@@ -90,33 +90,38 @@
                     </div>
                   </td>
                   <td class="text-start">
+                    <%if(brand.isBlocked===true){%>
                     <span
                       class="badge rounded-pill alert-danger"
                       style="width: 60px"
                       >Blocked</span
                     >
-
+                     <%}else{%>
                     <span
                       class="badge rounded-pill alert-success"
                       style="width: 60px"
                       >Active</span
                     >
+                    <%}%>
                   </td>
                   <td class="text-start">
+                    <%if(brand.isBlocked===false){%>
                     <button class="btn btn-danger" style="width: 90px">
-                      <a href="" class="text-white">Block</a>
+                      <a href="/admin/blockBrand?id=<%=brand._id%>" class="text-white">Block</a>
                     </button>
+                    <%}else{%>
 
                     <button class="btn btn-success" style="width: 90px">
-                      <a href="" class="text-white">Unblock</a>
+                      <a href="/admin/unblockBrand?id=<%=brand._id%>" class="text-white">Unblock</a>
                     </button>
+                    <%}%>
 
                     <button
                       class="btn btn-danger"
                       style="width: 90px"
-                      onclick=""
+                      onclick="return confirmDelete()"
                     >
-                      <a href="" class="text-white">Delete</a>
+                      <a href="/admin/deleteBrand?id=<%=brand._id%>" class="text-white">Delete</a>
                     </button>
                   </td>
                 </tr>
@@ -131,4 +136,10 @@
   <div class="pagination-container">
 </div>
 </section>
+
+<script>
+  function confirmDelete(){
+    return confirm("Are you sure you want to delete this brand?")
+  }
+</script>
 <%- include("../../views/partials/admin/footer") %>

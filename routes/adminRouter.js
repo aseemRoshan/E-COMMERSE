@@ -33,6 +33,10 @@ router.post("/editCategory/:id",adminAuth,categoryController.editCategory);
 //Brand Managment
 router.get("/brands",adminAuth,brandController.getBrandPage);
 router.post("/addBrand",adminAuth,uploads.single("image"),brandController.addBrand);
+router.get("/blockBrand",adminAuth,brandController.blockBrand);
+router.get("/unBlockBrand",adminAuth,brandController.unBlockBrand);
+router.get("/deleteBrand",adminAuth,brandController.deleteBrand);
+
 //Product Management
 // router.get("/addProducts",adminAuth,productController.getProductAddPage)
 
