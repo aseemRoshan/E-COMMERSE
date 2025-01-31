@@ -38,7 +38,7 @@ router.get("/unBlockBrand",adminAuth,brandController.unBlockBrand);
 router.get("/deleteBrand",adminAuth,brandController.deleteBrand);
 
 //Product Management
-// router.get("/addProducts",adminAuth,productController.getProductAddPage)
+ router.get("/product-add",adminAuth,productController.getProductAddPage)
 
 
 
