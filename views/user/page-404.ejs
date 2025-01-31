@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .error {
+            text-align: center;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .error h1 {
+            font-size: 6rem;
+            color: #8B4513; /* Wooden brown color */
+        }
+
+        .error p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .error .btn {
+            background-color: #8B4513; /* Wooden brown color */
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .error .btn:hover {
+            background-color: #A0522D; /* Darker wooden color */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error">
+            <h1>404</h1>
+            <p>Oops! The page you're looking for doesn't exist.</p>
+            <a href="/" class="btn">Go to Home</a>
+        </div>
+    </div>
+</body>
+</html>

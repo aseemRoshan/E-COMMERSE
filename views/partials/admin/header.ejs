@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .sidebar {
+            width: 250px;
+            background: #1e1e1e;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .sidebar h2 {
+            color: #fff;
+            text-align: center;
+        }
+        .sidebar a {
+            text-decoration: none;
+            color: #ccc;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .sidebar a:hover {
+            background: #333;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background: #181818;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: #1e1e1e;
+            border-radius: 5px;
+        }
+        .profile {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: url("/furni-1.0.0/Admin-side/1725771501979.jpg");
+            display: flex;
+    align-items: center;
+    justify-content: center;
+
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Furniture Admin</h2>
+        <a href="#">🏠 Dashboard</a>
+        <a href="/admin/Customers">👤 Customers</a>
+        <a href="/admin/category">📁 Category</a>
+        <a href="/admin/brands">🏷️ Brands</a>
+        <a href="/admin/product-add">➕ Add Product</a>
+        <a href="#">📦 Products</a>
+        <a href="#">🎟️ Coupon</a>
+        <a href="#">🖼️ Banner</a>
+        <a href="#">🛒 Orders</a>
+        <a style="color: red;" href="/admin/logout">LogOut</a>
+    </div>
