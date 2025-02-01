@@ -39,8 +39,9 @@ router.get("/deleteBrand",adminAuth,brandController.deleteBrand);
 
 //Product Management
  router.get("/product-add",adminAuth,productController.getProductAddPage)
-
-
+ router.post("/product-add",adminAuth,uploads.array("images",4),productController.addProducts)
+ router.get("/products",adminAuth,productController.getAllProducts);
+ 
 
 
 
