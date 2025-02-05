@@ -1,7 +1,10 @@
-const User = require("../../models/userSchema")
+const User = require("../../models/userSchema");
+const Category = require("../../models/categorySchema");
+const Product = require("../../models/productSchema");
 const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+const { log } = require("node:console");
 
 const loadSignup = async (req,res)=>{
 
@@ -17,14 +20,25 @@ const loadSignup = async (req,res)=>{
 
 
 const loadShopping = async (req,res)=>{
-      try {
-         return res.render("shop")
-      } catch (error) {
+    try {
         
-        console.log("Shopping page not loading:",error);
+        const categories = await Category.find({isListed:true});
+        
+        
+        const products = await Product.find({
+            isBlocked: false,
+            category: {$in: categories.map(category => category._id)},
+            quantity: {$gt: 0}
+        });
+                
+        return res.render("shop", {
+            products: products,
+            user: req.session.user || null
+        });
+    } catch (error) {
+        console.log("Shopping page not loading:", error);
         res.status(500).send("Server Error");
-        
-      }
+    }
 }
 
 
@@ -51,12 +65,25 @@ const pageNotFound = async (req,res)=>{
 const loadHomepage = async (req,res)=>{
     try {
          const userid = req.session.user;
+         const categories = await Category.find({isListed:true});
+         let products = await Product.find(
+            {isBlocked:false,
+              category:{$in:categories.map(category=>category._id)},quantity:{$gt:0}  
+            }
+         )
+
+
+        products.sort((a,b)=>new Date(b.createdOn)-new Date(a.createdOn));
+        products = products.slice(0,3);
+
+
+
          if(userid){
             const userData = await User.findById(userid)
             console.log(userData,'user')
-            res.render("home",{user:userData})
+            res.render("home",{user:userData,products:products})
          }else{
-            return res.render("home")
+            return res.render("home",{products:products})
          }
          
 

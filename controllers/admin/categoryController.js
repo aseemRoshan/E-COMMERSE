@@ -205,6 +205,9 @@ const editCategory = async (req,res) =>{
 
 
 
+
+
+
 module.exports = {
     categoryInfo,
     addCategory,
@@ -214,5 +217,6 @@ module.exports = {
     getUnlistCategory,
     getEditCategory,
     editCategory,
+   
 
 }
