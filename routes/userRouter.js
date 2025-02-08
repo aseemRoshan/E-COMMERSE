@@ -3,7 +3,7 @@ const router = express.Router();
 const userController = require("../controllers/user/userController");
 const passport = require('passport');
 const productController = require("../controllers/user/productController");
-
+const profileController = require("../controllers/user/profileController");
 
 router.get("/auth/google",passport.authenticate("google",{scope:['profile','email']}));
 // router.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:"/signup"}),(req,res)=>{
@@ -47,7 +47,12 @@ router.post("/search",userController.searchProducts);
 //product management
 router.get("/product-details",productController.productDetails)
 
-
-
+//profile management
+router.get("/forgot-password",profileController.getForgetPassPage);
+router.post("/forgot-email-valid",profileController.forgotEmailValid);
+router.post("/verify-passForgot-otp",profileController.verifyForgotPassOtp);
+router.get("/reset-password",profileController.getResetPassPage);
+router.post("/resend-forgot-otp",profileController.resendOtp);
+router.post("/reset-password",profileController.postNewPassword);
 
 module.exports = router;
