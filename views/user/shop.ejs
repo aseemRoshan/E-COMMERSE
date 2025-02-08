@@ -1,10 +1,3 @@
-<!-- /*
-* Bootstrap 5
-* Template Name: Furni
-* Template Author: Untree.co
-* Template URI: https://untree.co/
-* License: https://creativecommons.org/licenses/by/3.0/
-*/ -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -23,28 +16,300 @@
   <link href="/furni-1.0.0/css/style.css" rel="stylesheet">
   <title>Furni Free Bootstrap 5 Template for Furniture and Interior Design Websites by Untree.co</title>
   <style>
-    .categories ul {
+    .main-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .shop-container {
+      padding: 2rem 0;
+    }
+
+    .shop-title {
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      color: #333;
+    }
+
+    .search-form {
       display: flex;
+      align-items: center;
+      background-color: #f1f1f1;
+      border-radius: 25px;
+      overflow: hidden;
+      width: 100%;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 12px 20px;
+      font-size: 14px;
+      border: none;
+      outline: none;
+      background-color: transparent;
+    }
+
+    .search-button {
+      padding: 12px 25px;
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 25px;
+      margin-right: 5px;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .search-button:hover {
+      background-color: #218838;
+      transform: scale(1.05);
+    }
+
+    .product-list-container {
+      display: flex;
+      gap: 30px;
+    }
+
+    .sidebar {
+      width: 280px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      height: fit-content;
+    }
+
+    .filter-section {
+      margin-bottom: 25px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .filter-title {
+      font-weight: 600;
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #333;
+      text-align: left;
+    }
+
+    .category-brand-container ul {
       list-style: none;
       padding: 0;
-	
-	  
+      margin: 0;
+    }
 
+    .filter-item {
+      margin: 8px 0;
+      text-align: left;
     }
-    .categories ul li {
-      margin-right: 20px;
+
+    .filter-item a {
+      text-decoration: none;
+      color: #666;
+      transition: color 0.3s;
+      display: block;
+      padding: 5px 0;
     }
-	.categories a {
-		color: white;
-		text-decoration: none;
-		font-weight: bold;
-	}
-	
+
+    .filter-item a:hover {
+      color: #28a745;
+    }
+
+    .price-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .price-button {
+      padding: 10px 15px;
+      background-color: #f8f9fa;
+      color: #333;
+      border: 1px solid #dee2e6;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      font-size: 14px;
+      width: 100%;
+    }
+
+    .price-button:hover {
+      background-color: #28a745;
+      color: white;
+      border-color: #28a745;
+    }
+
+    .product-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 25px;
+    }
+
+    .product-item {
+      position: relative;
+      background: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .product-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    .product-thumbnail {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .product-title {
+      font-size: 1.1rem;
+      margin: 10px 0;
+      color: #333;
+    }
+
+    .product-price {
+      color: #999;
+      font-size: 1rem;
+      margin-right: 10px;
+    }
+
+    .productsale-price {
+      color: #28a745;
+      font-size: 1.1rem;
+    }
+
+    .wishlist-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #dc3545;
+      padding: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wishlist-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .wishlist-btn.active {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .sort-dropdown {
+      padding: 12px 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 25px;
+      font-size: 14px;
+      width: 100%;
+      margin-bottom: 15px;
+      outline: none;
+    }
+    .btn{
+      color: grey;
+      background-color: white;
+    }
+    .pagination{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .pagination a:hover {
+      background-color: #28a745;
+      color: white;
+   }
+    .pagination a.active {
+       background-color: #28a745;
+       color: white;
+  }
+  .add-to-cart-btn {
+  padding: 10px 15px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-top: 10px;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}
+
+
+.page-header {
+    background-color: #f7f8fa;
+    padding: 15px 0;
+}
+
+.breadcrumb-nav {
+    font-size: 14px;
+}
+
+.breadcrumb-nav a {
+    color: #333;
+    text-decoration: none;
+}
+
+.breadcrumb-nav span {
+    margin: 0 10px;
+    color: #999;
+}
+
+
+.product-section {
+    padding: 40px 0;
+}
+
+    @media (max-width: 768px) {
+      .product-list-container {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+    }
+    
   </style>
 </head>
 
 <body>
-
   <!-- Start Header/Navigation -->
   <nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
     <div class="container">
@@ -54,7 +319,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarsFurni">
         <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
-          <li class="nav-item ">
+          <li class="nav-item">
             <a class="nav-link" href="/">Home</a>
           </li>
           <li class="active"><a class="nav-link" href="shop.html">Shop</a></li>
@@ -72,176 +337,209 @@
   </nav>
   <!-- End Header/Navigation -->
 
-  <!-- Start Hero Section -->
-  <div class="hero" style="
-     background-image: url('');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 50px 0;
-  ">
+  <div class="page-header">
     <div class="container">
-      <div class="row justify-content-between">
-        <div class="col-lg-5">
-          <div class="intro-excerpt">
-            <!-- <h1>Shop</h1> -->
-            <!-- Categories Section -->
-            <div class="categories">
-              
+        <nav class="breadcrumb-nav">
+            <a href="/">Home</a>
+            <span>/</span>
+            <a href="/shop">Shop</a>
+            <!-- <span>/</span>
+            <span>Product Detail Page</span> -->
+        </nav>
+    </div>
+</div>
+
+
+
+
+
+  <div class="main-container">
+    <div class="shop-container">
+      <h1 class="shop-title">Shop</h1>
+
+      <div >
+        <form action="/search" method="POST" class="search-form">
+        <input type="text" id="product-search" name="query" placeholder="Search products..." class="search-input">
+        <button class="search-button" onclick="performSearch()">Search</button>
+      </div>
+
+      <div class="product-list-container">
+        <aside class="sidebar">
+          <!-- <div class="filter-section">
+            <div class="filter-title">Sort By</div>
+            <select class="sort-dropdown" onchange="sortProducts(this.value)">
+              <option value="">Select Option</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+            </select>
+          </div> -->
+
+          <div class="filter-section">
+            <div class="filter-title">Categories</div>
+            <div class="category-brand-container">
               <ul>
-				<li><a href="/shop?category=sofa">All Products</a></li>
-				<li><a href="/shop?category=sofa">Sofa</a></li>
-                <li><a href="/shop?category=sofa">Study table</a></li>
-                <li><a href="/shop?category=dining">Dining</a></li>
-                <li><a href="/shop?category=study-tables">Study Tables</a></li>
+                <% categories.forEach(category => { %>
+                  
+                  <li class="filter-item">
+                    <a href="/filter?category=<%=category._id%>" onclick="filterCategory('<%= category %>')"><%= category.name %></a>
+                  </li>
+                <% }); %>
               </ul>
             </div>
           </div>
-        </div>
-        <div class="col-lg-7">
+
+          <div class="filter-section">
+            <div class="filter-title">Brands</div>
+            <div class="category-brand-container">
+              <ul>
+                <% brands.forEach(brand => { %>
+                  <li class="filter-item">
+                    <a href="/filter?brand=<%=brand._id%>" onclick="filterBrand('<%= brand %>')"><%= brand.brandName %></a>
+                  </li>
+                <% }); %>
+              </ul>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-title">Price Range</div>
+            <div class="price-options">
+              <a href="/filterPrice?gt=0&lt=2000"><button class="price-button" onclick="filterProductsByPrice(500)">Under ₹2000</button></a>
+              <a href="/filterPrice?gt=2000&lt=6000"><button class="price-button" onclick="filterProductsByPrice(1000)">₹2000 - ₹6000</button></a>
+              <a href="/filterPrice?gt=6000&lt=12000"><button class="price-button" onclick="filterProductsByPrice(1500)">₹6000 - ₹12000</button></a>
+              <a href="/filterPrice?gt=12000&lt=1000000"><button class="price-button" onclick="filterProductsByPrice(1501)">Above ₹12000</button></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="product-grid" id="productContainer">
+          <% products.forEach(product => { %>
+            <div class="product-item">
+              <button class="wishlist-btn">
+                <i class="fas fa-heart"></i>
+              </button>
+              <a href="/product-details?id=<%= product._id %>">
+                <img src="/uploads/re-image/<%= product.productImage[0] %>" class="img-fluid product-thumbnail">
+                <h3 class="product-title"><%= product.productName %></h3>
+                <p>Brand:<%=product.brand%></p>
+                <strong class="product-price" style="text-decoration: line-through;">₹<%= product.regularPrice %></strong>
+                <strong class="productsale-price">₹<%= product.salePrice %></strong>
+              </a>
+              <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
+            </div>
+          <% }) %>
         </div>
       </div>
     </div>
-  </div>
-  <!-- End Hero Section -->
-		
-
-		<div class="untree_co-section product-section before-footer-section">
-		    <div class="container">
-		      	<div class="row">
-					<% products.forEach(product=>{ %>
-		      		<!-- Start Column 1 -->
-					<div class="col-12 col-md-4 col-lg-3 mb-5">
-						<a class="product-item" href="/product-details?id=<%=product._id%>">
-							<img src="/uploads/re-image/<%= product.productImage[0] %>" class="img-fluid product-thumbnail" > >
-							<h3 class="product-title"><%= product.productName %></h3>
-							<strong class="product-price" style="text-decoration: line-through;">₹<%= product.regularPrice %></strong>
-							<strong class="productsale-price"> ₹<%= product.salePrice %></strong>
-
-							<span class="icon-cross">
-								<img src="/furni-1.0.0/images/cross.svg" class="img-fluid">
-							</span>
-						</a>
-					</div> 
-					<% }) %>
-					<!-- End Column 1 -->
-						
-					
-
-		      	</div>
-		    </div>
-		</div>
 
 
-		<!-- Start Footer Section -->
-		<footer class="footer-section">
-			<div class="container relative">
 
-				<div class="sofa-img">
-					<img src="/furni-1.0.0/images/sofa.png" alt="Image" class="img-fluid">
-				</div>
-
-				<div class="row">
-					<div class="col-lg-8">
-						<div class="subscription-form">
-							<h3 class="d-flex align-items-center"><span class="me-1"><img src="/furni-1.0.0/images/envelope-outline.svg" alt="Image" class="img-fluid"></span><span>Subscribe to Newsletter</span></h3>
-
-							<form action="#" class="row g-3">
-								<div class="col-auto">
-									<input type="text" class="form-control" placeholder="Enter your name">
-								</div>
-								<div class="col-auto">
-									<input type="email" class="form-control" placeholder="Enter your email">
-								</div>
-								<div class="col-auto">
-									<button class="btn btn-primary">
-										<span class="fa fa-paper-plane"></span>
-									</button>
-								</div>
-							</form>
-
-						</div>
-					</div>
-				</div>
-
-				<div class="row g-5 mb-5">
-					<div class="col-lg-4">
-						<div class="mb-4 footer-logo-wrap"><a href="#" class="footer-logo">Furni<span>.</span></a></div>
-						<p class="mb-4">Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque habitant</p>
-
-						<ul class="list-unstyled custom-social">
-							<li><a href="#"><span class="fa fa-brands fa-facebook-f"></span></a></li>
-							<li><a href="#"><span class="fa fa-brands fa-twitter"></span></a></li>
-							<li><a href="#"><span class="fa fa-brands fa-instagram"></span></a></li>
-							<li><a href="#"><span class="fa fa-brands fa-linkedin"></span></a></li>
-						</ul>
-					</div>
-
-					<div class="col-lg-8">
-						<div class="row links-wrap">
-							<div class="col-6 col-sm-6 col-md-3">
-								<ul class="list-unstyled">
-									<li><a href="#">About us</a></li>
-									<li><a href="#">Services</a></li>
-									<li><a href="#">Blog</a></li>
-									<li><a href="#">Contact us</a></li>
-								</ul>
-							</div>
-
-							<div class="col-6 col-sm-6 col-md-3">
-								<ul class="list-unstyled">
-									<li><a href="#">Support</a></li>
-									<li><a href="#">Knowledge base</a></li>
-									<li><a href="#">Live chat</a></li>
-								</ul>
-							</div>
-
-							<div class="col-6 col-sm-6 col-md-3">
-								<ul class="list-unstyled">
-									<li><a href="#">Jobs</a></li>
-									<li><a href="#">Our team</a></li>
-									<li><a href="#">Leadership</a></li>
-									<li><a href="#">Privacy Policy</a></li>
-								</ul>
-							</div>
-
-							<div class="col-6 col-sm-6 col-md-3">
-								<ul class="list-unstyled">
-									<li><a href="#">Nordic Chair</a></li>
-									<li><a href="#">Kruzo Aero</a></li>
-									<li><a href="#">Ergonomic Chair</a></li>
-								</ul>
-							</div>
-						</div>
-					</div>
-
-				</div>
-
-				<div class="border-top copyright">
-					<div class="row pt-4">
-						<div class="col-lg-6">
-							<p class="mb-2 text-center text-lg-start">Copyright &copy;<script>document.write(new Date().getFullYear());</script>. All Rights Reserved. &mdash; Designed with love by <a href="https://untree.co">Untree.co</a>  Distributed By <a href="https://themewagon.com">ThemeWagon</a> <!-- License information: https://untree.co/license/ -->
-            </p>
-						</div>
-
-						<div class="col-lg-6 text-center text-lg-end">
-							<ul class="list-unstyled d-inline-flex ms-auto">
-								<li class="me-4"><a href="#">Terms &amp; Conditions</a></li>
-								<li><a href="#">Privacy Policy</a></li>
-							</ul>
-						</div>
-
-					</div>
-				</div>
-
-			</div>
-		</footer>
-		<!-- End Footer Section -->	
+ 
+    <div class="pagination" >
+      <% if (currentPage > 1) { %>
+        <a class="btn" href="/shop?page=<%= currentPage - 1 %>">Prev</a>
+      <% } %>
+  
+  
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <a class="btn <%= currentPage === i ? 'active' : '' %>" href="/shop?page=<%= i %>"><%= i %></a>
+      <% } %>
+  
+  
+      <% if (currentPage < totalPages) { %>
+        <a class="btn" href="/shop?page=<%= currentPage + 1 %>">Next</a>
+      <% } %>
+    </div>
+  
+  
 
 
-		<script src="js/bootstrap.bundle.min.js"></script>
-		<script src="js/tiny-slider.js"></script>
-		<script src="js/custom.js"></script>
-	</body>
 
+  </div><!--exect this-->
+
+  
+
+
+  <!-- Start Footer Section -->
+  <footer class="footer-section">
+    <!-- Your existing footer content -->
+  </footer>
+  <!-- End Footer Section -->
+
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/tiny-slider.js"></script>
+  <script src="js/custom.js"></script>
+  <script>
+    // Filter and search functions
+    function performSearch() {
+      const query = document.getElementById('product-search').value;
+      fetch(`/api/products?search=${query}`)
+        .then(response => response.json())
+        .then(data => updateProductContainer(data));
+    }
+
+    function filterCategory(category) {
+      fetch(`/api/products?category=${category}`)
+        .then(response => response.json())
+        .then(data => updateProductContainer(data));
+    }
+
+    function filterBrand(brand) {
+      fetch(`/api/products?brand=${brand}`)
+        .then(response => response.json())
+        .then(data => updateProductContainer(data));
+    }
+
+    function filterProductsByPrice(maxPrice) {
+      fetch(`/api/products?maxPrice=${maxPrice}`)
+        .then(response => response.json())
+        .then(data => updateProductContainer(data));
+    }
+
+    function sortProducts(sortOption) {
+      fetch(`/api/products?sort=${sortOption}`)
+        .then(response => response.json())
+        .then(data => updateProductContainer(data));
+    }
+
+    function updateProductContainer(data) {
+      const productContainer = document.getElementById('productContainer');
+      productContainer.innerHTML = '';
+      data.forEach(product => {
+        const productHTML = `
+          <div class="product-item">
+            <button class="wishlist-btn">
+              <i class="fas fa-heart"></i>
+            </button>
+            <a href="/product-details?id=${product._id}">
+              <img src="/uploads/re-image/${product.productImage[0]}" class="img-fluid product-thumbnail">
+              <h3 class="product-title">${product.productName}</h3>
+              <strong class="product-price">₹${product.regularPrice}</strong>
+              <strong class="productsale-price">₹${product.salePrice}</strong>
+            </a>
+          </div>
+        `;
+        productContainer.innerHTML += productHTML;
+      });
+      initWishlistButtons();
+    }
+
+    // Wishlist functionality
+    function initWishlistButtons() {
+      document.querySelectorAll('.wishlist-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          this.classList.toggle('active');
+          // Add your wishlist API call here
+        });
+      });
+    }
+
+    // Initialize wishlist buttons on page load
+    initWishlistButtons();
+  </script>
+</body>
 </html>
+<%-include("../../views/partials/user/footer")%>

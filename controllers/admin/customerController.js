@@ -6,11 +6,11 @@ const customerInfo = async (req, res) => {
         let page = req.query.page ? parseInt(req.query.page) : 1;
         const limit = 3;
 
-        // Fetch users based on search criteria
+        
         const userData = await User.find({
             isAdmin: false,
             $or: [
-                { name: { $regex: ".*" + search + ".*", $options: "i" } }, // Case-insensitive search
+                { name: { $regex: ".*" + search + ".*", $options: "i" } }, 
                 { email: { $regex: ".*" + search + ".*", $options: "i" } },
             ],
         })
@@ -18,7 +18,7 @@ const customerInfo = async (req, res) => {
             .skip((page - 1) * limit)
             .exec();
 
-        // Get total count of users for pagination
+        
         const count = await User.countDocuments({
             isAdmin: false,
             $or: [
@@ -29,7 +29,7 @@ const customerInfo = async (req, res) => {
 
         const totalPages = Math.ceil(count / limit);
 
-        // Pass data to the EJS template
+        
         res.render("Customers", {
             data: userData,
             currentPage: page,

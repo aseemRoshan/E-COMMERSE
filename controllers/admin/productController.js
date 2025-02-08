@@ -3,8 +3,8 @@ const Category = require("../../models/categorySchema");
 const Brand = require("../../models/brandSchema");
 const User = require("../../models/userSchema");
 const fs = require("fs");
-const path = require("path");  // To updload images
-const sharp = require("sharp"); // To resize the width  and size of the img;
+const path = require("path");  
+const sharp = require("sharp"); 
 
 
 
@@ -296,8 +296,8 @@ const  addProducts = async (req,res) =>{
       const {imageNameToServer,productIdToServer} = req.body;
       const product = await Product.findByIdAndUpdate(productIdToServer,{$pull:{productImage:imageNameToServer}});
       const imagepath = path.join("public","uploads","re-image",imageNameToServer);
-      if(fs.existsSync(imagePath)){
-        await fs.unlinkSync(imagepath);
+      if(fs.existsSync(imagepath)){
+        fs.unlinkSync(imagepath);
         console.log(`Image ${imageNameToServer} deleted successfully`)
       }else{
           console.log(`Image ${imageNameToServer} not found`)

@@ -21,19 +21,13 @@
                     <div class="product-gallery">
                         <!-- Main Image with Zoom -->
                         <div class="main-image-container">
-                            <div class="image-zoom-wrapper">
-                                <img src="/uploads/re-image/<%= product.productImage[0] %>" 
-                                     alt="<%= product.productName %>" 
-                                     class="main-image"
-                                     id="zoomImage">
-                                <div class="zoom-lens"></div>
-                                <div class="zoom-result"></div>
-                            </div>
-                            <button class="zoom-btn">
-                                <i class="fi-rs-search"></i>
-                            </button>
+                            <img src="/uploads/re-image/<%= product.productImage[0] %>"
+                                 alt="<%= product.productName %>"
+                                 class="main-image"
+                                 id="zoomImage"
+                                 data-zoom-image="/uploads/re-image/<%= product.productImage[0] %>">
                         </div>
-                        
+
                         <!-- Thumbnail Images -->
                         <div class="thumbnail-container">
                             <% product.productImage.forEach((image, index) => { %>
@@ -45,18 +39,18 @@
                     </div>
                 </div>
 
-                <!-- Right Column - Product Details -->
+                
                 <div class="col-md-6">
                     <div class="product-details">
-                        <!-- Product Title -->
+                        
                         <h1 class="product-title"><%= product.productName %></h1>
 
-                        <!-- Brand and Reviews -->
+                        
                         <div class="product-meta">
                             <div class="brand">
                                 Brands: <a href="#"><%= product.brand %></a>
                             </div>
-                            <div class="reviews">
+                            <div class="reviews" >
                                 <div class="stars">
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
@@ -123,14 +117,14 @@
                     <% relatedProducts.forEach(relatedProduct => { %>
                         <div class="product-card">
                             <div class="product-image">
-                                <a href="/product/<%= relatedProduct._id %>">
-                                    <img src="/uploads/re-image/<%= relatedProduct.productImage[0] %>" 
+                                <a href="/product-details?id=<%= relatedProduct._id %>">
+                                    <img src="/uploads/re-image/<%= relatedProduct.productImage[0] %>"
                                          alt="<%= relatedProduct.productName %>">
                                 </a>
                             </div>
                             <div class="product-info">
                                 <h3 class="product-name">
-                                    <a href="/product/<%= relatedProduct._id %>">
+                                    <a href="/product-details?id=<%= relatedProduct._id %>">
                                         <%= relatedProduct.productName %>
                                     </a>
                                 </h3>
@@ -150,7 +144,7 @@
 </main>
 
 <style>
-/* Main Styles */
+
 .main {
     padding-top: 20px;
 }
@@ -174,12 +168,11 @@
     color: #999;
 }
 
-/* Product Section Styles */
+
 .product-section {
     padding: 40px 0;
 }
 
-/* Image Gallery Styles */
 .product-gallery {
     position: relative;
 }
@@ -192,58 +185,13 @@
     margin-bottom: 20px;
 }
 
-/* Image Zoom Styles */
-.image-zoom-wrapper {
-    position: relative;
-    width: 100%;
-    height: 500px;
-}
 
 .main-image {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    height: auto;
+    display: block;
 }
 
-.zoom-lens {
-    position: absolute;
-    border: 1px solid #d4d4d4;
-    width: 150px;
-    height: 150px;
-    display: none;
-    background: rgba(255, 255, 255, 0.4);
-    cursor: crosshair;
-}
-
-.zoom-result {
-    position: absolute;
-    top: 0;
-    left: 105%;
-    width: 500px;
-    height: 500px;
-    border: 1px solid #d4d4d4;
-    display: none;
-    overflow: hidden;
-    background-color: #fff;
-    z-index: 999;
-}
-
-.zoom-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* Thumbnail Styles */
 .thumbnail-container {
     display: flex;
     gap: 10px;
@@ -267,7 +215,7 @@
     object-fit: cover;
 }
 
-/* Product Details Styles */
+
 .product-title {
     font-size: 24px;
     margin-bottom: 20px;
@@ -306,7 +254,7 @@
     margin-left: 15px;
 }
 
-/* Features and Cart Section Styles */
+
 .product-features {
     list-style: none;
     padding: 0;
@@ -370,7 +318,7 @@
     cursor: pointer;
 }
 
-/* Related Products Styles */
+
 .related-products-section {
     padding: 60px 0;
     background-color: #f8f9fa;
@@ -395,6 +343,7 @@
     border-radius: 10px;
     padding: 15px;
     transition: box-shadow 0.3s ease;
+    
 }
 
 .product-card:hover {
@@ -443,24 +392,28 @@
     color: #3BB77E;
 }
 
-/* Responsive Styles */
+
 @media (max-width: 768px) {
     .related-products-slider {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
-    
+
     .zoom-result {
         display: none !important;
     }
-    
+
     .image-zoom-wrapper {
         height: 350px;
     }
 }
 </style>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
+
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
     // Quantity selector functionality
     const minusBtn = document.querySelector('.minus');
     const plusBtn = document.querySelector('.plus');
@@ -478,56 +431,52 @@ document.addEventListener('DOMContentLoaded', function() {
         qtyInput.value = currentValue + 1;
     });
 
-    // Image Zoom Functionality
-    const wrapper = document.querySelector('.image-zoom-wrapper');
-    const mainImage = document.querySelector('#zoomImage');
-    const lens = document.querySelector('.zoom-lens');
-    const result = document.querySelector('.zoom-result');
+    // Function to initialize zoom
+    function initializeZoom(imageElement) {
+        $(imageElement).elevateZoom({
+            zoomType: "inner",
+            cursor: "crosshair",
+            zoomWindowFadeIn: 500,
+            zoomWindowFadeOut: 500,
+            lensFadeIn: 500,
+            lensFadeOut: 500
+        });
+    }
 
-    mainImage.addEventListener('mouseenter', function() {
-        lens.style.display = 'block';
-        result.style.display = 'block';
-    });
-
-    mainImage.addEventListener('mouseleave', function() {
-        lens.style.display = 'none';
-        result.style.display = 'none';
-    });
-    mainImage.addEventListener('mousemove', function(e) {
-    let rect = mainImage.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
-    
-    // Calculate position for lens
-    let lensWidth = lens.offsetWidth / 2;
-    let lensHeight = lens.offsetHeight / 2;
-    
-    lens.style.left = (x - lensWidth) + 'px';
-    lens.style.top = (y - lensHeight) + 'px';
-    
-    // Calculate zoom ratio
-    let fx = result.offsetWidth / lens.offsetWidth;
-    let fy = result.offsetHeight / lens.offsetHeight;
-    
-    // Update result
-    result.style.backgroundImage = `url('${mainImage.src}')`;
-    result.style.backgroundSize = (mainImage.width * fx) + 'px ' + (mainImage.height * fy) + 'px';
-    result.style.backgroundPosition = `-${(x * fx - result.offsetWidth / 2)}px -${(y * fy - result.offsetHeight / 2)}px`;
-});
+    // Initial zoom on the first image
+    const zoomImage = document.getElementById('zoomImage');
+    initializeZoom(zoomImage);
 
     // Thumbnail switching functionality
-    const thumbnails = document.querySelectorAll('.thumbnail-item');
+    const thumbnails = document.querySelectorAll('.thumbnail-item img');
     thumbnails.forEach(thumbnail => {
-        thumbnail.addEventListener('click', () => {
+        thumbnail.addEventListener('click', function () {
             // Remove active class from all thumbnails
-            thumbnails.forEach(t => t.classList.remove('active'));
-            // Add active class to clicked thumbnail
-            thumbnail.classList.add('active');
-            // Update main image
-            mainImage.src = thumbnail.querySelector('img').src;
+            thumbnails.forEach(t => t.parentElement.classList.remove('active'));
+            this.parentElement.classList.add('active');
+
+            // Get the new image src
+            const newImageSrc = this.getAttribute('src');
+
+            // Remove previous zoom instance completely
+            $('.zoomContainer').remove(); // Removes the zoom container
+            $(zoomImage).removeData('elevateZoom'); // Removes zoom data
+            $(zoomImage).unbind(); // Removes previous event bindings
+
+            // Update the main image dynamically
+            zoomImage.src = newImageSrc;
+            zoomImage.setAttribute('data-zoom-image', newImageSrc);
+            
+            // Wait for the new image to load before re-initializing zoom
+            zoomImage.onload = function () {
+                initializeZoom(zoomImage);
+            };
         });
     });
 });
+
+ 
+
 </script>
 
 <%- include("../../views/partials/user/footer") %>

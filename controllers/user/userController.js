@@ -1,10 +1,12 @@
 const User = require("../../models/userSchema");
 const Category = require("../../models/categorySchema");
 const Product = require("../../models/productSchema");
+const Brand = require("../../models/brandSchema");
 const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
 const { log } = require("node:console");
+const { search } = require("../../routes/userRouter");
 
 const loadSignup = async (req,res)=>{
 
@@ -22,17 +24,39 @@ const loadSignup = async (req,res)=>{
 const loadShopping = async (req,res)=>{
     try {
         
+        const user = req.session.user;
+        const userData = await User.findOne({_id:user});
+
         const categories = await Category.find({isListed:true});
-        
+        const categoryIds = categories.map((category)=>category._id.toString());
+        const page = parseInt (req.query.page) || 1;
+        const limit = 12;
+        const skip = (page-1)*limit;
         
         const products = await Product.find({
             isBlocked: false,
             category: {$in: categories.map(category => category._id)},
             quantity: {$gt: 0}
-        });
+        }).sort({createdOn:-1}).skip(skip).limit(limit);
+        
+        const totalProducts = await Product.countDocuments({
+            isBlocked:false,
+            category:{$in:categoryIds},
+            quantity:{$gt:0}
+        })
+        const totalPages = Math.ceil(totalProducts/limit);
+
+        const brands = await Brand.find({isBlocked:false});
+        const categoriesWithIds = categories.map(categoroy => ({_id:categoroy._id,name:categoroy.name}))
                 
         return res.render("shop", {
+            user:userData,
             products: products,
+            categories:categoriesWithIds,
+            brands:brands,
+            totalProducts:totalProducts,
+            currentPage:page,
+            totalPages:totalPages,
             user: req.session.user || null
         });
     } catch (error) {
@@ -41,6 +65,180 @@ const loadShopping = async (req,res)=>{
     }
 }
 
+
+const filterProduct = async (req,res) =>{
+    try {
+        
+        const user = req.session.user;
+        const category = req.query.category;
+        const brand = req.query.brand;
+        const findCategory = category ? await Category.findOne({_id:category}) : null;
+        const findBrand = brand ? await Brand.findOne({_id:brand}) : null;
+        const brands = await Brand.find({}).lean();
+        const query = {
+
+            isBlocked : false,
+            quantity : {$gt:0}
+        }
+
+        if(findCategory){
+            query.category = findCategory._id;
+        }
+
+        if(findBrand){
+            query.brand = findBrand.brandName;
+        }
+
+        let findProducts = await Product.find(query).lean();
+        findProducts.sort((a,b)=>new Date(b.createdOn)-new Date(a.createdOn));
+
+        const categories = await Category.find({isListed:true});
+
+        let itemsPerPage = 12;
+
+        let currentPage = parseInt(req.query.page) || 1;
+        let startIndex = (currentPage-1) * itemsPerPage;
+        let endIndex = startIndex+itemsPerPage;
+        let totalPages = Math.ceil(findProducts.length/itemsPerPage);
+        const currentProduct = findProducts.slice(startIndex,endIndex);
+        let userData = null;
+        if(user){
+            userData = await User.findOne({_id:user});
+            if(userData){
+                const searchEntry = {
+                    category : findCategory ? findCategory._id :null,
+                    brand : findBrand ? findBrand.brandName : null,
+                    searchedOn : new Date(),
+                }
+                userData.searchHistory.push(searchEntry);
+                await userData.save();
+            }
+        }
+
+        req.session.filteredProducts = currentProduct;
+
+       res.render("shop",{
+          user: userData,
+          products:currentProduct,
+          categories : categories,
+          brands : brands,
+          totalPages,
+          currentPage,
+          selectedCategory:category || null ,
+          selectedBrand : brand || null,
+
+       })
+
+
+    } catch (error) {
+        
+        res.redirect("/pageNotFound");
+
+    }
+}
+
+
+
+const filterByPrice = async (req,res) =>{
+     try {
+        
+         const user = req.session.user;
+         const userData = await User.findOne({_id:user});
+         const brands = await Brand.find({}).lean();
+         const categories = await Category.find({isListed:true}).lean();
+
+         let findProducts = await Product.find({
+            salePrice: {$gt:req.query.gt,$lt:req.query.lt},
+            isBlocked:false,
+            quantity: {$gt:0}
+
+         }).lean();
+
+        findProducts.sort((a,b)=>new Date(b.createdOn)-new Date(a.createdOn));
+     
+        let itemsPerPage = 12;
+        let currentPage = parseInt(req.query.page) || 1;
+        let startIndex = (currentPage-1)*itemsPerPage;
+        let endIndex = startIndex + itemsPerPage;
+        let totalPages = Math.ceil(findProducts.length/itemsPerPage);
+        const currentProduct = findProducts.slice(startIndex,endIndex);
+        req.session.filteredProducts = findProducts ;
+
+        res.render("shop",{
+          
+            user:userData,
+            products:currentProduct,
+            categories:categories,
+            brands:brands,
+            totalPages,
+            currentPage,
+
+        })
+
+     } catch (error) {
+        
+        console.log(error);
+        res.redirect("/pageNotFound");
+        
+
+     }
+}
+
+
+
+const searchProducts = async (req,res) =>{
+    try {
+        
+       const user = req.session.user;
+       const userData = await User.findOne({_id:user});
+       let search = req.body.query;
+
+       const brands = await Brand.find({}).lean();
+       const categories = await Category.find({isListed:true}).lean();
+       const categoryIds = categories.map(category=>category._id.toString());
+       let searchResult = [];
+       if(req.session.filteredProducts && req.session.filteredProducts.length>0){
+        searchResult = req.session.filteredProducts.filter(product=>
+            product.productName.toLowerCase().includes(search.toLowerCase())
+        )
+       }else {
+        searchResult = await Product.find({
+             productName : {$regex:".*"+search+".*",$options:"i"},
+             isBlocked:false,
+             quantity:{$gt:0},
+             category:{$in:categoryIds}
+        })
+       }
+
+       
+       searchResult.sort((a,b)=>new Date(b.createdOn)- new Date(a.createdOn));
+       let itemsPerPage = 12;
+       let currentPage = parseInt(req.query.page) || 1;
+       let startIndex = (currentPage-1)*itemsPerPage;
+       let endIndex = startIndex + itemsPerPage;
+       let totalPages = Math.ceil(searchResult.length/itemsPerPage);
+       const currentProduct = searchResult.slice(startIndex,endIndex);
+
+
+       res.render("shop",{
+
+        user : userData,
+        products : currentProduct,
+        categories : categories,
+        brands : brands,
+        totalPages,
+        currentPage,
+        count:searchResult.length,
+       })
+
+
+    } catch (error) {
+        
+        console.log("Error:",error);
+        res.redirect("/pageNotFound")
+
+    }
+}
 
 
 
@@ -98,38 +296,7 @@ const loadHomepage = async (req,res)=>{
 
 
 
-// const signup = async (req,res)=>{
-  
-//     const {name,email,phone,password} = req.body;
 
-//     try {
-        
-//        const existingUser =await User.findOne({email});
-//        if(existingUser){
-      
-//         return res.render('signup',{
-//             error:"Email is already in use",
-//             formData :{name,phone}
-//         })
-//        }
-
-
-//         const newUser = new User({name,email,phone,password});
-        
-//         console.log(newUser);
-        
-
-//         await newUser.save();
-
-//         return res.redirect("/signup")
-
-
-//     } catch (error) {
-        
-//         console.error("Error for save user",error);
-//         res.status(500).send("Internal server error")
-//     }
-// }
 
 
 function generateOtp(){
@@ -327,7 +494,10 @@ const login = async (req,res) =>{
         return res.render("login",{message:"Incorrect Password"})
      }
      
-     req.session.user =  findUser._id;
+     req.session.user = findUser;
+        // Pass user to all views using res.locals
+        res.locals.user = req.session.user;
+     //req.session.user =  findUser._id;
 
      res.redirect("/")
 
@@ -377,4 +547,7 @@ module.exports = {
     loadLogin,
     login,
     logout,
+    filterProduct,
+    filterByPrice,
+    searchProducts,
 }

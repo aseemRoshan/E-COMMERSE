@@ -18,13 +18,13 @@
       align-items: center;
       min-height: 100vh;
       background-image: url('/furni-1.0.0/images/armchair-green-living-room-with-copy-space_43614-910.avif'); 
-      background-repeat: no-repeat; /* Prevents the image from repeating */
-      background-size: cover; /* Ensures the image covers the entire background */
+      background-repeat: no-repeat; 
+      background-size: cover;
       background-position: center;
     }
 
     .container {
-      background-color: rgba(255, 255, 255, 0.7); /* Adjust the alpha value for desired opacity */
+      background-color: rgba(255, 255, 255, 0.7); 
       padding: 30px;
       border-radius: 10px;
       max-width: 400px;
@@ -101,19 +101,19 @@
     }
 
     .login-link {
-      text-align: center; /* Center the text */
-      margin-top: 15px; /* Space above the link */
-      font-size: 14px; /* Font size for the link */
-      color: black; /* Link color */
+      text-align: center; 
+      margin-top: 15px; 
+      font-size: 14px; 
+      color: black; 
     }
 
     .login-link a {
-      text-decoration: none; /* Remove underline */
-      color: #007BFF; /* Same color for link */
+      text-decoration: none; 
+      color: #007BFF; 
     }
 
     .login-link a:hover {
-      text-decoration: underline; /* Underline on hover */
+      text-decoration: underline; 
     }
 
     @media (max-width: 500px) {
@@ -290,10 +290,10 @@ function passValidateChecking(e){
 
 document.addEventListener("DOMContentLoaded",function(){
   signupform.addEventListener("submit",function(e){
-    //Prevent form submission to validat first
+    
     e.preventDefault(); 
 
-       // Reset error messages
+      
        error1.style.display = "none";
         error2.style.display = "none";
         error3.style.display = "none";
@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded",function(){
         
 
 
-  //Call validtioion function
+  
    nameValidateChecking();
    emailValidateChecking();
    phoneValidateChecking();
@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded",function(){
    ){
     e.preventDefault();
    }else{
-    //If no errors, submit the form
+    
     signupform.submit();
    }
 

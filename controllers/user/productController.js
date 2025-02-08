@@ -1,6 +1,7 @@
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const User = require("../../models/userSchema");
+const Brand = require("../../models/brandSchema")
 
 
 const productDetails = async (req, res) => {
@@ -9,7 +10,7 @@ const productDetails = async (req, res) => {
         const userData = await User.findById(userId);
         const productId = req.query.id;
 
-        // Fetch the main product and populate its category
+        
         const product = await Product.findById(productId).populate('category');
 
         if (!productId) {
@@ -18,23 +19,24 @@ const productDetails = async (req, res) => {
 
         if (!product) {
             console.log("Product not found for ID:", productId);
-            return res.redirect("/pageNotFound"); // Redirect if product doesn't exist
+            return res.redirect("/pageNotFound"); 
         }
 
-        // Fetch related products from the same category (excluding the current product)
+        
         const relatedProducts = await Product.find({
             category: product.category,
-            _id: { $ne: productId } // Exclude current product
+            _id: { $ne: productId } ,
+            isBlocked:false
         })
-        .limit(4) // Limit to 4 related products
-        .select('productName productImage salePrice regularPrice'); // Select specific fields
+        .limit(4) 
+        .select('productName productImage salePrice regularPrice'); 
 
-        // Calculate total offer (discount percentage)
+        
         const totalOffer = Math.round(
             ((product.regularPrice - product.salePrice) / product.regularPrice) * 100
         );
 
-        // Get category details
+        
         const findCategory = product.category || {};
         const categoryOffer = findCategory?.categoryOffer || 0;
         const productOffer = product.productOffer || 0;
@@ -61,14 +63,13 @@ const getProductDetails = async (req, res) => {
     try {
         const productId = req.params.id;
         
-        // Fetch the main product
         const product = await Product.findById(productId);
         
         if (!product) {
             return res.status(404).send('Product not found');
         }
 
-        // Fetch related products
+        
         const relatedProducts = await Product.find({
             category: product.category,
             _id: { $ne: productId }
@@ -76,15 +77,17 @@ const getProductDetails = async (req, res) => {
         .limit(4)
         .select('productName productImage salePrice regularPrice');
         
-        // Calculate offer percentage
+        
         const totalOffer = calculateOffer(product.regularPrice, product.salePrice);
         
-        res.render('product-detail', {
+        res.render('product-details', {
             product,
             relatedProducts,
             totalOffer,
             quantity: product.quantity,
             category: await Category.findById(product.category)
+          
+            
         });
 
     } catch (error) {
@@ -93,7 +96,6 @@ const getProductDetails = async (req, res) => {
     }
 };
 
-// Helper function to calculate offer percentage
 function calculateOffer(regularPrice, salePrice) {
     if (regularPrice && salePrice) {
         return Math.round(((regularPrice - salePrice) / regularPrice) * 100);

@@ -7,6 +7,8 @@
     <title>Edit Product</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     
     <style>
         body {
@@ -325,7 +327,7 @@
                                         <!-- Existing Images -->
                                         <div class="existing-images mb-4">
                                             <%for(let i=0;i<product.productImage.length;i++){%>
-                                                <div class="col-md-12">
+                                                <div class="col-md-12" id="existingImages<%= product.productImage[i] %>">
                                                     <div class="mb-4">
                                                         <div class="col-12">
                                                             <td>
@@ -334,7 +336,7 @@
                                                                     src="/uploads/re-image/<%=product.productImage[i]%>"
                                                                     alt="">
                                                                 <i onclick="deleteSingleImage('<%=product.productImage[i]%>','<%=product._id%>')" 
-                                                                   class="fa fa-check"></i>
+                                                                    <i  class="fa fa-times"></i> 
                                                             </td>
                                                         </div>
                                                     </div>
@@ -574,7 +576,10 @@
             method:"post",
             data:{imageNameToServer:imageId,productIdToServer:productId},
             success:((response)=>{
-                if(response.status===true){
+                console.log(response);
+                
+                if(response.status){
+                    console.log(document.getElementById(`existingImages${imageId}`))
                      window.location.reload()
                 }
             })
