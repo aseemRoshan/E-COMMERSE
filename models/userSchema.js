@@ -38,10 +38,26 @@ const userSchema = new Schema({
         type:Boolean,
         default:false
     },
-    cart:[{
-        type:Schema.Types.ObjectId,
-        ref:"Cart",
-    }],
+    cart:{
+        type:Array,
+    },
+    // cart:[{
+    //     type:Schema.Types.ObjectId,
+    //     ref:"Cart",
+    // }],
+    // cart:[{
+    //     productId:{
+    //         type:Schema.Types.ObjectId,
+    //         ref:"Product",
+    //         required:true,
+    //     },
+    //     quantity:{
+    //         type:Number,
+    //         required:true,
+    //         default:1,
+    //     }
+    // }],
+
     wallet:{
         type:Schema.Types.ObjectId,
          default:null

@@ -12,6 +12,7 @@
   <!-- Bootstrap CSS -->
   <link href="/furni-1.0.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <link href="/furni-1.0.0/css/tiny-slider.css" rel="stylesheet">
   <link href="/furni-1.0.0/css/style.css" rel="stylesheet">
   <title>Furni Free Bootstrap 5 Template for Furniture and Interior Design Websites by Untree.co</title>
@@ -237,6 +238,7 @@
       justify-content: center;
       align-items: center;
       margin-top: 20px;
+      gap:1rem
     }
 
     .pagination a:hover {
@@ -266,7 +268,6 @@
   transform: scale(1.05);
 }
 
-
 .page-header {
     background-color: #f7f8fa;
     padding: 15px 0;
@@ -286,7 +287,6 @@
     color: #999;
 }
 
-
 .product-section {
     padding: 40px 0;
 }
@@ -305,7 +305,7 @@
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       }
     }
-    
+
   </style>
 </head>
 
@@ -329,8 +329,8 @@
           <li><a class="nav-link" href="contact.html">Contact us</a></li>
         </ul>
         <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
-          <li><a class="nav-link" href="#"><img src="/furni-1.0.0/images/user.svg"></a></li>
-          <li><a class="nav-link" href="cart.html"><img src="/furni-1.0.0/images/cart.svg"></a></li>
+          <li><a class="nav-link"  style="  filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(288deg) brightness(100%) contrast(100%);" href="/wishlist"><img  style="width: 1.6rem;" src="/furni-1.0.0/images/wishlist-1-removebg-preview.png"></a></li>
+          <li><a class="nav-link" href="/cart"><img src="/furni-1.0.0/images/cart.svg"></a></li>
         </ul>
       </div>
     </div>
@@ -349,23 +349,19 @@
     </div>
 </div>
 
-
-
-
-
-  <div class="main-container">
+<div class="main-container">
     <div class="shop-container">
       <h1 class="shop-title">Shop</h1>
 
-      <div >
-        <form action="/search" method="POST" class="search-form">
-        <input type="text" id="product-search" name="query" placeholder="Search products..." class="search-input">
-        <button class="search-button" onclick="performSearch()">Search</button>
-      </div>
+      <div>
+        <form action="/search" method="POST" class="search-form" onsubmit="event.preventDefault(); performSearch();">
+          <input type="text" id="product-search" name="query" placeholder="Search products..." class="search-input">
+          <button type="submit" class="search-button">Search</button>
+        </div>
 
       <div class="product-list-container">
         <aside class="sidebar">
-          <!-- <div class="filter-section">
+          <div class="filter-section">
             <div class="filter-title">Sort By</div>
             <select class="sort-dropdown" onchange="sortProducts(this.value)">
               <option value="">Select Option</option>
@@ -374,14 +370,13 @@
               <option value="name-asc">Name: A to Z</option>
               <option value="name-desc">Name: Z to A</option>
             </select>
-          </div> -->
+          </div>
 
           <div class="filter-section">
             <div class="filter-title">Categories</div>
             <div class="category-brand-container">
               <ul>
                 <% categories.forEach(category => { %>
-                  
                   <li class="filter-item">
                     <a href="/filter?category=<%=category._id%>" onclick="filterCategory('<%= category %>')"><%= category.name %></a>
                   </li>
@@ -417,7 +412,7 @@
         <div class="product-grid" id="productContainer">
           <% products.forEach(product => { %>
             <div class="product-item">
-              <button class="wishlist-btn">
+              <button class="wishlist-btn" onclick="addToWishlist('<%=product._id%>')">
                 <i class="fas fa-heart"></i>
               </button>
               <a href="/product-details?id=<%= product._id %>">
@@ -434,112 +429,167 @@
       </div>
     </div>
 
-
-
- 
-    <div class="pagination" >
+    <div class="pagination">
       <% if (currentPage > 1) { %>
         <a class="btn" href="/shop?page=<%= currentPage - 1 %>">Prev</a>
       <% } %>
-  
-  
+
       <% for (let i = 1; i <= totalPages; i++) { %>
         <a class="btn <%= currentPage === i ? 'active' : '' %>" href="/shop?page=<%= i %>"><%= i %></a>
       <% } %>
-  
-  
+
       <% if (currentPage < totalPages) { %>
         <a class="btn" href="/shop?page=<%= currentPage + 1 %>">Next</a>
       <% } %>
     </div>
-  
-  
 
+</div><!--exect this-->
 
+<!-- Start Footer Section -->
+<footer class="footer-section">
+  <!-- Your existing footer content -->
+</footer>
+<!-- End Footer Section -->
 
-  </div><!--exect this-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Filter and search functions
+  function performSearch() {
+    const query = document.getElementById('product-search').value;
+    fetch(`/api/products?search=${query}`)
+      .then(response => response.json())
+      .then(data => updateProductContainer(data));
+  }
 
-  
+  function filterCategory(category) {
+    fetch(`/api/products?category=${category}`)
+      .then(response => response.json())
+      .then(data => updateProductContainer(data));
+  }
 
+  function filterBrand(brand) {
+    fetch(`/api/products?brand=${brand}`)
+      .then(response => response.json())
+      .then(data => updateProductContainer(data));
+  }
 
-  <!-- Start Footer Section -->
-  <footer class="footer-section">
-    <!-- Your existing footer content -->
-  </footer>
-  <!-- End Footer Section -->
+  function filterProductsByPrice(maxPrice) {
+    fetch(`/api/products?maxPrice=${maxPrice}`)
+      .then(response => response.json())
+      .then(data => updateProductContainer(data));
+  }
 
-  <script src="js/bootstrap.bundle.min.js"></script>
-  <script src="js/tiny-slider.js"></script>
-  <script src="js/custom.js"></script>
-  <script>
-    // Filter and search functions
-    function performSearch() {
-      const query = document.getElementById('product-search').value;
-      fetch(`/api/products?search=${query}`)
-        .then(response => response.json())
-        .then(data => updateProductContainer(data));
-    }
+  function sortProducts(sortOption) {
+    fetch(`/api/products?sort=${sortOption}`)
+      .then(response => response.json())
+      .then(data => updateProductContainer(data));
+  }
 
-    function filterCategory(category) {
-      fetch(`/api/products?category=${category}`)
-        .then(response => response.json())
-        .then(data => updateProductContainer(data));
-    }
-
-    function filterBrand(brand) {
-      fetch(`/api/products?brand=${brand}`)
-        .then(response => response.json())
-        .then(data => updateProductContainer(data));
-    }
-
-    function filterProductsByPrice(maxPrice) {
-      fetch(`/api/products?maxPrice=${maxPrice}`)
-        .then(response => response.json())
-        .then(data => updateProductContainer(data));
-    }
-
-    function sortProducts(sortOption) {
-      fetch(`/api/products?sort=${sortOption}`)
-        .then(response => response.json())
-        .then(data => updateProductContainer(data));
-    }
-
-    function updateProductContainer(data) {
-      const productContainer = document.getElementById('productContainer');
-      productContainer.innerHTML = '';
-      data.forEach(product => {
-        const productHTML = `
-          <div class="product-item">
-            <button class="wishlist-btn">
-              <i class="fas fa-heart"></i>
-            </button>
-            <a href="/product-details?id=${product._id}">
-              <img src="/uploads/re-image/${product.productImage[0]}" class="img-fluid product-thumbnail">
-              <h3 class="product-title">${product.productName}</h3>
-              <strong class="product-price">₹${product.regularPrice}</strong>
-              <strong class="productsale-price">₹${product.salePrice}</strong>
-            </a>
-          </div>
-        `;
-        productContainer.innerHTML += productHTML;
-      });
-      initWishlistButtons();
-    }
-
-    // Wishlist functionality
-    function initWishlistButtons() {
-      document.querySelectorAll('.wishlist-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          this.classList.toggle('active');
-          // Add your wishlist API call here
-        });
-      });
-    }
-
-    // Initialize wishlist buttons on page load
+  function updateProductContainer(data) {
+    const productContainer = document.getElementById('productContainer');
+    productContainer.innerHTML = '';
+    data.forEach(product => {
+      const productHTML = `
+        <div class="product-item">
+          <button class="wishlist-btn">
+            <i class="fas fa-heart"></i>
+          </button>
+          <a href="/product-details?id=${product._id}">
+            <img src="/uploads/re-image/${product.productImage[0]}" class="img-fluid product-thumbnail">
+            <h3 class="product-title">${product.productName}</h3>
+            <strong class="product-price">₹${product.regularPrice}</strong>
+            <strong class="productsale-price">₹${product.salePrice}</strong>
+          </a>
+          <button class="add-to-cart-btn" onclick="addToCart('${product._id}')">Add to Cart</button>
+        </div>
+      `;
+      productContainer.innerHTML += productHTML;
+    });
     initWishlistButtons();
-  </script>
-</body>
-</html>
+  }
+
+  // Wishlist functionality
+  function initWishlistButtons() {
+    document.querySelectorAll('.wishlist-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        this.classList.toggle('active');
+        // Add your wishlist API call here
+      });
+    });
+  }
+
+  // Initialize wishlist buttons on page load
+  initWishlistButtons();
+
+  // Add to Cart functionality
+  function addToCart(productId) {
+    $.ajax({
+      url: '/addToCart',
+      method: 'POST',
+      data: { productId: productId },
+      success: (response) => {
+        Swal.fire({
+          title: 'Success',
+          text: response.message,
+          icon: 'success',
+          timer: 3000 // Increase the timer duration
+        });
+      },
+      error: (error) => {
+        if (error.responseJSON && error.responseJSON.message) {
+          Swal.fire({
+            title: 'Error',
+            text: error.responseJSON.message,
+            icon: 'error',
+            timer: 3000 // Increase the timer duration
+          });
+        } else {
+          Swal.fire({
+            title: 'Error',
+            text: 'There was an error adding the product to your cart',
+            icon: 'error',
+            timer: 3000 // Increase the timer duration
+          });
+        }
+      }
+    });
+  }
+</script>
 <%-include("../../views/partials/user/footer")%>
+
+<script>
+  function addToWishlist(productId){
+    $.ajax({
+      url:'/addToWishlist',
+      method:"POST",
+      data:{productId : productId},
+      success: (response) =>{
+        if(response.status){
+          Swal.fire({
+            title:"Added to wishlist",
+            text:"The product has been added to your wishlist",
+            icon:"success",
+            timer:"2000"
+          })
+        }else{
+          Swal.fire({
+            title:"Already in wishlist",
+            text:response.message,
+            icon:"info",
+            timer:2000,
+          })
+        }
+      },
+      error : (error) =>{
+        Swal.fire({
+          title:"Error",
+          text:"There was an error adding the product to your wishlist",
+          icon:"error",
+          timer:2000,
+        })
+      }
+    })
+  }
+</script>
