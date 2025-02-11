@@ -6,6 +6,7 @@ const productController = require("../controllers/user/productController");
 const profileController = require("../controllers/user/profileController");
 const wishlistController = require("../controllers/user/wishlistController");
 const cartController = require("../controllers/user/cartController");
+const orderController = require("../controllers/user/orderController");
 const { userAuth } = require('../middlewares/auth');
 
 router.get("/auth/google",passport.authenticate("google",{scope:['profile','email']}));
@@ -87,6 +88,18 @@ router.post("/addToCart", userAuth, cartController.addToCart);
 router.post("/deleteItem", userAuth, cartController.deleteItem);
 router.post("/changeQuantity", userAuth, cartController.changeQuantity);
 
+// Order Management
+router.get("/checkout", userAuth,orderController.getCheckoutPage);
+router.get("/deleteItem", userAuth, orderController.deleteProduct);
+router.post("/applyCoupon",userAuth,orderController.applyCoupon);
+router.post("/orderPlaced", userAuth,orderController.orderPlaced);
+router.get("/orderDetails", userAuth,orderController.getOrderDetailsPage);
+router.post("/cancelOrder",userAuth,orderController.cancelOrder);
+router.post("/returnrequestOrder",userAuth,orderController.returnorder);
+router.post("/verifyPayment", userAuth, orderController.verify);
+router.post("/singleProductId",userAuth,orderController.changeSingleProductStatus);
+router.post('/paymentConfirm',userAuth,orderController.paymentConfirm);
+router.get("/downloadInvoice/:orderId",userAuth,orderController.downloadInvoice);
 
 
 

@@ -8,6 +8,7 @@ const mongodb = require("mongodb");
 const getCartPage = async (req, res) => {
     try {
         const userId = req.session.user._id;
+        const user = await User.findById(userId)
 
         // Find the user's cart
         const cart = await Cart.findOne({ userId }).populate("items.productId");
@@ -29,7 +30,7 @@ const getCartPage = async (req, res) => {
 
         const total = cartItems.reduce((acc, item) => acc + item.total, 0);
 
-        res.render("cart", { cartItems, total });
+        res.render("cart", { cartItems:cartItems, total:total,user:user });
     } catch (error) {
         console.error("Error fetching cart data:", error);
         res.redirect("/pageNotFound");
@@ -176,4 +177,5 @@ module.exports = {
     addToCart,
     deleteItem,
     changeQuantity,
+    
 }
