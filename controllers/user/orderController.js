@@ -24,17 +24,14 @@ let instance = new razorpay({
 const getCheckoutPage = async (req, res) => {
   try {
     const userId = req.query.userId; // Ensure `userId` is being passed correctly
-    console.log("User ID:", userId); // Debugging statement
 
     const findUser = await User.findOne({ _id: userId });
-    console.log("Find User:", findUser); // Debugging statement
 
     if (!findUser) {
       return res.redirect("/pageNotFound");
     }
 
     const cart = await Cart.findOne({ userId: userId }).populate("items.productId");
-    console.log("User Cart:", cart); // Debugging statement
 
     if (cart && cart.items.length > 0) {
       const addressData = await Address.findOne({ userId: userId });
@@ -57,9 +54,6 @@ const getCheckoutPage = async (req, res) => {
         minimumPrice: { $lt: grandTotal },
       });
 
-      console.log("Data:", data); // Debugging statement
-      console.log("Grand Total:", grandTotal); // Debugging statement
-      console.log("Coupons:", findCoupons); // Debugging statement
 
       res.render("checkoutcart", {
         product: data,
@@ -82,17 +76,43 @@ const getCheckoutPage = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
   try {
-    const id = req.query.id;
+    const productId = req.query.id;
     const userId = req.session.user;
-    const user = await User.findById(userId);
-    const cartIndex = user.cart.findIndex((item) => item.productId == id);
-    user.cart.splice(cartIndex, 1);
-    await user.save();
-    res.redirect("/checkout");
+    console.log("Product ID to delete:", productId); // Debugging statement
+    console.log("User ID from session:", userId); // Debugging statement
+
+    if (!productId || !userId) {
+      console.error("Missing product ID or user ID");
+      return res.redirect("/pageNotFound");
+    }
+
+    const cart = await Cart.findOne({ userId: userId });
+    if (!cart) {
+      console.error("Cart not found");
+      return res.redirect("/pageNotFound");
+    }
+
+    const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId);
+    if (itemIndex !== -1) {
+      cart.items.splice(itemIndex, 1);
+      await cart.save();
+      console.log("Product deleted successfully"); // Debugging statement
+      console.log("Redirecting to checkout page"); // Debugging statement
+      res.redirect("/checkout");
+    } else {
+      console.error("Product not found in cart");
+      res.redirect("/pageNotFound");
+    }
   } catch (error) {
+    console.error("Error deleting product:", error);
     res.redirect("/pageNotFound");
   }
 };
+
+
+
+
+
 const applyCoupon = async (req, res) => {
   try {
     const userId = req.session.user;
@@ -120,29 +140,48 @@ const applyCoupon = async (req, res) => {
 };
 
 
-
 const orderPlaced = async (req, res) => {
   try {
+    console.log('placed');
+    
     const { totalPrice, addressId, payment, discount } = req.body;
+    console.log('bodyy', req.body);
+    
     const userId = req.session.user;
+
+    console.log("Request Body:", req.body); // Debugging statement
+    console.log("User ID from session:", userId); // Debugging statement
+
+    if (!userId) {
+      console.error("User not logged in"); // Debugging statement
+      return res.status(400).json({ error: "User not logged in" });
+    }
+
     const findUser = await User.findOne({ _id: userId });
     if (!findUser) {
+      console.error("User not found"); // Debugging statement
       return res.status(404).json({ error: "User not found" });
     }
-    const productIds = findUser.cart.map((item) => item.productId);
+
     const findAddress = await Address.findOne({ userId: userId, "address._id": addressId });
     if (!findAddress) {
+      console.error("Address not found"); // Debugging statement
       return res.status(404).json({ error: "Address not found" });
     }
 
     const desiredAddress = findAddress.address.find((item) => item._id.toString() === addressId.toString());
     if (!desiredAddress) {
+      console.error("Specific address not found"); // Debugging statement
       return res.status(404).json({ error: "Specific address not found" });
     }
+
+    const productIds = findUser.cart.map((item) => item.productId);
     const findProducts = await Product.find({ _id: { $in: productIds } });
     if (findProducts.length !== productIds.length) {
+      console.error("Some products not found"); // Debugging statement
       return res.status(404).json({ error: "Some products not found" });
     }
+
     const cartItemQuantities = findUser.cart.map((item) => ({
       productId: item.productId,
       quantity: item.quantity,
@@ -156,26 +195,35 @@ const orderPlaced = async (req, res) => {
       productStatus: "Confirmed",
       quantity: cartItemQuantities.find((cartItem) => cartItem.productId.toString() === item._id.toString()).quantity,
     }));
-    if (payment === "cod" && totalPrice > 1000) {
-      return res.status(400).json({ error: "Orders above ₹1000 are not allowed for Cash on Delivery (COD)" });
+
+    if (payment === "cod" && totalPrice > 100000) {
+      console.error("COD not allowed for orders above ₹100000"); // Debugging statement
+      return res.status(400).json({ error: "Orders above ₹100000 are not allowed for Cash on Delivery (COD)" });
     }
-    const finalAmount = totalPrice - discount;
-    console.log(`finalAmount: ${finalAmount}`);
+
+    const finalAmount = totalPrice - (discount || 0);
+    console.log(`Final Amount: ${finalAmount}`); // Debugging statement
 
     let newOrder = new Order({
       product: orderedProducts,
       totalPrice: totalPrice,
-      discount: discount,
+      discount: discount || 0,
       finalAmount: finalAmount,
       address: desiredAddress,
       payment: payment,
       userId: userId,
-      status: payment === "razorpay" ? "Failed" : "Confirmed",
+      status: payment === "razorpay" ? "Pending" : "Confirmed",
       createdOn: Date.now(),
     });
+
     let orderDone = await newOrder.save();
+    console.log('1', newOrder);
+    
 
     await User.updateOne({ _id: userId }, { $set: { cart: [] } });
+    console.log('2');
+    
+
     for (let orderedProduct of orderedProducts) {
       const product = await Product.findOne({ _id: orderedProduct._id });
       if (product) {
@@ -183,9 +231,11 @@ const orderPlaced = async (req, res) => {
         await product.save();
       }
     }
-
+    console.log('3');
+    
     // Handle different payment methods
     if (newOrder.payment === "cod") {
+      console.log('cod');
       res.json({
         payment: true,
         method: "cod",
@@ -221,10 +271,11 @@ const orderPlaced = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error processing order:", error);
-    res.redirect("/pageNotFound");
+    console.error("Error processing order:", error); // Debugging statement
+    res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 
 const getOrderDetailsPage = async (req, res) => {

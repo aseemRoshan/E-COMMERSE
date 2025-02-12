@@ -270,184 +270,145 @@
             </div>
     </section>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
 
     <script>
-        async function placeOrder(userId, productId) {
-            let address = $("input[name='selectedAddress']:checked").val();
-            let payment = $("input[name='payment_option']:checked").val();
+async function placeOrder(userId) {
+  const address = $("input[name='selectedAddress']:checked").val();
+  const payment = $("input[name='payment_option']:checked").val();
+  const totalValue = document.getElementById("totalValue").textContent;
+  const numericValue = parseInt(totalValue.replace(/[^\d.]/g, ''));
 
-            const sum = document.getElementById("totalValue").textContent;
-            const numericValue = parseInt(sum.replace(/[^\d.]/g, ''));
-            console.log(numericValue);
-            
-
-            if (!payment) {
-                Swal.fire({
-                    title: 'NO PAYMENT FOUND!',
-                    text: 'Please select your Payment.',
-                    icon: 'error',
-                    timer: 3000,
-                });
-            } else if (!address) {
-                Swal.fire({
-                    title: 'NO ADDRESS FOUND!',
-                    text: 'Please select your address.',
-                    icon: 'error',
-                    timer: 3000,
-                });
-            } else if(payment === "cod" && numericValue > 1000){
-                Swal.fire({
-            title: 'COD Not Allowed!',
-            text: 'Orders above ₹1000 are not allowed for Cash on Delivery (COD).',
-            icon: 'error',
-            timer: 3000,
-        });
-            }else {
-                $.ajax({
-                    url: '/orderPlaced',
-                    method: 'POST',
-                    data:{
-                        totalPrice: numericValue,
-                        createdOn: new Date().getTime(),
-                        date: new Date(),
-                        addressId: address,
-                        payment: payment,
-                        discount : discount
-                    },
-                    success: function (response) {
-                        let orderId = response.order._id
-                        if (response.method === "cod") {
-                        Swal.fire({
-                            title: "Order success",
-                            text: "order placed successfully",
-                            icon: "success",
-                            showCancelButton: true,
-                            confirmButtonText: "view orders",
-                            cancelButtonText: "continue shopping",
-                            reverseButtons: true
-                        }).then(function (result) {
-                            if (result.value) {
-                                let orderId = response.order._id
-                                location.href =`/orderDetails?id=${orderId}`;
-                            } else if (result.dismiss === "cancel") {
-                                location.href = '/'
-                            }
-                        });
-                    
-                        }else if (response.method === "wallet") {
-                            if(response.payment===true){
-                        Swal.fire({
-                            title: "Order success",
-                            text: "order placed successfully",
-                            icon: "success",
-                            showCancelButton: true,
-                            confirmButtonText: "view orders",
-                            cancelButtonText: "continue shopping",
-                            reverseButtons: true
-                        }).then(function (result) {
-                            if (result.value) {
-                                let orderId = response.order._id
-                                location.href = `/orderDetails?id=${orderId}`;
-                            } else if (result.dismiss === "cancel") {
-                                location.href = '/'
-                            }
-                        });
-                    }else {
+  if (!payment) {
     Swal.fire({
-        title: "Order failed",
-        text: "Wallet amount is not enough",
-        icon: "error",
-        showConfirmButton: true,
-    }).then(function(result) {
-        if (result.value) {
-            location.href = '/';
-        }
+      title: 'NO PAYMENT FOUND!',
+      text: 'Please select your Payment.',
+      icon: 'error',
+      timer: 3000,
     });
+    return;
+  }
+
+  if (!address) {
+    Swal.fire({
+      title: 'NO ADDRESS FOUND!',
+      text: 'Please select your address.',
+      icon: 'error',
+      timer: 3000,
+    });
+    return;
+  }
+
+  if (payment === "cod" && numericValue > 100000) {
+    Swal.fire({
+      title: 'COD Not Allowed!',
+      text: 'Orders above ₹1000 are not allowed for Cash on Delivery (COD).',
+      icon: 'error',
+      timer: 3000,
+    });
+    return;
+  }
+
+  try {
+    const response = await $.ajax({
+      url: '/orderPlaced',
+      method: 'POST',
+      data: {
+        totalPrice: numericValue,
+        addressId: address,
+        payment: payment,
+        discount: discount || 0, 
+      },
+    });
+
+    
+
+    if (response.method === "cod") {
+      console.log("COD payment success"); // Debugging statement
+      Swal.fire({
+        title: "Order success",
+        text: "Order placed successfully",
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonText: "View orders",
+        cancelButtonText: "Continue shopping",
+        reverseButtons: true,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          location.href = `/orderDetails?id=${response.order._id}`;
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          location.href = '/';
+        }
+      });
+    } else if (response.method === "wallet") {
+      if (response.payment === true) {
+        console.log("Wallet payment success"); // Debugging statement
+        Swal.fire({
+          title: "Order success",
+          text: "Order placed successfully",
+          icon: "success",
+          showCancelButton: true,
+          confirmButtonText: "View orders",
+          cancelButtonText: "Continue shopping",
+          reverseButtons: true,
+        }).then((result) => {
+          if (result.isConfirmed) {
+            location.href = `/orderDetails?id=${response.order._id}`;
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            location.href = '/';
+          }
+        });
+      } else {
+        console.log("Wallet payment failed"); // Debugging statement
+        Swal.fire({
+          title: "Order failed",
+          text: "Wallet amount is not enough",
+          icon: "error",
+          showConfirmButton: true,
+        }).then((result) => {
+          if (result.isConfirmed) {
+            location.href = '/';
+          }
+        });
+      }
+    } else if (response.method === "razorpay") {
+      const orderAmount = Math.round(numericValue * 100);
+      const options = {
+        key: "rzp_test_vWkG4lrwiDnQ0g",
+        amount: orderAmount,
+        currency: "INR",
+        name: "Trend Setter",
+        description: "Test Transaction",
+        image: "https://firebasestorage.googleapis.com/v0/b/ecommerce-397a7.appspot.com/o/logo.jpg?alt=media&token=07b6be19-1ce8-4797-a3a0-f0eaeaafedad",
+        order_id: response.razorPayOrder.id,
+        handler: function (status) {
+          verifyPayment(response.razorPayOrder, status, response.order._id);
+        },
+        prefill: {
+          name: "Customer Name",
+          email: "customer@example.com",
+          contact: "9961618585",
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+      const rzp1 = new Razorpay(options);
+      rzp1.open();
+    }
+  } catch (error) {
+    console.error("Error placing order:", error); // Debugging statement
+    Swal.fire({
+      title: 'Error Occured',
+      text: "Can't process order. Error occurred.",
+      icon: 'error',
+      timer: 5000,
+    });
+  }
 }
 
-                        }                 
-                            else if (response.method === "razorpay") {
-                           let orderAmount=Math.round(numericValue*100);
-                            var options = {
-                                "key": "rzp_test_vWkG4lrwiDnQ0g",
-                                "amount": orderAmount,
-                                "currency": "INR",
-                                "name": "Trend Setter",
-                                "description": "Test Transaction",
-                                "image": "https://firebasestorage.googleapis.com/v0/b/ecommerce-397a7.appspot.com/o/logo.jpg?alt=media&token=07b6be19-1ce8-4797-a3a0-f0eaeaafedad",
-                                "order_id": response.razorPayOrder.id,
-                                "handler": function (status) {
-                                    verifyPayment(response.razorPayOrder, status,response.order._id);
-                                },
-                                "prefill": {
-                                    "name": "Customer Name",
-                                    "email": "customer@example.com",
-                                    "contact": "9961618585"
-                                },
-
-                                "theme": {
-                                    "color": "#3399cc"
-                                }
-                            }
-                            var rzp1 = new Razorpay(options);
-                            rzp1.open();
-
-                        } else {
-                            Swal.fire({
-                                title: 'Error Occured',
-                                text: "Can't process order error occured",
-                                icon: 'fail',
-                                timer: 5000
-                            })
-                        }
-                    },
-                });
-            }
-        }
-
-        function verifyPayment(order, payment,orderId) {
-            $.ajax({
-                url: '/verifyPayment',
-                method: 'post',
-                data: {
-                    order,
-                    payment
-                }, success: (response) => {
-                    if (response.status) {
-                        $.ajax({
-                            url:'/paymentConfirm',
-                            method:'post',
-                            data :{
-                                status:"Pending",
-                                orderId
-                            },
-                            success:(response)=>{
-                            }
-                        })
-                        Swal.fire({
-                            title: "Order success",
-                            text: "order placed successfully",
-                            icon: "success",
-                            showCancelButton: true,
-                            confirmButtonText: "view orders",
-                            cancelButtonText: "continue shopping",
-                            reverseButtons: true
-                        }).then(function (result) {
-                            if (result.value) {
-                                console.log("I am success");
-                                var orderDetailsUrl = `/orderDetails?id=${orderId}`;
-            location.href = orderDetailsUrl;
-                            } else if (result.dismiss === "cancel") {
-                                console.log("Nopppp");
-                                location.href = '/'
-                            }
-                        });
-                    }
-
-                }
-            })
-        }
-        
         function showCouponDetails(couponName) {
             Swal.fire({
                 title: 'Coupon Details',

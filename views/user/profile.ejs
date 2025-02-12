@@ -1,6 +1,3 @@
-profile.ejs  
-
-
 
 <%- include("../../views/partials/user/header") %>
 <style>
@@ -256,14 +253,22 @@ profile.ejs
                            </tr>
                          </thead>
                          <tbody>
+                          <% if (orders && orders.length > 0) { %>
+                            <% orders.forEach((order) => { %>
                            <tr>
-                             <td></td>
-                             <td></td>
-                             <td></td>
+                             <td><%= order._id%></td>
+                             <td><%= order.status %></td>
+                             <td>₹<% order.totalPrice %></td>
                              <td>
                                <a href="" class="btn-small d-block">View</a>
                              </td>
                            </tr>
+                           <% }) %>
+                           <% } else {%>
+                            <tr>
+                              <td colspan="4">No orders found</td>
+                            </tr>
+                            <% } %>
                          </tbody>
                        </table>
                      </div>
