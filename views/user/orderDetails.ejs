@@ -3,8 +3,8 @@
     <section class="content-main">
         <div class="content-header">
             <div class="mt-10">
-                <h2 class="content-title card-title">Order detail</h2>
-                <p>Details for Order ID: <%= orders.orderId %></p>
+                <h2 class="content-title card-title">Order Details</h2>
+                <p>Details for Order ID: <%= orders._id %></p>
             </div>
         </div>
         <div class="card-body">
@@ -17,9 +17,13 @@
                         </span>
                         <div class="text">
                             <h6 class="mb-1">Customer</h6>
-                            <p class="mb-1">
-                                <%= orders.address[0].name %> <br> <%= orders.address[0].phone %>
-                            </p>
+                            <% if (orders && orders.address && orders.address.length > 0 && orders.address[0].name && orders.address[0].phone) { %>
+                                <p class="mb-1">
+                                    <%= orders.address[0].name %> <br> <%= orders.address[0].phone %>
+                                </p>
+                            <% } else { %>
+                                <p class="mb-1">Customer details not available</p>
+                            <% } %>
                         </div>
                     </article>
                 </div>
@@ -30,14 +34,14 @@
                             <i class="text-primary material-icons md-local_shipping"></i>
                         </span>
                         <div class="text">
-                            <h6 class="mb-1">Order info</h6>
+                            <h6 class="mb-1">Order Info</h6>
                             <p class="mb-1">
-                                Pay method: <%= orders.payment %> <br>
-                                Status: <%= orders.status %><br>
-                                Grand Total: ₹<%= totalGrant.toLocaleString() %> <br>
-                                Paid Amount: ₹<%= totalPrice.toLocaleString() %> <br>
-                                Discount: ₹<%= discount.toLocaleString() %> <br>
-                                Final Amount: ₹<%= finalAmount.toLocaleString() %>
+                                Payment Method: <%= orders.payment || 'N/A' %> <br>
+                                Status: <%= orders.status || 'N/A' %> <br>
+                                Grand Total: ₹<%= (totalGrant || 0).toLocaleString() %> <br>
+                                Paid Amount: ₹<%= (totalPrice || 0).toLocaleString() %> <br>
+                                Discount: ₹<%= (discount || 0).toLocaleString() %> <br>
+                                Final Amount: ₹<%= (finalAmount || 0).toLocaleString() %>
                             </p>
                         </div>
                     </article>
@@ -49,15 +53,19 @@
                             <i class="text-primary material-icons md-place"></i>
                         </span>
                         <div class="text">
-                            <h6 class="mb-1">Deliver to</h6>
-                            <p class="mb-1">
-                                Address: <%= orders.address[0].landMark %>, <%= orders.address[0].city %> <br>
-                                <%= orders.address[0].state %>, <%= orders.address[0].addressType %> <br>
-                                <%= orders.address[0].pincode %>
-                            </p>
-                            <%if(orders.status==="Delivered"){%>
-                                <a href="/downloadInvoice/<%=orders._id%>" class="btn btn-sm">Download Invoice</a>
-                            <%}%>
+                            <h6 class="mb-1">Deliver To</h6>
+                            <% if (orders && orders.address && orders.address.length > 0) { %>
+                                <p class="mb-1">
+                                    Address: <%= orders.address[0].landMark || 'N/A' %>, <%= orders.address[0].city || 'N/A' %> <br>
+                                    <%= orders.address[0].state || 'N/A' %>, <%= orders.address[0].addressType || 'N/A' %> <br>
+                                    <%= orders.address[0].pincode || 'N/A' %>
+                                </p>
+                                <% if (orders.status === "Delivered") { %>
+                                    <a href="/downloadInvoice/<%= orders._id %>" class="btn btn-sm">Download Invoice</a>
+                                <% } %>
+                            <% } else { %>
+                                <p class="mb-1">Delivery address not available</p>
+                            <% } %>
                         </div>
                     </article>
                 </div>
@@ -73,64 +81,129 @@
                                     <th width="20%">Name</th>
                                     <th width="10%">Unit Price</th>
                                     <th width="10%">Quantity</th>
-                                    <th class="text-center" width="10%" class="text-end">Total</th>
+                                    <th class="text-center" width="10%">Total</th>
                                     <th width="10%">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <% if (locals.orders) { %>
-                                    <% for (let i = 0; i < orders.product.length; i++) { %>
+                                <% if (orders && orders.product && Array.isArray(orders.product) && orders.product.length > 0) { %>
+                                    <% orders.product.forEach((product) => { %>
                                         <tr>
                                             <td class="text-center">
                                                 <a class="itemside" href="#">
                                                     <div class="left">
-                                                        <img src="/uploads/re-image/<%= orders.product[i].image %>" style="height: 7rem; width: 7rem;" class="img-xs" alt="Item">
+                                                        <img src="/uploads/re-image/<%= product.image || 'default.jpg' %>" style="height: 7rem; width: 7rem;" class="img-xs" alt="Item">
                                                     </div>
                                                 </a>
                                             </td>
                                             <td class="text-center">
                                                 <div class="info">
-                                                    <%= orders.product[i].name || orders.product[i].title %>
+                                                    <%= product.name || product.title || 'N/A' %>
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                ₹<%= orders.product[i].price.toLocaleString() %>
+                                                ₹<%= (product.price || 0).toLocaleString() %>
                                             </td>
                                             <td class="text-center">
-                                                <%= orders.product[i].quantity %>
+                                                <%= product.quantity || 0 %>
                                             </td>
                                             <td class="text-center">
-                                                ₹<%=(parseInt(orders.product[i].price) * parseInt(orders.product[i].quantity)).toLocaleString()%>
+                                                ₹<%= ((parseInt(product.price) || 0) * (parseInt(product.quantity) || 0)).toLocaleString() %>
                                             </td>
                                             <td class="text-center">
-                                                <% if (orders.product[i].productStatus === "Cancel") { %>
+                                                <% if (product.productStatus === "Cancel") { %>
                                                     <i>Cancelled</i>
                                                 <% } else { %>
-                                                    <select onchange="handleDropdownChange(this)">
-                                                        <option value="" disabled selected><%= orders.status %></option>
-                                                        <% if (orders.status === "Confirmed") { %>
-                                                            <option value="cancel">Cancel Order</option>
-                                                        <% } else if (orders.status === "Shipped" || orders.status === "Delivered") { %>
-                                                            <option value="returnrequest">Return Request</option>
-                                                        <% } else if (orders.status === "Failed") { %>
-                                                            <option value="retry" disabled>Retry Payment</option>
-                                                        <% } %>
-                                                    </select>
+                                                    <% if (orders.status === "Confirmed" || orders.status === "Pending" || orders.status === "Shipped") { %>
+                                                        <button class="btn btn-danger btn-sm" onclick="showCancelModal('<%= orders._id %>')">Delete Order</button>
+                                                    <% } else if (orders.status === "Delivered") { %>
+                                                        <button class="btn btn-warning btn-sm" onclick="showReturnModal('<%= orders._id %>')">Return Order</button>
+                                                    <% } %>
                                                 <% } %>
                                             </td>
                                         </tr>
-                                    <% } %>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="6">No products found</td>
+                                    </tr>
                                 <% } %>
                                 <input type="hidden" name="" id="orderId" value="<%= orders._id %>">
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="col-lg-1"></div>
             </div>
+            <!-- Add Review Section -->
+            <% if (orders.status === "Delivered") { %>
+                <div class="row mt-4">
+                    <div class="col-lg">
+                        <h5>Add Review</h5>
+                        <form id="reviewForm">
+                            <div class="mb-3">
+                                <label for="rating" class="form-label">Rating</label>
+                                <select class="form-control" id="rating" required>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reviewText" class="form-label">Review</label>
+                                <textarea class="form-control" id="reviewText" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            <% } %>
         </div>
     </section>
 </main>
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelOrderModalLabel">Delete Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cancelOrderForm">
+                    <div class="mb-3">
+                        <label for="cancelReason" class="form-label">Reason for Deletion</label>
+                        <textarea class="form-control" id="cancelReason" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Return Order Modal -->
+<div class="modal fade" id="returnOrderModal" tabindex="-1" aria-labelledby="returnOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="returnOrderModalLabel">Return Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="returnOrderForm">
+                    <div class="mb-3">
+                        <label for="returnReason" class="form-label">Reason for Return</label>
+                        <textarea class="form-control" id="returnReason" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
 <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
@@ -140,70 +213,253 @@
 <script src="assets/js/main.js" type="text/javascript"></script>
 <script src="https://cdn.jsdelivr.net/npm/easyinvoice/dist/easyinvoice.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
 
 <script>
-function handleDropdownChange(selectElement) {
-    var selectedValue = selectElement.value;
-    var orderId = document.getElementById("orderId").value;
+    function handleDropdownChange(selectElement) {
+        var selectedValue = selectElement.value;
+        var orderId = document.getElementById("orderId").value;
 
-    if (selectedValue === "cancel") {
-        confirmCancelOrder(orderId);
-    } else if (selectedValue == "returnrequest") {
-        returnRequestOrder(orderId);
+        if (selectedValue === "cancel") {
+            showCancelModal(orderId);
+        } else if (selectedValue === "returnrequest") {
+            showReturnModal(orderId);
+        }
     }
-}
 
-function confirmCancelOrder(orderId) {
-    Swal.fire({
-        title: 'Confirm Cancel Order',
-        text: 'Are you sure you want to cancel this order?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, cancel it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            console.log('working');
-            cancelOrder(orderId);
-        }
-    });
-}
+    function showCancelModal(orderId) {
+        $('#cancelOrderModal').modal('show');
+        $('#cancelOrderForm').off('submit').on('submit', function(event) {
+            event.preventDefault();
+            var reason = $('#cancelReason').val();
+            $.ajax({
+                url: '/cancelOrder',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ orderId: orderId, reason: reason }),
+                success: (response) => {
+                    if (response.success) {
+                        $('#cancelOrderModal').modal('hide');
+                        window.location.reload();
+                    } else {
+                        alert(response.message || "Failed to cancel the order. Please try again.");
+                    }
+                },
+                error: (error) => {
+                    console.error("Cancellation error:", error);
+                    alert("An error occurred while cancelling the order. Please try again.");
+                }
+            });
+        });
+    }
 
-function cancelOrder(orderId) {
-    $.ajax({
-        url: '/cancelOrder',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ orderId: orderId }),
-        success: (response) => {
-            if (response.result.modifiedCount === 1) {
-                window.location.reload();
+    function showReturnModal(orderId) {
+    $('#returnOrderModal').modal('show');
+    $('#returnOrderForm').off('submit').on('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        var reason = $('#returnReason').val();
+        console.log("Return reason:", reason); // Debugging log
+        console.log("Order ID:", orderId); // Debugging log
+
+        $.ajax({
+            url: '/returnrequestOrder',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ orderId: orderId, reason: reason }),
+            success: (response) => {
+                console.log("Return request response:", response); // Debugging log
+                if (response.success) {
+                    $('#returnOrderModal').modal('hide');
+                    window.location.reload();
+                } else {
+                    alert(response.message || "Failed to return the order. Please try again.");
+                }
+            },
+            error: (error) => {
+                console.error("Return error:", error); // Debugging log
+                alert("An error occurred while returning the order. Please try again.");
             }
-        },
-        error: (error) => {
-            alert(error);
-        }
+        });
     });
 }
 
-function returnRequestOrder(orderId) {
-    $.ajax({
-        url: '/returnrequestOrder',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ orderId: orderId }),
-        success: (response) => {
-            if (response.result.modifiedCount === 1) {
-                window.location.reload();
-            }
-        },
-        error: (error) => {
-            alert(error);
-        }
+    $(document).ready(function() {
+        $('#reviewForm').on('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            var rating = $('#rating').val();
+            var reviewText = $('#reviewText').val();
+            var productId = '<%= orders.product[0]._id %>'; // Assuming you want to add a review for the first product
+
+            $.ajax({
+                url: '/addReview',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ productId: productId, rating: rating, reviewText: reviewText }),
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Review Added',
+                            text: 'Your review and rating have been added successfully!',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.reload(); // Reload the page to reflect the changes
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed to Add Review',
+                            text: response.message || "Failed to add the review. Please try again.",
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.error("Review error:", error); // Debugging log
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: "An error occurred while adding the review. Please try again.",
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        });
     });
-}
 </script>
 
-<%- include("../../views/partials/user/footer") %>
+<footer class="footer-section">
+    <div class="container relative">
+        <div class="sofa-img">
+            <!-- <img src="/furni-1.0.0/images/sofa.png" alt="Image" class="img-fluid"> -->
+        </div>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="subscription-form">
+                    <h3 class="d-flex align-items-center"><span class="me-1"><img src="/furni-1.0.0/images/envelope-outline.svg" alt="Image" class="img-fluid"></span><span>Subscribe to Newsletter</span></h3>
+                    <form action="#" class="row g-3">
+                        <div class="col-auto">
+                            <input type="text" class="form-control" placeholder="Enter your name">
+                        </div>
+                        <div class="col-auto">
+                            <input type="email" class="form-control" placeholder="Enter your email">
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-primary">
+                                <span class="fa fa-paper-plane"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row g-5 mb-5">
+            <div class="col-lg-4">
+                <div class="mb-4 footer-logo-wrap"><a href="#" class="footer-logo">Furni<span>.</span></a></div>
+                <p class="mb-4">Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque habitant</p>
+                <ul class="list-unstyled custom-social">
+                    <li><a href="#"><span class="fa fa-brands fa-facebook-f"></span></a></li>
+                    <li><a href="#"><span class="fa fa-brands fa-twitter"></span></a></li>
+                    <li><a href="#"><span class="fa fa-brands fa-instagram"></span></a></li>
+                    <li><a href="#"><span class="fa fa-brands fa-linkedin"></span></a></li>
+                </ul>
+            </div>
+            <div class="col-lg-8">
+                <div class="row links-wrap">
+                    <div class="col-6 col-sm-6 col-md-3">
+                        <ul class="list-unstyled">
+                            <li><a href="#">About us</a></li>
+                            <li><a href="#">Services</a></li>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Contact us</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-3">
+                        <ul class="list-unstyled">
+                            <li><a href="#">Support</a></li>
+                            <li><a href="#">Knowledge base</a></li>
+                            <li><a href="#">Live chat</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-3">
+                        <ul class="list-unstyled">
+                            <li><a href="#">Jobs</a></li>
+                            <li><a href="#">Our team</a></li>
+                            <li><a href="#">Leadership</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-6 col-sm-6 col-md-3">
+                        <ul class="list-unstyled">
+                            <li><a href="#">Nordic Chair</a></li>
+                            <li><a href="#">Kruzo Aero</a></li>
+                            <li><a href="#">Ergonomic Chair</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="border-top copyright">
+            <div class="row pt-4">
+                <!-- <div class="col-lg-6">
+                    <p class="mb-2 text-center text-lg-start">Copyright &copy;<script>document.write(new Date().getFullYear());</script>. All Rights Reserved. &mdash; Designed with love by <a href="https://untree.co">Untree.co</a> Distributed By <a hreff="https://themewagon.com">ThemeWagon</a>  <!-- License information: https://untree.co/license/ -->
+    <!-- </p>
+                </div> -->
+                <!-- <div class="col-lg-6 text-center text-lg-end">
+                    <ul class="list-unstyled d-inline-flex ms-auto">
+                        <li class="me-4"><a href="#">Terms &amp; Conditions</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</footer>
+<!-- End Footer Section -->
 
+<script src="/furni-1.0.0/js/bootstrap.bundle.min.js"></script>
+<script src="/furni-1.0.0/js/tiny-slider.js"></script>
+<script src="/furni-1.0.0/js/custom.js"></script>
+<!--Additional links-->
+
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.nice-select.min.js"></script>
+<script src="js/jquery.nicescroll.min.js"></script>
+<script src="js/jquery.magnific-popup.min.js"></script>
+<script src="js/jquery.countdown.min.js"></script>
+<script src="js/jquery.slicknav.js"></script>
+<script src="js/mixitup.min.js"></script>
+<script src="js/owl.carousel.min.js"></script>
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.all.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<script src="./user-assets/js/vendor/modernizr-3.6.0.min.js"></script>
+<script src="./user-assets/js/vendor/jquery-3.6.0.min.js"></script>
+<script src="./user-assets/js/vendor/jquery-migrate-3.3.0.min.js"></script>
+<script src="./user-assets/js/vendor/bootstrap.bundle.min.js"></script>
+<script src="./user-assets/js/plugins/slick.js"></script>
+<script src="./user-assets/js/plugins/jquery.syotimer.min.js"></script>
+<script src="./user-assets/js/plugins/wow.js"></script>
+<script src="./user-assets/js/plugins/jquery-ui.js"></script>
+<script src="./user-assets/js/plugins/perfect-scrollbar.js"></script>
+<script src="./user-assets/js/plugins/magnific-popup.js"></script>
+<script src="./user-assets/js/plugins/select2.min.js"></script>
+<script src="./user-assets/js/plugins/waypoints.js"></script>
+<script src="./user-assets/js/plugins/counterup.js"></script>
+<script src="./user-assets/js/plugins/jquery.countdown.min.js"></script>
+<script src="./user-assets/js/plugins/images-loaded.js"></script>
+<script src="./user-assets/js/plugins/isotope.js"></script>
+<script src="./user-assets/js/plugins/scrollup.js"></script>
+<script src="./user-assets/js/plugins/jquery.vticker-min.js"></script>
+<script src="./user-assets/js/plugins/jquery.theia.sticky.js"></script>
+<script src="./user-assets/js/plugins/jquery.elevatezoom.js"></script>
+<script src="./user-assets/js/maind134.js?v=3.4"></script>
+<script src="./user-assets/js/shopd134.js?v=3.4"></script>
+
+</body>
+
+</html>

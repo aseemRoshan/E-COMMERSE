@@ -3,9 +3,28 @@ const mongoose = require("mongoose");
 const {Schema} = mongoose;
 const {v4:uuidv4} = require("uuid");
 const Product = require("./productSchema");
+const { type } = require("os");
 
 
 const orderSchema = new Schema({
+    // product: [
+    //     {
+    //       productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+    //       quantity: { type: Number, required: true },
+    //       price: { type: Number, required: true },
+    //       productStatus: { type: String, required: true },
+    //     },
+    //   ],
+    product: [
+        {
+          productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+          quantity: { type: Number, required: true },
+          price: { type: Number, required: true },
+          productStatus: { type: String, required: true },
+          name: { type: String }, // Ensure this field exists
+          image: { type: String }, // Ensure this field exists
+        },
+      ],
         orderId:{
             type:String,
             default:()=>uuidv4(),
@@ -39,11 +58,17 @@ const orderSchema = new Schema({
             required:true,
 
         },
-        address:{
-            type:Schema.Types.ObjectId,
-            ref:"User",
-            required:true,
-        },
+        
+        address: [
+            {
+              name: { type: String },
+              phone: { type: String },
+              landMark: { type: String },
+              city: { type: String },
+              state: { type: String },
+              pincode: { type: String },
+            },
+          ],
         invoiceDate:{
             type:Date
         },
@@ -64,6 +89,25 @@ const orderSchema = new Schema({
         payment:{
             type:String,
             required:true,
+        },
+        userId:{
+            type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true,
+        },
+        reviewText:{
+            type:String,
+            required:false,
+
+
+        },
+        ratings:{
+          type:Number,
+            min:1,
+            max:5,
+            default:1,
+
+        },
+        deliveryDate:{
+              type:Date,
         }
 })
 

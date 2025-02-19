@@ -1,0 +1,267 @@
+<%- include("../../views/partials/admin/header") %>
+<main class="container mt-5">
+    <section class="content-main">
+        <div class="content-header mb-4">
+            <h2 class="content-title card-title">Order Details</h2>
+            <p class="lead">Details for Order ID: <%= orders._id %></p>
+        </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <!-- Customer Information -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-primary h-100">
+                            <div class="card-body text-center">
+                                <i class="material-icons text-primary display-4">person</i>
+                                <h5 class="card-title mt-3">Customer</h5>
+                                <% if (orders.userId && orders.userId.email) { %>
+                                    <p class="card-text"><%= orders.userId.email %></p>
+                                <% } else { %>
+                                    <p class="card-text">Customer details not available</p>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Order Information -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-primary h-100">
+                            <div class="card-body text-center">
+                                <i class="material-icons text-primary display-4">local_shipping</i>
+                                <h5 class="card-title mt-3">Order Info</h5>
+                                <p class="card-text">
+                                    Payment Method: <%= orders.paymentMethod || 'N/A' %> <br>
+                                    Status: <%= orders.status || 'N/A' %> <br>
+                                    Grand Total: ₹<%= (totalGrant || 0).toLocaleString() %> <br>
+                                    Paid Amount: ₹<%= (totalPrice || 0).toLocaleString() %> <br>
+                                    Discount: ₹<%= (discount || 0).toLocaleString() %> <br>
+                                    Final Amount: ₹<%= (finalAmount || 0).toLocaleString() %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Delivery Information -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-primary h-100">
+                            <div class="card-body text-center">
+                                <i class="material-icons text-primary display-4">place</i>
+                                <h5 class="card-title mt-3">Deliver To</h5>
+                                <% if (orders.address) { %>
+                                    <p class="card-text">
+                                        Address: <%= orders.address.street || 'N/A' %>, <%= orders.address.city || 'N/A' %> <br>
+                                        <%= orders.address.state || 'N/A' %>, <%= orders.address.zipCode || 'N/A' %> <br>
+                                        <%= orders.address.country || 'N/A' %>
+                                    </p>
+                                    <% if (orders.status === "Delivered") { %>
+                                        <a href="/admin/downloadInvoice/<%= orders._id %>" class="btn btn-sm btn-primary">Download Invoice</a>
+                                    <% } %>
+                                <% } else { %>
+                                    <p class="card-text">Delivery address not available</p>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Order Details Table -->
+                <div class="table-responsive mt-4">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-dark">
+                            <tr class="text-center">
+                                <th width="30%">Product</th>
+                                <th width="20%">Name</th>
+                                <th width="10%">Unit Price</th>
+                                <th width="10%">Quantity</th>
+                                <th width="10%">Total</th>
+                                <th width="10%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (orders.product && orders.product.length > 0) { %>
+                                <% orders.product.forEach((product) => { %>
+                                    <tr class="text-center">
+                                        <td>
+                                            <img src="/uploads/re-image/<%= product.image || 'default.jpg' %>" style="height: 7rem; width: 7rem;" class="img-fluid" alt="Item">
+                                        </td>
+                                        <td><%= product.name || 'N/A' %></td>
+                                        <td>₹<%= (product.price || 0).toLocaleString() %></td>
+                                        <td><%= product.quantity || 0 %></td>
+                                        <td>₹<%= ((parseInt(product.price) || 0) * (parseInt(product.quantity) || 0)).toLocaleString() %></td>
+                                        <td>
+                                            <% if (product.status === "Canceled") { %>
+                                                <span class="badge bg-danger">Canceled</span>
+                                            <% } else { %>
+                                                <select class="form-select" onchange="handleDropdownChange(this)" data-product-id="<%= product._id %>">
+                                                    <option value="" disabled selected><%= product.status %></option>
+                                                    <% if (product.status === "Pending") { %>
+                                                        <option value="approve">Approve</option>
+                                                        <option value="cancel">Cancel</option>
+                                                    <% } else if (product.status === "Approved") { %>
+                                                        <option value="ship">Ship</option>
+                                                        <option value="cancel">Cancel</option>
+                                                    <% } else if (product.status === "Shipped") { %>
+                                                        <option value="deliver">Deliver</option>
+                                                        <option value="return">Return</option>
+                                                    <% } %>
+                                                </select>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="text-center">No products found</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+<script>
+function handleDropdownChange(selectElement) {
+    var selectedValue = selectElement.value;
+    var orderId = document.getElementById("orderId").value;
+    var productId = selectElement.getAttribute('data-product-id');
+
+    if (selectedValue === "approve") {
+        approveProduct(orderId, productId);
+    } else if (selectedValue === "cancel") {
+        confirmCancelProduct(orderId, productId);
+    } else if (selectedValue === "ship") {
+        shipProduct(orderId, productId);
+    } else if (selectedValue === "deliver") {
+        deliverProduct(orderId, productId);
+    } else if (selectedValue === "return") {
+        returnProduct(orderId, productId);
+    }
+}
+
+function confirmCancelProduct(orderId, productId) {
+    Swal.fire({
+        title: 'Confirm Cancel Product',
+        text: 'Are you sure you want to cancel this product?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, cancel it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            cancelProduct(orderId, productId);
+        }
+    });
+}
+
+function cancelProduct(orderId, productId) {
+    $.ajax({
+        url: '/admin/cancelProduct',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ orderId: orderId, productId: productId }),
+        success: (response) => {
+            if (response.result.modifiedCount === 1) {
+                window.location.reload();
+            }
+        },
+        error: (error) => {
+            alert(error);
+        }
+    });
+}
+
+function approveProduct(orderId, productId) {
+    $.ajax({
+        url: '/admin/approveProduct',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ orderId: orderId, productId: productId }),
+        success: (response) => {
+            if (response.result.modifiedCount === 1) {
+                window.location.reload();
+            }
+        },
+        error: (error) => {
+            alert(error);
+        }
+    });
+}
+
+function shipProduct(orderId, productId) {
+    $.ajax({
+        url: '/admin/shipProduct',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ orderId: orderId, productId: productId }),
+        success: (response) => {
+            if (response.result.modifiedCount === 1) {
+                window.location.reload();
+            }
+        },
+        error: (error) => {
+            alert(error);
+        }
+    });
+}
+
+function deliverProduct(orderId, productId) {
+    $.ajax({
+        url: '/admin/deliverProduct',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ orderId: orderId, productId: productId }),
+        success: (response) => {
+            if (response.result.modifiedCount === 1) {
+                window.location.reload();
+            }
+        },
+        error: (error) => {
+            alert(error);
+        }
+    });
+}
+
+function returnProduct(orderId, productId) {
+    $.ajax({
+        url: '/admin/returnProduct',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ orderId: orderId, productId: productId }),
+        success: (response) => {
+            if (response.result.modifiedCount === 1) {
+                window.location.reload();
+            }
+        },
+        error: (error) => {
+            alert(error);
+        }
+    });
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

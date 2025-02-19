@@ -1,15 +1,250 @@
-
-
-
-
-
-
-
 <%- include("../../views/partials/admin/header") %>
 <div class="main-content">
-    <div class="topbar">
-        <h1>Dashboard</h1>
-        <div class="profile"></div>
+    <div class="content">
+        <div class="topbar">
+            <h1>Dashboard</h1>
+            <div class="profile"></div>
+        </div>
+        <div class="date-filters">
+            <button class="date-filter active">1 Day</button>
+            <button class="date-filter">1 Week</button>
+            <button class="date-filter">1 Month</button>
+            <input type="date" id="startDate" value="2025-02-17">
+            <input type="date" id="endDate" value="2025-02-18">
+            <button class="apply-filter">Apply Filter</button>
+            <button class="export-btn" id="exportExcel">
+                <i class="fas fa-file-excel"></i> Excel Report
+            </button>
+            <button class="export-btn" id="exportPdf">
+                <i class="fas fa-file-pdf"></i> PDF Report
+            </button>
+        </div>
+        <div class="dashboard-cards">
+            <div class="card">
+                <div class="card-body">
+                    <i class="fas fa-chart-line"></i>
+                    <h5 class="card-title">Total Sales</h5>
+                    <p class="card-text">₹<%= totalSales %></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h5 class="card-title">Total Orders</h5>
+                    <p class="card-text"><%= totalOrders %></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <i class="fas fa-undo"></i>
+                    <h5 class="card-title">Returned Orders</h5>
+                    <p class="card-text"><%= returnedOrders %></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <i class="fas fa-hourglass-half"></i>
+                    <h5 class="card-title">Pending Orders</h5>
+                    <p class="card-text"><%= pendingOrders %></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <i class="fas fa-check-circle"></i>
+                    <h5 class="card-title">Delivered Orders</h5>
+                    <p class="card-text"><%= deliveredOrders %></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <i class="fas fa-truck"></i>
+                    <h5 class="card-title">Shipped Orders</h5>
+                    <p class="card-text"><%= shippedOrders %></p>
+                </div>
+            </div>
+            <!-- <div class="card">
+                <div class="card-body">
+                    <i class="fas fa-cogs"></i>
+                    <h5 class="card-title">Processing Orders</h5>
+                    <p class="card-text"><%= processingOrders %></p>
+                </div>
+            </div> -->
+            <div class="card">
+                <div class="card-body">
+                    <i class="fas fa-users"></i>
+                    <h5 class="card-title">Total Users</h5>
+                    <p class="card-text"><%= totalUsers %></p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <i class="fas fa-tags"></i>
+                    <h5 class="card-title">Total Discount</h5>
+                    <p class="card-text">₹<%= totalDiscount %></p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+  body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-content {
+    display: flex;
+    height: 100vh;
+  }
+
+  .content {
+    flex: 1;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .topbar h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #333;
+  }
+
+  .date-filters {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .date-filters .date-filter {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    color: #333;
+    padding: 10px 20px;
+    margin-right: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .date-filters .date-filter.active {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  .date-filters .date-filter:hover {
+    background-color: #0056b3;
+  }
+
+  .date-filters input[type="date"] {
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #333;
+  }
+
+  .date-filters .apply-filter {
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    margin-right: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .date-filters .apply-filter:hover {
+    background-color: #0056b3;
+  }
+
+  .date-filters .export-btn {
+    background-color: #28a745;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    margin-right: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+  }
+
+  .date-filters .export-btn i {
+    margin-right: 5px;
+  }
+
+  .date-filters .export-btn:hover {
+    background-color: #218838;
+  }
+
+  .dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card-body i {
+    font-size: 48px;
+    color: #007bff;
+    margin-bottom: 10px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+  }
+
+  .card-text {
+    font-size: 24px;
+    margin: 0;
+    color: #333;
+  }
+</style>
+
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<script>
+  document.getElementById("exportExcel").addEventListener("click", function() {
+    alert("Export to Excel clicked!");
+    // Add your export to Excel logic here
+  });
+
+  document.getElementById("exportPdf").addEventListener("click", function() {
+    alert("Export to PDF clicked!");
+    // Add your export to PDF logic here
+  });
+</script>
+
 <%- include("../../views/partials/admin/footer") %>

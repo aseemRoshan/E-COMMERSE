@@ -6,7 +6,7 @@
     <meta name="keywords" content="Male_Fashion, unica, creative, html" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Male-Fashion</title>
+    <title>Furiture</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css" />
@@ -19,9 +19,9 @@
             background: linear-gradient(135deg, #f3f4f6, #e3e5e8);
             color: white;
             background-image: url("/furni-1.0.0/images/retro-living-room-interior-design_53876-145503.avif");
-            background-repeat: no-repeat; /* Prevents the image from repeating */
-      background-size: cover; /* Ensures the image covers the entire background */
-      background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
         }
 
         .container {
@@ -32,11 +32,9 @@
         }
 
         .login-wrap {
-  background-color: rgba(255, 255, 255, 0.6); 
-
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
-}
-
+            background-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
         .heading_s1 h3 {
             font-size: 28px;
@@ -58,14 +56,14 @@
         }
 
         .form-control {
-            width: 100%; 
-  padding: 10px;
-  font-size: 16px;
-  margin: 10px auto;
-  display: block; 
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px auto;
+            display: block;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
         }
 
         .form-control:focus {
@@ -108,17 +106,18 @@
 
         .otp-timer {
             display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 10px auto; 
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: #f5f5f5;
-  border: 2px solid #ddd;
-  text-align: center;
-  font-size: 16px;
-  color: red;}
+            justify-content: center;
+            align-items: center;
+            margin: 10px auto;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #f5f5f5;
+            border: 2px solid #ddd;
+            text-align: center;
+            font-size: 16px;
+            color: red;
+        }
 
         #timerValue {
             display: block;
@@ -158,6 +157,15 @@
         .text-muted a:hover {
             text-decoration: underline;
         }
+
+        #resendOtpButton {
+            transition: opacity 0.3s ease;
+        }
+
+        #resendOtpButton[hidden] {
+            opacity: 0;
+            pointer-events: none; /* Disable clicks when hidden */
+        }
     </style>
 </head>
 <body>
@@ -177,7 +185,7 @@
                     <div id="otpTimer" class="otp-timer">
                         <span id="timerValue">60</span>
                     </div>
-                    <button type="button" class="btn btn-secondary" onclick="resendOTP()">Resend OTP</button>
+                    <button type="button" id="resendOtpButton" class="btn btn-secondary" onclick="resendOTP()" hidden>Resend OTP</button>
                 </div>
                 <% if (locals.message && message.length > 0) { %>
                 <div class="alert alert-danger"><%= message %></div>
@@ -205,21 +213,29 @@
                 clearInterval(timerInterval);
                 document.getElementById("timerValue").classList.add("expired");
                 document.getElementById("timerValue").textContent = "Expired";
-                document.getElementById("otp").disabled = true;
+                document.getElementById("resendOtpButton").removeAttribute("hidden"); // Show the Resend OTP button
             }
         }, 1000);
     }
     startTimer();
 
-    function ValidateOTPForm(){
+    function ValidateOTPForm() {
         const otpInput = document.getElementById("otp").value;
+        if (otpInput.length !== 6 || !/^\d+$/.test(otpInput)) {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid OTP",
+                text: "Please enter a valid 6-digit OTP.",
+            });
+            return false;
+        }
 
         $.ajax({
             type: "POST",
-            url: "verify-otp",
+            url: "/verify-otp",
             data: { otp: otpInput },
-            success: function(response){
-                if(response.success){
+            success: function (response) {
+                if (response.success) {
                     Swal.fire({
                         icon: "success",
                         title: "OTP Verified Successfully",
@@ -232,60 +248,58 @@
                     Swal.fire({
                         icon: "error",
                         title: "Error",
-                        text: response.statusMessage,
+                        text: response.message,
                     });
                 }
             },
-            error: function(){
+            error: function () {
                 Swal.fire({
                     icon: "error",
                     title: "Invalid OTP",
-                    text: "Please try again"
+                    text: "Please try again",
                 });
-            }
+            },
         });
         return false;
     }
 
+    function resendOTP() {
+        clearInterval(timerInterval);
+        timer = 60;
+        document.getElementById("timerValue").textContent = timer;
+        document.getElementById("timerValue").classList.remove("expired");
+        document.getElementById("resendOtpButton").setAttribute("hidden", true); // Hide the Resend OTP button
+        startTimer();
 
-
-  function resendOTP(){
-    clearInterval(timerInterval);
-    timer = 60;
-    document.getElementById("otp").disabled =false;
-    document.getElementById("timerValue").classList.remove("expired");
-    startTimer();
-    $.ajax({
-        type:"POST",
-        url:"resend-otp",
-        success:function (response){
-            if(response.success){
-
+        $.ajax({
+            type: "POST",
+            url: "/resend-otp",
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "OTP Resent Successfully",
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "An error occurred while resending OTP. Please try again.",
+                    });
+                }
+            },
+            error: function () {
                 Swal.fire({
-                    icon:"success",
-                    title:"OTP Resend Successfully",
-                    showConfirmButton:false,
-                    timer:1500,
-                })
-            }else{
-
-                Swal.fire({
-                    icon:"error",
-                    title:"Error",
-                    text:"An error occured while resending OTP. Please try again"
-                })
-            }
-        }
-    })
-    return false
-  }
-   
-
-
-
-
-
-
+                    icon: "error",
+                    title: "Error",
+                    text: "An error occurred while resending OTP. Please try again.",
+                });
+            },
+        });
+        return false;
+    }
 </script>
 </body>
 </html>

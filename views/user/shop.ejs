@@ -1,3 +1,4 @@
+<%- include("../../views/partials/user/header") %>
 <!doctype html>
 <html lang="en">
 <head>
@@ -311,7 +312,7 @@
 
 <body>
   <!-- Start Header/Navigation -->
-  <nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
+  <!-- <nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
     <div class="container">
       <a class="navbar-brand" href="index.html">Furni<span>.</span></a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
@@ -334,7 +335,7 @@
         </ul>
       </div>
     </div>
-  </nav>
+  </nav> -->
   <!-- End Header/Navigation -->
 
   <div class="page-header">
@@ -369,6 +370,8 @@
               <option value="price-high">Price: High to Low</option>
               <option value="name-asc">Name: A to Z</option>
               <option value="name-desc">Name: Z to A</option>
+              <option value="created-new">Newest Arrivals</option>
+              <option value="created-old">Oldest Arrivals</option>
             </select>
           </div>
 
@@ -455,59 +458,45 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   // Filter and search functions
-  function performSearch() {
+function performSearch() {
     const query = document.getElementById('product-search').value;
-    fetch(`/api/products?search=${query}`)
-      .then(response => response.json())
-      .then(data => updateProductContainer(data));
-  }
+    fetch(`/search?query=${encodeURIComponent(query)}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        updateProductContainer(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
 
-  function filterCategory(category) {
-    fetch(`/api/products?category=${category}`)
-      .then(response => response.json())
-      .then(data => updateProductContainer(data));
-  }
-
-  function filterBrand(brand) {
-    fetch(`/api/products?brand=${brand}`)
-      .then(response => response.json())
-      .then(data => updateProductContainer(data));
-  }
-
-  function filterProductsByPrice(maxPrice) {
-    fetch(`/api/products?maxPrice=${maxPrice}`)
-      .then(response => response.json())
-      .then(data => updateProductContainer(data));
-  }
-
-  function sortProducts(sortOption) {
-    fetch(`/api/products?sort=${sortOption}`)
-      .then(response => response.json())
-      .then(data => updateProductContainer(data));
-  }
-
-  function updateProductContainer(data) {
+function updateProductContainer(data) {
     const productContainer = document.getElementById('productContainer');
     productContainer.innerHTML = '';
     data.forEach(product => {
-      const productHTML = `
-        <div class="product-item">
-          <button class="wishlist-btn">
-            <i class="fas fa-heart"></i>
-          </button>
-          <a href="/product-details?id=${product._id}">
-            <img src="/uploads/re-image/${product.productImage[0]}" class="img-fluid product-thumbnail">
-            <h3 class="product-title">${product.productName}</h3>
-            <strong class="product-price">₹${product.regularPrice}</strong>
-            <strong class="productsale-price">₹${product.salePrice}</strong>
-          </a>
-          <button class="add-to-cart-btn" onclick="addToCart('${product._id}')">Add to Cart</button>
-        </div>
-      `;
-      productContainer.innerHTML += productHTML;
+        const productHTML = `
+            <div class="product-item">
+                <button class="wishlist-btn" onclick="addToWishlist('${product._id}')">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <a href="/product-details?id=${product._id}">
+                    <img src="/uploads/re-image/${product.productImage[0]}" class="img-fluid product-thumbnail">
+                    <h3 class="product-title">${product.productName}</h3>
+                    <p>Brand: ${product.brand}</p>
+                    <strong class="product-price" style="text-decoration: line-through;">₹${product.regularPrice}</strong>
+                    <strong class="productsale-price">₹${product.salePrice}</strong>
+                </a>
+                <button class="add-to-cart-btn" onclick="addToCart('${product._id}')">Add to Cart</button>
+            </div>
+        `;
+        productContainer.innerHTML += productHTML;
     });
-    initWishlistButtons();
-  }
+}
 
   // Wishlist functionality
   function initWishlistButtons() {
@@ -592,4 +581,13 @@
       }
     })
   }
+
+
+
+
+
+  function sortProducts(sortOption) {
+    window.location.href = `/shop?sort=${sortOption}`;
+}
+
 </script>

@@ -1,6 +1,9 @@
 const User = require("../../models/userSchema");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const Order = require("../../models/orderSchema");
+const Product = require("../../models/productSchema");
+
 
 
 
@@ -54,18 +57,43 @@ const login = async (req,res) =>{
 }
 
 
-const loadDashboard = async (req,res) =>{
-    if(req.session.admin){
+const loadDashboard = async (req, res) => {
+    if (req.session.admin) {
         try {
-            
-           res.render("dashboard");
+            const totalSales = await Order.aggregate([
+                { $group: { _id: null, total: { $sum: "$finalAmount" } } }
+            ]);
 
+            const totalOrders = await Order.countDocuments();
+            const returnedOrders = await Order.countDocuments({ status: "Returned" });
+            const pendingOrders = await Order.countDocuments({ status: "Pending" });
+            const deliveredOrders = await Order.countDocuments({ status: "Delivered" });
+            const shippedOrders = await Order.countDocuments({ status: "Shipped" });
+            const processingOrders = await Order.countDocuments({ status: "Processing" });
+            const totalUsers = await User.countDocuments();
+            const totalDiscount = await Order.aggregate([
+                { $group: { _id: null, total: { $sum: "$discount" } } }
+            ]);
+
+            res.render("dashboard", {
+                totalSales: totalSales[0]?.total || 0,
+                totalOrders,
+                returnedOrders,
+                pendingOrders,
+                deliveredOrders,
+                shippedOrders,
+                processingOrders,
+                totalUsers,
+                totalDiscount: totalDiscount[0]?.total || 0,
+            });
         } catch (error) {
-            
-            res.redirect("/pageerror")
+            console.log("Dashboard error", error);
+            res.redirect("/pageerror");
         }
+    } else {
+        res.redirect("/admin/login");
     }
-}
+};
 
 
 

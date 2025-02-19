@@ -193,23 +193,29 @@ const postNewPassword  = async(req,res) =>{
 
 
 
-
 const userProfile = async (req, res) => {
     try {
       const userId = req.session.user;
       const userData = await User.findById(userId);
       const addressData = await Address.findOne({ userId: userId });
       const orders = await Order.find({ userId: userId }).sort({ createdOn: -1 });
+  
+      // Fetch wallet history
+      const walletHistory = userData.history || [];
+  
+      console.log('orders', orders);
       res.render("profile", {
         user: userData,
         userAddress: addressData,
-        orders: orders
+        orders: orders,
+        walletHistory: walletHistory,
       });
     } catch (error) {
       console.error("Error retrieving profile data", error);
       res.redirect("/pageNotFound");
     }
   };
+  
   
 
 

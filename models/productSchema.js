@@ -56,6 +56,7 @@ const productSchema = new Schema({
         required:true,
         default:"Available",
     },
+    createdOn:{type:Date, default: Date.now},
 },{timestamps:true});
 
 const Product = mongoose.model("Product",productSchema);

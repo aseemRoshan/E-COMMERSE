@@ -81,7 +81,7 @@ const  addProducts = async (req,res) =>{
     } catch (error) {
         console.log(error);
         
-        res.send('eroor')
+
     }
 }
 

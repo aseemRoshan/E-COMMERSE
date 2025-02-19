@@ -42,11 +42,11 @@ const productDetails = async (req, res) => {
         const productOffer = product.productOffer || 0;
         const combinedOffer = categoryOffer + productOffer;
 
-        // Render the product details page with all necessary data
+        
         res.render("product-details", {
             product: product,
-            relatedProducts, // Pass related products to the view
-            totalOffer: combinedOffer, // Use combined offer (category + product)
+            relatedProducts, 
+            totalOffer: combinedOffer, 
             quantity: product.quantity,
             category: findCategory,
         });

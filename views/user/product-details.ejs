@@ -90,7 +90,7 @@
                                 <input type="number" value="1" min="1" class="qty-input">
                                 <button class="qty-btn plus">+</button>
                             </div>
-                            <button class="add-to-cart-btn">Add to cart</button>
+                            <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>')">Add to cart</button>
                             <button class="wishlist-btn">
                                 <i class="fi-rs-heart"></i>
                             </button>
@@ -475,7 +475,41 @@
     });
 });
 
- 
+
+
+
+function updateCartCount(count) {
+    document.getElementById('cart-count').innerText = count;
+}
+
+// In the success callback of addToCart:
+updateCartCount(response.cartCount);
+
+
+function addToCart(productId) {
+    const quantity = document.querySelector('.qty-input').value; // Get the quantity from the input field
+    $.ajax({
+        url: '/addToCart',
+        method: 'POST',
+        data: { productId: productId, quantity: quantity },
+        success: (response) => {
+            Swal.fire({
+                title: 'Success',
+                text: response.message,
+                icon: 'success',
+                timer: 3000
+            });
+        },
+        error: (error) => {
+            Swal.fire({
+                title: 'Error',
+                text: error.responseJSON?.message || 'There was an error adding the product to your cart',
+                icon: 'error',
+                timer: 3000
+            });
+        }
+    });
+}
 
 </script>
 

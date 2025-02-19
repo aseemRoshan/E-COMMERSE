@@ -36,31 +36,29 @@ const categoryInfo = async (req,res) =>{
     }
 }
 
-
-
-const addCategory = async (req,res) =>{
-    const {name,description} = req.body;
+const addCategory = async (req, res) => {
+    const { name, description } = req.body;
     try {
-        
-       const existingCategory = await Category.findOne({name});
-       if(existingCategory){
-        return res.status(400).json({error:"Category already exists"})
-       }
-       const newCategory  = new Category({
-        name,
-        description,
-       })
-       
-       await newCategory.save();
-       return res.json({message:"Category added successfully"})
-   
+        // Convert the input name to lowercase
+        const lowerCaseName = name.toLowerCase();
 
+        // Check if a category with the same name (case-insensitive) already exists
+        const existingCategory = await Category.findOne({ name: { $regex: `^${lowerCaseName}$`, $options: 'i' } });
+        if (existingCategory) {
+            return res.status(400).json({ error: "Category already exists" });
+        }
+
+        const newCategory = new Category({
+            name,
+            description,
+        });
+
+        await newCategory.save();
+        return res.json({ message: "Category added successfully" });
     } catch (error) {
-        return res.status(500).json({error:"Internal Server Error"})
+        return res.status(500).json({ error: "Internal Server Error" });
     }
-}
-
-
+};
 
 
 
@@ -174,36 +172,34 @@ const getEditCategory = async (req,res) =>{
        }
 }
 
-
-
-const editCategory = async (req,res) =>{
+const editCategory = async (req, res) => {
     try {
-        
-     const id = req.params.id;
-     const {categoryName,description} = req.body; 
-     const existingCategory = await Category.findOne({name:categoryName});
+        const id = req.params.id;
+        const { categoryName, description } = req.body;
 
-     if(existingCategory){
-         return res.status(400).json({error:"Category exists, please choose another name"})
-     }
+        // Convert the input name to lowercase
+        const lowerCaseName = categoryName.toLowerCase();
 
-     const updateCategory = await Category.findByIdAndUpdate(id,{
-        name:categoryName,
-        description:description,
-     },{new:true});
+        // Check if a category with the same name (case-insensitive) already exists
+        const existingCategory = await Category.findOne({ name: { $regex: `^${lowerCaseName}$`, $options: 'i' }, _id: { $ne: id } });
+        if (existingCategory) {
+            return res.status(400).json({ error: "Category already exists, please choose another name" });
+        }
 
-     if(updateCategory){
-        res.redirect("/admin/category")
-     }else{
-        res.status(404).json({error:"Category not found"})
-     }
+        const updateCategory = await Category.findByIdAndUpdate(id, {
+            name: categoryName,
+            description: description,
+        }, { new: true });
 
+        if (updateCategory) {
+            res.redirect("/admin/category");
+        } else {
+            res.status(404).json({ error: "Category not found" });
+        }
     } catch (error) {
-        res.status(500).json({error:"Internal server error"})   
+        res.status(500).json({ error: "Internal server error" });
     }
-}
-
-
+};
 
 
 

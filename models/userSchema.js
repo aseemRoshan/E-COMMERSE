@@ -59,10 +59,19 @@ const userSchema = new Schema({
     // }],
 
     wallet:{
-        type:Schema.Types.ObjectId,
-         default:null
+        type:Number,
+         default:0,
 
     },
+    history: [
+        {
+          amount: { type: Number, required: true },
+          status: { type: String, required: true },
+          date: { type: Date, required: true },
+          description: { type: String }
+        }
+      ],
+      
     wishlist:[{
         type:Schema.Types.ObjectId,
         ref:"Wishlist"
@@ -101,7 +110,10 @@ const userSchema = new Schema({
             type:Date,
             default:Date.now,
         }
-    }]
+    }],
+    otp:{type:String},
+    otpExpires:{type:Date},
+    isVerified:{type:Boolean, default:false},
 
 })
 

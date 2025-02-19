@@ -234,6 +234,47 @@
             padding: 1rem;
         }
     }
+
+    @media (max-width: 480px) {
+        .admin-dashboard {
+            padding: 0.5rem;
+        }
+
+        .dashboard-header {
+            padding: 0.5rem;
+        }
+
+        .search-container {
+            border-radius: 8px;
+        }
+
+        .search-input {
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .search-button {
+            padding: 0.75rem 1.5rem;
+        }
+
+        .table-container {
+            border-radius: 8px;
+        }
+
+        .customer-table th,
+        .customer-table td {
+            padding: 0.75rem 1rem;
+        }
+
+        .action-button {
+            padding: 0.3rem 0.6rem;
+            min-width: 60px;
+        }
+
+        .pagination-link {
+            padding: 0.4rem 0.8rem;
+        }
+    }
 </style>
 
 <div class="admin-dashboard">
@@ -247,10 +288,10 @@
     <section class="search-section">
         <form action="/admin/user/" method="get">
             <div class="search-container">
-                <input 
-                    type="text" 
-                    class="search-input" 
-                    placeholder="Search customers..." 
+                <input
+                    type="text"
+                    class="search-input"
+                    placeholder="Search customers..."
                     name="search"
                 >
                 <button type="submit" class="search-button">
@@ -278,17 +319,15 @@
                             <td><%= data[i].name %></td>
                             <td><%= data[i].email %></td>
                             <td><%= data[i].phone %></td>
-                            <td class="action-cell"> 
+                            <td class="action-cell">
                                 <% if (data[i].isBlocked === false) { %>
-                                    <a href="/admin/blockCustomer?id=<%= data[i]._id %>" 
-                                       class="action-button block-button">
+                                    <button onclick="blockCustomer('<%= data[i]._id %>')" class="action-button block-button">
                                         Block
-                                    </a>
+                                    </button>
                                 <% } else { %>
-                                    <a href="/admin/unblockCustomer?id=<%= data[i]._id %>" 
-                                       class="action-button unblock-button">
+                                    <button onclick="unblockCustomer('<%= data[i]._id %>')" class="action-button unblock-button">
                                         Unblock
-                                    </a>
+                                    </button>
                                 <% } %>
                             </td>
                         </tr>
@@ -306,10 +345,55 @@
                     <li class="pagination-item <%= i === currentPage ? 'active' : '' %>">
                         <a href="?page=<%= i %>" class="pagination-link"><%= i %></a>
                     </li>
-                <% } %>   
+                <% } %>
             </ul>
         </nav>
     </section>
 </div>
 
 <%- include("../../views/partials/admin/footer") %>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    async function blockCustomer(id) {
+        try {
+            const response = await fetch(`/admin/blockCustomer?id=${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                Swal.fire('Success', data.message, 'success').then(() => {
+                    location.reload(); // Reload the page to reflect the changes
+                });
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        } catch (error) {
+            Swal.fire('Error', 'An error occurred while blocking the customer', 'error');
+        }
+    }
+
+    async function unblockCustomer(id) {
+        try {
+            const response = await fetch(`/admin/unblockCustomer?id=${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                Swal.fire('Success', data.message, 'success').then(() => {
+                    location.reload(); // Reload the page to reflect the changes
+                });
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        } catch (error) {
+            Swal.fire('Error', 'An error occurred while unblocking the customer', 'error');
+        }
+    }
+</script>
