@@ -115,7 +115,7 @@
                                                     <i>Cancelled</i>
                                                 <% } else { %>
                                                     <% if (orders.status === "Confirmed" || orders.status === "Pending" || orders.status === "Shipped") { %>
-                                                        <button class="btn btn-danger btn-sm" onclick="showCancelModal('<%= orders._id %>')">Delete Order</button>
+                                                        <button class="btn btn-danger btn-sm" onclick="showCancelModal('<%= orders._id %>')">Cancel Order</button>
                                                     <% } else if (orders.status === "Delivered") { %>
                                                         <button class="btn btn-warning btn-sm" onclick="showReturnModal('<%= orders._id %>')">Return Order</button>
                                                     <% } %>

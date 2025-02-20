@@ -20,6 +20,10 @@ router.get("/login",adminController.loadLogin);
 router.post("/admin-login",adminController.login);
 router.get("/",adminAuth,adminController.loadDashboard)
 router.get("/logout",adminController.logout);
+router.get("/dashboard", adminAuth, adminController.loadDashboard);
+router.get("/export-excel", adminAuth, adminController.generateExcelReport); // Add this line
+router.get("/export-pdf", adminAuth, adminController.generatePdfReport);
+
 //customer management
 router.get("/Customers",adminAuth,customerController.customerInfo);
 router.get("/blockCustomer",adminAuth,customerController.customerBlocked);

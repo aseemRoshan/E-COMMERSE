@@ -6,11 +6,11 @@
             <div class="profile"></div>
         </div>
         <div class="date-filters">
-            <button class="date-filter active">1 Day</button>
-            <button class="date-filter">1 Week</button>
-            <button class="date-filter">1 Month</button>
-            <input type="date" id="startDate" value="2025-02-17">
-            <input type="date" id="endDate" value="2025-02-18">
+            <button class="date-filter active" data-range="1">1 Day</button>
+            <button class="date-filter" data-range="7">1 Week</button>
+            <button class="date-filter" data-range="30">1 Month</button>
+            <input type="date" id="startDate" value="<%= startDate || new Date().toISOString().split('T')[0] %>">
+            <input type="date" id="endDate" value="<%= endDate || new Date().toISOString().split('T')[0] %>">
             <button class="apply-filter">Apply Filter</button>
             <button class="export-btn" id="exportExcel">
                 <i class="fas fa-file-excel"></i> Excel Report
@@ -234,16 +234,39 @@
 
 <!-- Font Awesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
 <script>
+  document.querySelectorAll(".date-filter").forEach(button => {
+    button.addEventListener("click", function() {
+      document.querySelectorAll(".date-filter").forEach(btn => btn.classList.remove("active"));
+      this.classList.add("active");
+      const range = this.getAttribute("data-range");
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - range);
+      document.getElementById("startDate").value = startDate.toISOString().split('T')[0];
+      document.getElementById("endDate").value = endDate.toISOString().split('T')[0];
+      applyFilter();
+    });
+  });
+
+  document.querySelector(".apply-filter").addEventListener("click", applyFilter);
+
+  function applyFilter() {
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    window.location.href = `/admin/dashboard?startDate=${startDate}&endDate=${endDate}`;
+  }
+
   document.getElementById("exportExcel").addEventListener("click", function() {
-    alert("Export to Excel clicked!");
-    // Add your export to Excel logic here
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    window.location.href = `/admin/export-excel?startDate=${startDate}&endDate=${endDate}`;
   });
 
   document.getElementById("exportPdf").addEventListener("click", function() {
-    alert("Export to PDF clicked!");
-    // Add your export to PDF logic here
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    window.location.href = `/admin/export-pdf?startDate=${startDate}&endDate=${endDate}`;
   });
 </script>
 
