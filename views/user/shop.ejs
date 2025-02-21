@@ -372,7 +372,7 @@
               <option value="name-desc">Name: Z to A</option>
               <option value="created-new">Newest Arrivals</option>
               <option value="created-old">Oldest Arrivals</option>
-            </select>
+          </select>
           </div>
 
           <div class="filter-section">
@@ -587,7 +587,15 @@ function updateProductContainer(data) {
 
 
   function sortProducts(sortOption) {
-    window.location.href = `/shop?sort=${sortOption}`;
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category'); // Get the selected category from the URL
+    let url = `/shop?sort=${sortOption}`;
+
+    if (category) {
+        url += `&category=${category}`; // Append the category to the URL if it exists
+    }
+
+    window.location.href = url; // Redirect to the updated URL
 }
 
 </script>

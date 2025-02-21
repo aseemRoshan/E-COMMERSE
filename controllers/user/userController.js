@@ -26,43 +26,54 @@ const loadShopping = async (req, res) => {
         const limit = 12;
         const skip = (page - 1) * limit;
 
-        let sortOption = {};
+        // Get the selected category and sort option from the query parameters
+        const selectedCategory = req.query.category;
         const sortQuery = req.query.sort;
 
+        // Build the query for products
+        let query = {
+            isBlocked: false,
+            quantity: { $gt: 0 }
+        };
+
+        // Add category filter if a category is selected
+        if (selectedCategory) {
+            query.category = selectedCategory;
+        }
+        
+
+        // Define the sort option based on the selected sort query
+        let sortOption = {};
         switch (sortQuery) {
             case 'price-low':
-                sortOption = { salePrice: 1 }; 
+                sortOption = { salePrice: 1 }; // Sort by price low to high
                 break;
             case 'price-high':
-                sortOption = { salePrice: -1 }; 
+                sortOption = { salePrice: -1 }; // Sort by price high to low
                 break;
             case 'name-asc':
-                sortOption = { productName: 1 }; 
+                sortOption = { productName: 1 }; // Sort by name A to Z
                 break;
             case 'name-desc':
-                sortOption = { productName: -1 }; 
+                sortOption = { productName: -1 }; // Sort by name Z to A
                 break;
             case 'created-new':
-                sortOption = { createdOn: -1 }; 
+                sortOption = { createdOn: -1 }; // Sort by newest arrivals
                 break;
             case 'created-old':
-                sortOption = { createdOn: 1 }; 
+                sortOption = { createdOn: 1 }; // Sort by oldest arrivals
                 break;
             default:
-                sortOption = { createdOn: -1 };
+                sortOption = { createdOn: -1 }; // Default sorting
         }
 
-        const products = await Product.find({
-            isBlocked: false,
-            category: { $in: categories.map(category => category._id) },
-            quantity: { $gt: 0 }
-        }).sort(sortOption).skip(skip).limit(limit);
+        // Fetch products based on the query and sort option
+        const products = await Product.find(query)
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit);
 
-        const totalProducts = await Product.countDocuments({
-            isBlocked: false,
-            category: { $in: categoryIds },
-            quantity: { $gt: 0 }
-        });
+        const totalProducts = await Product.countDocuments(query);
         const totalPages = Math.ceil(totalProducts / limit);
 
         const brands = await Brand.find({ isBlocked: false });
@@ -76,7 +87,8 @@ const loadShopping = async (req, res) => {
             totalProducts: totalProducts,
             currentPage: page,
             totalPages: totalPages,
-            user: req.session.user || null
+            user: req.session.user || null,
+            selectedCategory: selectedCategory || null, // Pass the selected category to the view
         });
     } catch (error) {
         console.log("Shopping page not loading:", error);
