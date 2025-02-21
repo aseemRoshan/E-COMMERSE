@@ -285,9 +285,19 @@ async function sendVerificationEmail(email, otp) {
     }
 }
 
+
+function generateReferralCode() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < 8; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
 const signup = async (req, res) => {
     try {
-        const { name, phone, email, password, cPassword } = req.body;
+        const { name, phone, email, password, cPassword, referalCode } = req.body;
 
         if (password !== cPassword) {
             return res.render("signup", { message: "Passwords do not match" });
@@ -299,27 +309,50 @@ const signup = async (req, res) => {
         }
 
         const otp = generateOtp();
-        const otpExpires = new Date(Date.now() + 1 * 60 * 1000); 
+        const otpExpires = new Date(Date.now() + 1 * 60 * 1000);
 
         const emailSent = await sendVerificationEmail(email, otp);
 
         if (!emailSent) {
-            return res.json({ message: "email-error" })
+            return res.json({ message: "email-error" });
         }
 
         req.session.userOtp = otp;
         req.session.userOtpExpires = otpExpires;
-        req.session.userData = { name, phone, email, password };
+        req.session.userData = { name, phone, email, password, referalCode: generateReferralCode() };
 
         console.log("OTP Sent:", otp);
         console.log("OTP Expires:", otpExpires);
+        console.log("Generated Referral Code:", req.session.userData.referalCode);
+
+        if (referalCode) {
+            const referringUser = await User.findOne({ referalCode });
+            if (referringUser) {
+                referringUser.wallet += 100; // Referring user gets ₹100
+                referringUser.referralEarnings += 100;
+                referringUser.redeemedUsers.push(req.session.userData._id); // Use the new user's ID from session
+
+                // Add wallet history for referring user
+                referringUser.history.push({
+                    amount: 100,
+                    status: "credit",
+                    date: new Date(),
+                    description: `Referred a friend (${email})`
+                });
+
+                await referringUser.save();
+
+                req.session.userData.wallet = 50; // New user gets ₹50
+            }
+        }
 
         res.render("verify-otp");
     } catch (error) {
         console.error("Signup error", error);
-        res.redirect("/pageNotFound")
+        res.redirect("/pageNotFound");
     }
-}
+};
+
 
 const securePassword = async (password) => {
     try {
@@ -329,7 +362,6 @@ const securePassword = async (password) => {
         console.error("Error hashing password", error);
     }
 }
-
 const verifyOtp = async (req, res) => {
     try {
         const { otp } = req.body;
@@ -347,7 +379,19 @@ const verifyOtp = async (req, res) => {
                 email: user.email,
                 phone: user.phone,
                 password: passwordHash,
+                wallet: user.wallet || 0,
+                referalCode: user.referalCode,
             });
+
+            // Add wallet history for new user
+            if (user.wallet === 50) {
+                saveUserData.history.push({
+                    amount: 50,
+                    status: "credit",
+                    date: new Date(),
+                    description: "Used referral code"
+                });
+            }
 
             await saveUserData.save();
             req.session.user = saveUserData._id;
@@ -359,7 +403,9 @@ const verifyOtp = async (req, res) => {
         console.error("Error Verify OTP", error);
         res.status(500).json({ success: false, message: "An error occurred" });
     }
-}
+};
+
+
 
 const resendOtp = async (req, res) => {
     try {
