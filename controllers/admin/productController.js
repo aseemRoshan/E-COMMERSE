@@ -62,8 +62,7 @@ const addProducts = async (req, res) => {
             await newProduct.save();
             return res.redirect("/admin/product-add");
         } else {
-         return   res.status(400).json("Product already exists, please try with another name");
-            // return res.redirect("/admin/pageerror");
+            return res.status(400).json("Product already exists, please try with another name");
         }
     } catch (error) {
         console.log(error);
@@ -117,7 +116,7 @@ const addProductOffer = async (req, res) => {
         const findProduct = await Product.findOne({ _id: productId });
         const findCategory = await Category.findOne({ _id: findProduct.category });
         if (findCategory.categoryOffer > percentage) {
-            return res.json({ status: false, message: "This products category already has a category offer" });
+            return res.json({ status: false, message: "This product's category already has a category offer" });
         }
 
         findProduct.salePrice = findProduct.salePrice - Math.floor(findProduct.regularPrice * (percentage / 100));
@@ -193,14 +192,18 @@ const editProduct = async (req, res) => {
         });
 
         if (existingProduct) {
-            return res.status(400).json({ error: "Product with this name is already exists. Please try with another name" });
+            return res.status(400).json({ error: "Product with this name already exists. Please try with another name" });
         }
 
         const images = [];
 
         if (req.files && req.files.length > 0) {
             for (let i = 0; i < req.files.length; i++) {
-                images.push(req.files[i].filename);
+                const originalImagePath = req.files[i].path;
+                const resizedFilename = "resized-" + req.files[i].filename;
+                const resizedImagePath = path.join('public', 'uploads', 're-image', resizedFilename);
+                await sharp(originalImagePath).resize({ width: 440, height: 440 }).toFile(resizedImagePath);
+                images.push(resizedFilename);
             }
         }
 
