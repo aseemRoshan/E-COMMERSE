@@ -24,6 +24,15 @@ const userAuth = (req,res,next) =>{
 
 
 const adminAuth = (req,res,next) =>{
+    
+
+    console.log(req.user_id);
+    
+    // const isUser = await User.findById(req.user_id)
+    // if(isUser && isUser.isAdmin){
+
+    // }
+
     User.findOne({isAdmin:true})
     .then(data=>{
         if(data){

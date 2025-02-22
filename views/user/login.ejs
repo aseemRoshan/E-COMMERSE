@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Furniture Website - Login</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -17,14 +18,14 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background-image: url('/furni-1.0.0/images/armchair-green-living-room-with-copy-space_43614-910.avif'); 
-      background-repeat: no-repeat; /* Prevents the image from repeating */
-      background-size: cover; /* Ensures the image covers the entire background */
+      background-image: url('/furni-1.0.0/images/armchair-green-living-room-with-copy-space_43614-910.avif');
+      background-repeat: no-repeat;
+      background-size: cover;
       background-position: center;
     }
 
     .container {
-      background-color: rgba(255, 255, 255, 0.7); /* Adjust the alpha value for desired opacity */
+      background-color: rgba(255, 255, 255, 0.7);
       padding: 30px;
       border-radius: 10px;
       max-width: 400px;
@@ -47,6 +48,31 @@
       font-size: 14px;
       margin-bottom: 5px;
       color: #555;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+    }
+
+    .input-group-append {
+      margin-left: -40px;
+      z-index: 10;
+    }
+
+    .input-group-text {
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      padding: 10px;
+    }
+
+    .input-group-text i {
+      color: #555;
+    }
+
+    .input-group-text:hover i {
+      color: #007BFF;
     }
 
     .form-group input {
@@ -87,7 +113,7 @@
       justify-content: center;
       background-color: white;
       color: grey;
-      margin-top: 10px; 
+      margin-top: 10px;
     }
 
     .google-btn img {
@@ -100,26 +126,28 @@
     }
 
     .login-link {
-      text-align: center; /* Center the text */
-      margin-top: 15px; /* Space above the link */
-      font-size: 14px; /* Font size for the link */
-      color: black; /* Link color */
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      color: black;
     }
 
     .login-link a {
-      text-decoration: none; /* Remove underline */
-      color: #007BFF; /* Same color for link */
+      text-decoration: none;
+      color: #007BFF;
     }
 
     .login-link a:hover {
-      text-decoration: underline; /* Underline on hover */
+      text-decoration: underline;
     }
-    .forgot-password-link{
-      font-size:0.875rem;
-      color:#007bff;
+
+    .forgot-password-link {
+      font-size: 0.875rem;
+      color: #007bff;
       text-decoration: none;
     }
-    .forgot-password-link:hover{
+
+    .forgot-password-link:hover {
       color: #0056b3;
       text-decoration: underline;
     }
@@ -135,28 +163,33 @@
   <div class="container">
     <h1>Login</h1>
 
-    <%if(locals.message && message.length>0){%>
+    <% if (locals.message && message.length > 0) { %>
       <div style="text-align: center; color: red;" class="alert alert-danger text-center">
-           <%=message%>
+        <%= message %>
       </div>
-     <%}%>
-
-
+    <% } %>
 
     <form method="post" action="/login">
       <div class="form-group">
         <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" placeholder="Enter email" >
+        <input type="email" id="email" name="email" placeholder="Enter email">
       </div>
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Enter password" >
+        <div class="input-group">
+          <input type="password" id="password" name="password" placeholder="Enter password">
+          <div class="input-group-append">
+            <span class="input-group-text" onclick="togglePasswordVisibility('password')">
+              <i class="fas fa-eye"></i>
+            </span>
+          </div>
+        </div>
       </div>
 
       <div class="form-group d-flex justify-content-end">
-             <a href="/forgot-password" class="forgot-password-link ms-auto">Forgot Password</a>
+        <a href="/forgot-password" class="forgot-password-link ms-auto">Forgot Password</a>
       </div>
-      
+
       <button type="submit" class="btn btn-login">Login</button>
       <a href="/auth/google" class="btn google-btn">
         <img src="https://static.typingclub.com/m/website/authen/google.svg" alt="Google Logo">
@@ -167,5 +200,23 @@
       Not registered? <a href="/signup">Sign up</a>
     </div>
   </div>
+
+  <script>
+    // Toggle password visibility
+    function togglePasswordVisibility(fieldId) {
+      const passwordField = document.getElementById(fieldId);
+      const eyeIcon = passwordField.nextElementSibling.querySelector("i");
+
+      if (passwordField.type === "password") {
+        passwordField.type = "text"; // Show password
+        eyeIcon.classList.remove("fa-eye");
+        eyeIcon.classList.add("fa-eye-slash"); // Change icon to "eye-slash"
+      } else {
+        passwordField.type = "password"; // Hide password
+        eyeIcon.classList.remove("fa-eye-slash");
+        eyeIcon.classList.add("fa-eye"); // Change icon to "eye"
+      }
+    }
+  </script>
 </body>
 </html>
