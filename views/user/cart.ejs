@@ -1,4 +1,5 @@
-<%- include("../../views/partials/user/header") %>
+<%- include("../../views/partials/user/header", { currentPage: 'cart' }) %>
+
 <main class="main">
     <div class="page-header breadcrumb-wrap">
         <div class="container">
@@ -11,6 +12,13 @@
     </div>
     <section class="mt-50 mb-50">
         <div class="container">
+            <% if (outOfStockMessages && outOfStockMessages.length > 0) { %>
+                <div class="alert alert-danger" role="alert">
+                    <% outOfStockMessages.forEach(message => { %>
+                        <p><%= message %></p>
+                    <% }) %>
+                </div>
+            <% } %>
             <div class="row">
                 <div class="col-9">
                     <div class="table-responsive">
@@ -83,7 +91,9 @@
                                 </tbody>
                             </table>
                         </div>
-                        <a href="/checkout?userId=<%= user._id%>" class="btn"> <i class="fi-rs-box-alt mr-10"></i> Proceed to Checkout</a>
+                        <% if (!outOfStockMessages || outOfStockMessages.length === 0) { %>
+                            <a href="/checkout?userId=<%= user._id%>" class="btn"> <i class="fi-rs-box-alt mr-10"></i> Proceed to Checkout</a>
+                        <% } %>
                     </div>
                 </div>
             </div>

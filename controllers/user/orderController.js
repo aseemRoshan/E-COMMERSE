@@ -129,6 +129,7 @@ const applyCoupon = async (req, res) => {
   }
 };
 
+
 const orderPlaced = async (req, res) => {
   try {
     const { totalPrice, addressId, payment, discount } = req.body;
@@ -156,6 +157,13 @@ const orderPlaced = async (req, res) => {
     const cart = await Cart.findOne({ userId: userId }).populate("items.productId");
     if (!cart || cart.items.length === 0) {
       return res.status(404).json({ error: "Cart is empty" });
+    }
+
+    // Check if any item is out of stock
+    const outOfStockItems = cart.items.filter(item => item.productId.quantity < item.quantity);
+    if (outOfStockItems.length > 0) {
+      const outOfStockMessages = outOfStockItems.map(item => `The product "${item.productId.productName}" is out of stock.`);
+      return res.status(400).json({ error: "Some items are out of stock", messages: outOfStockMessages });
     }
 
     const orderedProducts = cart.items.map((item) => ({
@@ -332,117 +340,149 @@ const changeSingleProductStatus = async (req, res) => {
 
 const cancelOrder = async (req, res) => {
   try {
-    const userId = req.session.user;
-    const findUser = await User.findOne({ _id: userId });
-    if (!findUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    const { orderId, reason } = req.body;
-
-    // Log the orderId and userId for debugging
-    console.log("Order ID:", orderId);
-    console.log("User ID:", userId);
-
-    // Ensure orderId is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      return res.status(400).json({ success: false, message: "Invalid order ID format" });
-    }
-
-    const findOrder = await Order.findOne({ _id: orderId });
-    if (!findOrder) {
-      return res.status(404).json({ success: false, message: "Order not found" });
-    }
-
-    if (findOrder.status === "Cancelled") {
-      return res.status(400).json({ success: false, message: "Order is already cancelled" });
-    }
-
-    if (findOrder.payment === "razorpay" || findOrder.payment === "wallet") {
-      findUser.wallet += findOrder.totalPrice;
-
-      await User.updateOne(
-        { _id: userId },
-        {
-          $push: {
-            history: {
-              amount: findOrder.totalPrice,
-              status: "credit",
-              date: Date.now(),
-              description: `Order ${orderId} cancelled`,
-            },
-          },
-        }
-      );
-      await findUser.save();
-    }
-
-    await Order.updateOne(
-      { _id: orderId },
-      { $set: { status: "Cancelled", cancellationReason: reason } }
-    );
-
-    for (const productData of findOrder.product) {
-      const productId = productData.productId;
-      const quantity = productData.quantity;
-
-      const product = await Product.findById(productId);
-      if (product) {
-        product.quantity += quantity;
-        await product.save();
-      } else {
-        console.log("Product not found:", productId);
+      const userId = req.session.user;
+      const findUser = await User.findOne({ _id: userId });
+      if (!findUser) {
+          return res.status(404).json({ success: false, message: "User not found" });
       }
-    }
 
-    res.status(200).json({ success: true, message: "Order cancelled successfully" });
+      const { orderId, productId, reason } = req.body;
+
+      // Log the orderId and userId for debugging
+      console.log("Order ID:", orderId);
+      console.log("User ID:", userId);
+
+      // Ensure orderId is a valid ObjectId
+      if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
+          return res.status(400).json({ success: false, message: "Invalid order ID or product ID format" });
+      }
+
+      const findOrder = await Order.findOne({ _id: orderId });
+      if (!findOrder) {
+          return res.status(404).json({ success: false, message: "Order not found" });
+      }
+
+      const productIndex = findOrder.product.findIndex((product) => product._id.toString() === productId);
+      if (productIndex === -1) {
+          return res.status(404).json({ success: false, message: "Product not found in order" });
+      }
+
+      const productData = findOrder.product[productIndex];
+      if (productData.productStatus === "Cancelled") {
+          return res.status(400).json({ success: false, message: "Product is already cancelled" });
+      }
+
+      if (findOrder.payment === "razorpay" || findOrder.payment === "wallet") {
+          findUser.wallet += productData.price * productData.quantity;
+
+          await User.updateOne(
+              { _id: userId },
+              {
+                  $push: {
+                      history: {
+                          amount: productData.price * productData.quantity,
+                          status: "credit",
+                          date: Date.now(),
+                          description: `Order ${orderId} product ${productId} cancelled`,
+                      },
+                  },
+              }
+          );
+          await findUser.save();
+      }
+
+      findOrder.product[productIndex].productStatus = "Cancelled";
+      findOrder.totalPrice -= productData.price * productData.quantity;
+      findOrder.finalAmount -= productData.price * productData.quantity;
+
+      await findOrder.save();
+
+      const product = await Product.findById(productData.productId);
+      if (product) {
+          product.quantity += productData.quantity;
+          await product.save();
+      } else {
+          console.log("Product not found:", productData.productId);
+      }
+
+      // Check if all products are cancelled
+      const allProductsCancelled = findOrder.product.every((product) => product.productStatus === "Cancelled");
+      if (allProductsCancelled) {
+          findOrder.status = "Cancelled";
+          await findOrder.save();
+      }
+
+      res.status(200).json({ success: true, message: "Product cancelled successfully" });
   } catch (error) {
-    console.error("Error in cancelOrder:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+      console.error("Error in cancelOrder:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
 
 const returnorder = async (req, res) => {
   try {
-    const userId = req.session.user;
-    const findUser = await User.findOne({ _id: userId });
-    if (!findUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const { orderId, reason } = req.body;
-    const findOrder = await Order.findOne({ _id: orderId });
-    if (!findOrder) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-    if (findOrder.status === "returned") {
-      return res.status(400).json({ message: "Order is already returned" });
-    }
-
-    // Credit the user's wallet with the order amount regardless of the payment method
-    findUser.wallet += findOrder.totalPrice;
-
-    await User.updateOne(
-      { _id: userId },
-      {
-        $push: {
-          history: {
-            amount: findOrder.totalPrice,
-            status: "credit",
-            date: Date.now(),
-            description: `Order ${orderId} returned`,
-          },
-        },
+      const userId = req.session.user;
+      const findUser = await User.findOne({ _id: userId });
+      if (!findUser) {
+          return res.status(404).json({ message: "User not found" });
       }
-    );
-    await findUser.save();
 
-    await Order.updateOne({ _id: orderId }, { status: "Returned", returnReason: reason });
-    res.status(200).json({ success: true, message: "Return request initiated successfully" });
+      const { orderId, productId, reason } = req.body;
+
+      const findOrder = await Order.findOne({ _id: orderId });
+      if (!findOrder) {
+          return res.status(404).json({ message: "Order not found" });
+      }
+
+      const productIndex = findOrder.product.findIndex((product) => product._id.toString() === productId);
+      if (productIndex === -1) {
+          return res.status(404).json({ message: "Product not found in order" });
+      }
+
+      const productData = findOrder.product[productIndex];
+      if (productData.productStatus === "Returned") {
+          return res.status(400).json({ message: "Product is already returned" });
+      }
+
+      // Credit the user's wallet with the product amount
+      findUser.wallet += productData.price * productData.quantity;
+
+      await User.updateOne(
+          { _id: userId },
+          {
+              $push: {
+                  history: {
+                      amount: productData.price * productData.quantity,
+                      status: "credit",
+                      date: Date.now(),
+                      description: `Order ${orderId} product ${productId} returned`,
+                  },
+              },
+          }
+      );
+      await findUser.save();
+
+      findOrder.product[productIndex].productStatus = "Returned";
+      findOrder.totalPrice -= productData.price * productData.quantity;
+      findOrder.finalAmount -= productData.price * productData.quantity;
+
+      await findOrder.save();
+
+      // Check if all products are returned
+      const allProductsReturned = findOrder.product.every((product) => product.productStatus === "Returned");
+      if (allProductsReturned) {
+          findOrder.status = "Returned";
+          await findOrder.save();
+      }
+
+      res.status(200).json({ success: true, message: "Return request initiated successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 const generateOrderRazorpay = (orderId, total) => {
   return new Promise((resolve, reject) => {

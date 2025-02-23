@@ -1,4 +1,5 @@
-<%- include("../../views/partials/user/header") %>
+<%- include("../../views/partials/user/header", { currentPage: 'checkout' }) %>
+
 <style>
   .coupon-card {
     border: 2px solid #eaeaea;
@@ -69,7 +70,7 @@
                         <td>
                           <%= product[i].productDetails[0].salePrice * product[i].quantity %>
                         </td>
-                        <td class="action" data-title="Remove" onclick="return confirm('Are you sure you want remove this product from cart?')">
+                        <td class="action" data-title="Remove" onclick="return confirm('Are you sure you want to remove this product from cart?')">
                           <a class="btn btn-sm" href="/deleteItem?id=<%= product[i].productDetails[0]._id %>">
                             <i class="fi-rs-trash"></i>
                           </a>
@@ -187,16 +188,16 @@
         <div class="mb-25 ml-150">
           <h5>Payment</h5>
         </div>
-        <div class="custome-radio ml-150">
-          <input class="form-check-input payment" type="radio" value="cod" name="payment_option" id="CashOnDelivey" checked="">
-          <label class="form-check-label" for="CashOnDelivey" product-bs-toggle="collapse" product-target="#CashOnDelivey" aria-controls="CashOnDelivey">Cash on Delivery</label>
+        <div class="custom-radio ml-150">
+          <input class="form-check-input payment" type="radio" value="cod" name="payment_option" id="CashOnDelivery" checked="">
+          <label class="form-check-label" for="CashOnDelivery" product-bs-toggle="collapse" product-target="#CashOnDelivery" aria-controls="CashOnDelivery">Cash on Delivery</label>
         </div>
 
-        <div class="custome-radio ml-150">
+        <div class="custom-radio ml-150">
           <input class="form-check-input payment" required="" value="razorpay" type="radio" name="payment_option" id="Razorpay" checked="">
           <label class="form-check-label" for="Razorpay" data-bs-toggle="collapse" data-target="#Razorpay" aria-controls="paypal">Razorpay</label>
         </div>
-        <div class="custome-radio ml-150">
+        <div class="custom-radio ml-150">
           <input class="form-check-input payment" required="" value="wallet" type="radio" name="payment_option" id="wallet" checked="">
           <label class="form-check-label" for="wallet" data-bs-toggle="collapse" data-target="#wallet" aria-controls="wallet">Wallet</label>
         </div>
@@ -248,7 +249,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  async function placeOrder(userId, productId) {
+  async function placeOrder(userId) {
     let address = $("input[name='selectedAddress']:checked").val();
     let payment = $("input[name='payment_option']:checked").val();
 
@@ -290,25 +291,16 @@
           discount: discount
         },
         success: function (response) {
-          let orderId = response.order._id;
-          if (response.method === "cod") {
+          if (response.error === "Some items are out of stock") {
             Swal.fire({
-              title: "Order success",
-              text: "Order placed successfully",
-              icon: "success",
-              showCancelButton: true,
-              confirmButtonText: "View orders",
-              cancelButtonText: "Continue shopping",
-              reverseButtons: true
-            }).then(function (result) {
-              if (result.value) {
-                location.href = `/orderDetails?id=${orderId}`;
-              } else if (result.dismiss === "cancel") {
-                location.href = '/';
-              }
+              title: 'Out of Stock!',
+              text: response.messages.join('\n'),
+              icon: 'error',
+              timer: 5000,
             });
-          } else if (response.method === "wallet") {
-            if (response.payment === true) {
+          } else {
+            let orderId = response.order._id;
+            if (response.method === "cod") {
               Swal.fire({
                 title: "Order success",
                 text: "Order placed successfully",
@@ -324,51 +316,77 @@
                   location.href = '/';
                 }
               });
+            } else if (response.method === "wallet") {
+              if (response.payment === true) {
+                Swal.fire({
+                  title: "Order success",
+                  text: "Order placed successfully",
+                  icon: "success",
+                  showCancelButton: true,
+                  confirmButtonText: "View orders",
+                  cancelButtonText: "Continue shopping",
+                  reverseButtons: true
+                }).then(function (result) {
+                  if (result.value) {
+                    location.href = `/orderDetails?id=${orderId}`;
+                  } else if (result.dismiss === "cancel") {
+                    location.href = '/';
+                  }
+                });
+              } else {
+                Swal.fire({
+                  title: "Order failed",
+                  text: "Wallet amount is not enough",
+                  icon: "error",
+                  showConfirmButton: true,
+                }).then(function (result) {
+                  if (result.value) {
+                    location.href = '/';
+                  }
+                });
+              }
+            } else if (response.method === "razorpay") {
+              let orderAmount = Math.round(numericValue * 100);
+              var options = {
+                "key": "rzp_test_hb0Gpt9IOIzC17",
+                "amount": orderAmount,
+                "currency": "INR",
+                "name": "Trend Setter",
+                "description": "Test Transaction",
+                "image": "https://firebasestorage.googleapis.com/v0/b/ecommerce-397a7.appspot.com/o/logo.jpg?alt=media&token=07b6be19-1ce8-4797-a3a0-f0eaeaafedad",
+                "order_id": response.razorPayOrder.id,
+                "handler": function (status) {
+                  verifyPayment(response.razorPayOrder, status, response.order._id);
+                },
+                "prefill": {
+                  "name": "Customer Name",
+                  "email": "customer@example.com",
+                  "contact": "9961618585"
+                },
+                "theme": {
+                  "color": "#3399cc"
+                }
+              };
+              var rzp1 = new Razorpay(options);
+              rzp1.open();
             } else {
               Swal.fire({
-                title: "Order failed",
-                text: "Wallet amount is not enough",
-                icon: "error",
-                showConfirmButton: true,
-              }).then(function (result) {
-                if (result.value) {
-                  location.href = '/';
-                }
+                title: 'Error Occurred',
+                text: "Can't process order error occurred",
+                icon: 'fail',
+                timer: 5000
               });
             }
-          } else if (response.method === "razorpay") {
-            let orderAmount = Math.round(numericValue * 100);
-            var options = {
-              "key": "rzp_test_hb0Gpt9IOIzC17",
-              "amount": orderAmount,
-              "currency": "INR",
-              "name": "Trend Setter",
-              "description": "Test Transaction",
-              "image": "https://firebasestorage.googleapis.com/v0/b/ecommerce-397a7.appspot.com/o/logo.jpg?alt=media&token=07b6be19-1ce8-4797-a3a0-f0eaeaafedad",
-              "order_id": response.razorPayOrder.id,
-              "handler": function (status) {
-                verifyPayment(response.razorPayOrder, status, response.order._id);
-              },
-              "prefill": {
-                "name": "Customer Name",
-                "email": "customer@example.com",
-                "contact": "9961618585"
-              },
-              "theme": {
-                "color": "#3399cc"
-              }
-            };
-            var rzp1 = new Razorpay(options);
-            rzp1.open();
-          } else {
-            Swal.fire({
-              title: 'Error Occured',
-              text: "Can't process order error occured",
-              icon: 'fail',
-              timer: 5000
-            });
           }
         },
+        error: function (error) {
+          Swal.fire({
+            title: 'Error',
+            text: 'There was an error placing the order',
+            icon: 'error',
+            timer: 3000
+          });
+        }
       });
     }
   }

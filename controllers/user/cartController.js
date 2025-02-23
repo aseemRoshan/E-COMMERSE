@@ -9,16 +9,14 @@ const mongodb = require("mongodb");
 const getCartPage = async (req, res) => {
     try {
         const userId = req.session.user._id;
-        const user = await User.findById(userId)
+        const user = await User.findById(userId);
 
-        
         const cart = await Cart.findOne({ userId }).populate("items.productId");
 
         if (!cart) {
-            return res.render("cart", { cartItems: [], total: 0 });
+            return res.render("cart", { cartItems: [], total: 0, outOfStockMessages: [] });
         }
 
-        
         const cartItems = cart.items.map(item => ({
             productId: item.productId._id.toString(),
             name: item.productId.productName,
@@ -31,12 +29,17 @@ const getCartPage = async (req, res) => {
 
         const total = cartItems.reduce((acc, item) => acc + item.total, 0);
 
-        res.render("cart", { cartItems:cartItems, total:total,user:user });
+        // Check if any item is out of stock
+        const outOfStockItems = cartItems.filter(item => item.stock < item.quantity);
+        const outOfStockMessages = outOfStockItems.map(item => `The product "${item.name}" is out of stock.`);
+
+        res.render("cart", { cartItems: cartItems, total: total, user: user, outOfStockMessages: outOfStockMessages });
     } catch (error) {
         console.error("Error fetching cart data:", error);
         res.redirect("/pageNotFound");
     }
 };
+
 
 
 

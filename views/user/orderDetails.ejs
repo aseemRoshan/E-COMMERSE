@@ -1,4 +1,5 @@
-<%- include("../../views/partials/user/header") %>
+<%- include("../../views/partials/user/header", { currentPage: 'orderDetails' }) %>
+
 <main class="container">
     <section class="content-main">
         <div class="content-header">
@@ -111,16 +112,16 @@
                                                 ₹<%= ((parseInt(product.price) || 0) * (parseInt(product.quantity) || 0)).toLocaleString() %>
                                             </td>
                                             <td class="text-center">
-                                                <% if (product.productStatus === "Cancel") { %>
-                                                    <i>Cancelled</i>
-                                                <% } else { %>
+                                                <% if (product.productStatus !== "Cancelled" && product.productStatus !== "Returned") { %>
                                                     <% if (orders.status === "Confirmed" || orders.status === "Pending" || orders.status === "Shipped") { %>
-                                                        <button class="btn btn-danger btn-sm" onclick="showCancelModal('<%= orders._id %>')">Cancel Order</button>
+                                                        <button class="btn btn-danger btn-sm" onclick="showCancelModal('<%= orders._id %>', '<%= product._id %>')">Cancel Order</button>
                                                     <% } else if (orders.status === "Delivered") { %>
-                                                        <button class="btn btn-warning btn-sm" onclick="showReturnModal('<%= orders._id %>')">Return Order</button>
+                                                        <button class="btn btn-warning btn-sm" onclick="showReturnModal('<%= orders._id %>', '<%= product._id %>')">Return Order</button>
                                                     <% } %>
                                                 <% } %>
+                                                
                                             </td>
+                                              
                                         </tr>
                                     <% }) %>
                                 <% } else { %>
@@ -228,48 +229,43 @@
         }
     }
 
-    function showCancelModal(orderId) {
-        $('#cancelOrderModal').modal('show');
-        $('#cancelOrderForm').off('submit').on('submit', function(event) {
-            event.preventDefault();
-            var reason = $('#cancelReason').val();
-            $.ajax({
-                url: '/cancelOrder',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ orderId: orderId, reason: reason }),
-                success: (response) => {
-                    if (response.success) {
-                        $('#cancelOrderModal').modal('hide');
-                        window.location.reload();
-                    } else {
-                        alert(response.message || "Failed to cancel the order. Please try again.");
-                    }
-                },
-                error: (error) => {
-                    console.error("Cancellation error:", error);
-                    alert("An error occurred while cancelling the order. Please try again.");
+    function showCancelModal(orderId, productId) {
+    $('#cancelOrderModal').modal('show');
+    $('#cancelOrderForm').off('submit').on('submit', function(event) {
+        event.preventDefault();
+        var reason = $('#cancelReason').val();
+        $.ajax({
+            url: '/cancelOrder',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ orderId: orderId, productId: productId, reason: reason }),
+            success: (response) => {
+                if (response.success) {
+                    $('#cancelOrderModal').modal('hide');
+                    window.location.reload();
+                } else {
+                    alert(response.message || "Failed to cancel the order. Please try again.");
                 }
-            });
+            },
+            error: (error) => {
+                console.error("Cancellation error:", error);
+                alert("An error occurred while cancelling the order. Please try again.");
+            }
         });
-    }
+    });
+}
 
-    function showReturnModal(orderId) {
+function showReturnModal(orderId, productId) {
     $('#returnOrderModal').modal('show');
     $('#returnOrderForm').off('submit').on('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
-
+        event.preventDefault();
         var reason = $('#returnReason').val();
-        console.log("Return reason:", reason); // Debugging log
-        console.log("Order ID:", orderId); // Debugging log
-
         $.ajax({
             url: '/returnrequestOrder',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ orderId: orderId, reason: reason }),
+            data: JSON.stringify({ orderId: orderId, productId: productId, reason: reason }),
             success: (response) => {
-                console.log("Return request response:", response); // Debugging log
                 if (response.success) {
                     $('#returnOrderModal').modal('hide');
                     window.location.reload();
@@ -278,13 +274,12 @@
                 }
             },
             error: (error) => {
-                console.error("Return error:", error); // Debugging log
+                console.error("Return error:", error);
                 alert("An error occurred while returning the order. Please try again.");
             }
         });
     });
 }
-
     $(document).ready(function() {
         $('#reviewForm').on('submit', function(event) {
             event.preventDefault(); // Prevent the default form submission
