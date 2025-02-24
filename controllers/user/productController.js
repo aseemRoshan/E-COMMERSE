@@ -1,16 +1,14 @@
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const User = require("../../models/userSchema");
-const Brand = require("../../models/brandSchema")
+const Brand = require("../../models/brandSchema");
 
-
-const productDetails = async (req, res) => {
+const productDetails = async (req, res, next) => {
     try {
         const userId = req.session.user;
         const userData = await User.findById(userId);
         const productId = req.query.id;
 
-        
         const product = await Product.findById(productId).populate('category');
 
         if (!productId) {
@@ -19,80 +17,68 @@ const productDetails = async (req, res) => {
 
         if (!product) {
             console.log("Product not found for ID:", productId);
-            return res.redirect("/pageNotFound"); 
+            return res.redirect("/pageNotFound");
         }
 
-        
         const relatedProducts = await Product.find({
             category: product.category,
-            _id: { $ne: productId } ,
-            isBlocked:false
+            _id: { $ne: productId },
+            isBlocked: false
         })
-        .limit(4) 
-        .select('productName productImage salePrice regularPrice'); 
+        .limit(4)
+        .select('productName productImage salePrice regularPrice');
 
-        
         const totalOffer = Math.round(
             ((product.regularPrice - product.salePrice) / product.regularPrice) * 100
         );
 
-        
         const findCategory = product.category || {};
         const categoryOffer = findCategory?.categoryOffer || 0;
         const productOffer = product.productOffer || 0;
         const combinedOffer = categoryOffer + productOffer;
 
-        
         res.render("product-details", {
             product: product,
-            relatedProducts, 
-            totalOffer: combinedOffer, 
+            relatedProducts,
+            totalOffer: combinedOffer,
             quantity: product.quantity,
             category: findCategory,
         });
 
     } catch (error) {
-        console.error("Error fetching product details:", error);
-        res.redirect("/pageNotFound");
+        next(error);
     }
 };
 
-
-
-const getProductDetails = async (req, res) => {
+const getProductDetails = async (req, res, next) => {
     try {
         const productId = req.params.id;
-        
+
         const product = await Product.findById(productId);
-        
+
         if (!product) {
             return res.status(404).send('Product not found');
         }
 
-        
         const relatedProducts = await Product.find({
             category: product.category,
             _id: { $ne: productId }
         })
         .limit(4)
         .select('productName productImage salePrice regularPrice');
-        
-        
+
         const totalOffer = calculateOffer(product.regularPrice, product.salePrice);
-        
+
         res.render('product-details', {
             product,
             relatedProducts,
             totalOffer,
             quantity: product.quantity,
             category: await Category.findById(product.category)
-          
-            
         });
 
     } catch (error) {
-        console.error('Error in getProductDetails:', error);
-        res.status(500).send('Internal Server Error');
+        next(error);
     }
 };
 
@@ -103,10 +89,7 @@ function calculateOffer(regularPrice, salePrice) {
     return 0;
 }
 
-
-
-
 module.exports = {
     productDetails,
     getProductDetails,
-}
+};

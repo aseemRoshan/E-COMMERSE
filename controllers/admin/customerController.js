@@ -1,16 +1,15 @@
 const User = require("../../models/userSchema");
 
-const customerInfo = async (req, res) => {
+const customerInfo = async (req, res, next) => {
     try {
         let search = req.query.search || "";
         let page = req.query.page ? parseInt(req.query.page) : 1;
         const limit = 3;
 
-        
         const userData = await User.find({
             isAdmin: false,
             $or: [
-                { name: { $regex: ".*" + search + ".*", $options: "i" } }, 
+                { name: { $regex: ".*" + search + ".*", $options: "i" } },
                 { email: { $regex: ".*" + search + ".*", $options: "i" } },
             ],
         })
@@ -18,7 +17,6 @@ const customerInfo = async (req, res) => {
             .skip((page - 1) * limit)
             .exec();
 
-        
         const count = await User.countDocuments({
             isAdmin: false,
             $or: [
@@ -29,47 +27,39 @@ const customerInfo = async (req, res) => {
 
         const totalPages = Math.ceil(count / limit);
 
-        
-        res.render("Customers", {
+        res.render("customers", {
             data: userData,
             currentPage: page,
             totalPages: totalPages,
         });
-
     } catch (error) {
         console.error("Error fetching customers:", error);
-        res.status(500).send("Internal Server Error");
+        next(error);
     }
 };
 
-
-
-const customerBlocked = async (req, res) => {
+const customerBlocked = async (req, res, next) => {
     try {
         let id = req.query.id;
         await User.updateOne({ _id: id }, { $set: { isBlocked: true } });
         res.json({ success: true, message: "Customer blocked successfully" });
     } catch (error) {
-        res.json({ success: false, message: "Error blocking customer" });
+        next(error);
     }
 };
 
-const customerunBlocked = async (req, res) => {
+const customerUnBlocked = async (req, res, next) => {
     try {
         let id = req.query.id;
         await User.updateOne({ _id: id }, { $set: { isBlocked: false } });
         res.json({ success: true, message: "Customer unblocked successfully" });
     } catch (error) {
-        res.json({ success: false, message: "Error unblocking customer" });
+        next(error);
     }
 };
-
-
-
-
 
 module.exports = {
     customerInfo,
     customerBlocked,
-    customerunBlocked,
-}
+    customerUnBlocked,
+};

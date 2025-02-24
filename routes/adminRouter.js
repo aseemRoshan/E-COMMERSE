@@ -12,7 +12,7 @@ const productController = require("../controllers/admin/productController");
 const orderController = require("../controllers/admin/orderController");
 const couponController = require("../controllers/admin/couponController");
 
-router.get("/pageerror", adminController.pageerror);
+router.get("/pageerror", adminController.pageError);
 router.get("/login", adminController.loadLogin);
 router.post("/admin-login", adminController.login);
 router.get("/", adminAuth, adminController.loadDashboard);
@@ -22,9 +22,9 @@ router.get("/export-excel", adminAuth, adminController.generateExcelReport);
 router.get("/export-pdf", adminAuth, adminController.generatePdfReport);
 
 // Customer management
-router.get("/Customers", adminAuth, customerController.customerInfo);
+router.get("/customers", adminAuth, customerController.customerInfo);
 router.get("/blockCustomer", adminAuth, customerController.customerBlocked);
-router.get("/unblockCustomer", adminAuth, customerController.customerunBlocked);
+router.get("/unblockCustomer", adminAuth, customerController.customerUnBlocked);
 router.get("/category", adminAuth, categoryController.categoryInfo);
 router.post("/addCategory", adminAuth, categoryController.addCategory);
 router.post("/addCategoryOffer", adminAuth, categoryController.addCategoryOffer);

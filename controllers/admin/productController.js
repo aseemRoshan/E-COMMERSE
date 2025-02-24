@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
 
-const getProductAddPage = async (req, res) => {
+const getProductAddPage = async (req, res, next) => {
     try {
         const category = await Category.find({ isListed: true });
         const brand = await Brand.find({ isBlocked: false });
@@ -15,11 +15,11 @@ const getProductAddPage = async (req, res) => {
             brand: brand
         });
     } catch (error) {
-        res.redirect("/pageerror");
+        next(error);
     }
-}
+};
 
-const addProducts = async (req, res) => {
+const addProducts = async (req, res, next) => {
     try {
         const products = req.body;
         const productExists = await Product.findOne({
@@ -66,11 +66,11 @@ const addProducts = async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        res.redirect("/admin/pageerror");
+        next(error);
     }
-}
+};
 
-const getAllProducts = async (req, res) => {
+const getAllProducts = async (req, res, next) => {
     try {
         const search = req.query.search || "";
         const page = req.query.page || 1;
@@ -106,11 +106,11 @@ const getAllProducts = async (req, res) => {
             res.render("page-404");
         }
     } catch (error) {
-        res.redirect("/pageerror");
+        next(error);
     }
-}
+};
 
-const addProductOffer = async (req, res) => {
+const addProductOffer = async (req, res, next) => {
     try {
         const { productId, percentage } = req.body;
         const findProduct = await Product.findOne({ _id: productId });
@@ -126,12 +126,11 @@ const addProductOffer = async (req, res) => {
         await findCategory.save();
         res.json({ status: true });
     } catch (error) {
-        res.redirect("/pageerror");
-        res.status(500).json({ status: false, message: "Internal Server Error" });
+        next(error);
     }
-}
+};
 
-const removeProductOffer = async (req, res) => {
+const removeProductOffer = async (req, res, next) => {
     try {
         const { productId } = req.body;
         const findProduct = await Product.findOne({ _id: productId });
@@ -141,31 +140,31 @@ const removeProductOffer = async (req, res) => {
         await findProduct.save();
         res.json({ status: true });
     } catch (error) {
-        res.redirect("/pageerror");
+        next(error);
     }
-}
+};
 
-const blockProduct = async (req, res) => {
+const blockProduct = async (req, res, next) => {
     try {
         let id = req.query.id;
         await Product.updateOne({ _id: id }, { $set: { isBlocked: true } });
         res.redirect("/admin/products");
     } catch (error) {
-        res.redirect("/pageerror");
+        next(error);
     }
-}
+};
 
-const unblockProduct = async (req, res) => {
+const unblockProduct = async (req, res, next) => {
     try {
         let id = req.query.id;
         await Product.updateOne({ _id: id }, { $set: { isBlocked: false } });
         res.redirect("/admin/products");
     } catch (error) {
-        res.redirect("/pageerror");
+        next(error);
     }
-}
+};
 
-const getEditProduct = async (req, res) => {
+const getEditProduct = async (req, res, next) => {
     try {
         const id = req.query.id;
         const product = await Product.findOne({ _id: id });
@@ -177,11 +176,11 @@ const getEditProduct = async (req, res) => {
             brand: brand,
         });
     } catch (error) {
-        res.redirect("/pageerror");
+        next(error);
     }
-}
+};
 
-const editProduct = async (req, res) => {
+const editProduct = async (req, res, next) => {
     try {
         const id = req.params.id;
         const product = await Product.findOne({ _id: id });
@@ -226,26 +225,26 @@ const editProduct = async (req, res) => {
         res.redirect("/admin/products");
     } catch (error) {
         console.error(error);
-        res.redirect("/pageerror");
+        next(error);
     }
-}
+};
 
-const deleteSingleImage = async (req, res) => {
+const deleteSingleImage = async (req, res, next) => {
     try {
         const { imageNameToServer, productIdToServer } = req.body;
         const product = await Product.findByIdAndUpdate(productIdToServer, { $pull: { productImage: imageNameToServer } });
-        const imagepath = path.join("public", "uploads", "re-image", imageNameToServer);
-        if (fs.existsSync(imagepath)) {
-            fs.unlinkSync(imagepath);
+        const imagePath = path.join("public", "uploads", "re-image", imageNameToServer);
+        if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
             console.log(`Image ${imageNameToServer} deleted successfully`);
         } else {
             console.log(`Image ${imageNameToServer} not found`);
         }
         res.send({ status: true });
     } catch (error) {
-        res.redirect("/pageerror");
+        next(error);
     }
-}
+};
 
 module.exports = {
     getProductAddPage,
@@ -258,4 +257,4 @@ module.exports = {
     getEditProduct,
     editProduct,
     deleteSingleImage,
-}
+};

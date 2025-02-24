@@ -18,7 +18,7 @@ let instance = new razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-const getCheckoutPage = async (req, res) => {
+const getCheckoutPage = async (req, res, next) => {
   try {
     const userId = req.query.userId;
 
@@ -64,12 +64,11 @@ const getCheckoutPage = async (req, res) => {
       res.redirect("/shop");
     }
   } catch (error) {
-    console.error("Error in getCheckoutPage:", error);
-    res.redirect("/pageNotFound");
+    next(error);
   }
 };
 
-const deleteProduct = async (req, res) => {
+const deleteProduct = async (req, res, next) => {
   try {
     const productId = req.query.id;
     const userId = req.session.user;
@@ -98,12 +97,11 @@ const deleteProduct = async (req, res) => {
       res.redirect("/pageNotFound");
     }
   } catch (error) {
-    console.error("Error deleting product:", error);
-    res.redirect("/pageNotFound");
+    next(error);
   }
 };
 
-const applyCoupon = async (req, res) => {
+const applyCoupon = async (req, res, next) => {
   try {
     const userId = req.session.user;
     const selectedCoupon = await Coupon.findOne({ name: req.body.coupon });
@@ -124,13 +122,11 @@ const applyCoupon = async (req, res) => {
     const gt = parseInt(req.body.total) - parseInt(selectedCoupon.offerPrice);
     return res.json({ success: true, gt: gt, offerPrice: parseInt(selectedCoupon.offerPrice) });
   } catch (error) {
-    console.error('Error applying coupon:', error);
-    return res.json({ success: false, message: 'Error applying coupon' });
+    next(error);
   }
 };
 
-
-const orderPlaced = async (req, res) => {
+const orderPlaced = async (req, res, next) => {
   try {
     const { totalPrice, addressId, payment, discount } = req.body;
     const userId = req.session.user;
@@ -238,12 +234,11 @@ const orderPlaced = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error processing order:", error);
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
-const getOrderDetailsPage = async (req, res) => {
+const getOrderDetailsPage = async (req, res, next) => {
   try {
     const userId = req.session.user;
     const orderId = req.query.id;
@@ -287,12 +282,11 @@ const getOrderDetailsPage = async (req, res) => {
       finalAmount: finalAmount,
     });
   } catch (error) {
-    console.error("Error fetching order details:", error);
-    res.redirect("/pageNotFound");
+    next(error);
   }
 };
 
-const paymentConfirm = async (req, res) => {
+const paymentConfirm = async (req, res, next) => {
   try {
     await Order.updateOne(
       { _id: req.body.orderId },
@@ -301,11 +295,11 @@ const paymentConfirm = async (req, res) => {
       res.json({ status: true });
     });
   } catch (error) {
-    res.redirect("/pageNotFound");
+    next(error);
   }
 };
 
-const changeSingleProductStatus = async (req, res) => {
+const changeSingleProductStatus = async (req, res, next) => {
   const { orderId, singleProductId, status } = req.body;
   const oid = new mongodb.ObjectId(singleProductId);
 
@@ -332,13 +326,11 @@ const changeSingleProductStatus = async (req, res) => {
     const result = await Order.updateOne(filter, update, options);
     res.status(200).json({ message: "Product status updated successfully", result });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    next(error);
   }
 };
 
-
-const cancelOrder = async (req, res) => {
+const cancelOrder = async (req, res, next) => {
   try {
       const userId = req.session.user;
       const findUser = await User.findOne({ _id: userId });
@@ -414,13 +406,11 @@ const cancelOrder = async (req, res) => {
 
       res.status(200).json({ success: true, message: "Product cancelled successfully" });
   } catch (error) {
-      console.error("Error in cancelOrder:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
+      next(error);
   }
 };
 
-
-const returnorder = async (req, res) => {
+const returnorder = async (req, res, next) => {
   try {
       const userId = req.session.user;
       const findUser = await User.findOne({ _id: userId });
@@ -478,11 +468,9 @@ const returnorder = async (req, res) => {
 
       res.status(200).json({ success: true, message: "Return request initiated successfully" });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
+      next(error);
   }
 };
-
 
 const generateOrderRazorpay = (orderId, total) => {
   return new Promise((resolve, reject) => {
@@ -501,7 +489,7 @@ const generateOrderRazorpay = (orderId, total) => {
   });
 };
 
-const verify = (req, res) => {
+const verify = (req, res, next) => {
   let hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
   hmac.update(
     `${req.body.payment.razorpay_order_id}|${req.body.payment.razorpay_payment_id}`
@@ -518,7 +506,7 @@ const verify = (req, res) => {
   }
 };
 
-const downloadInvoice = async (req, res) => {
+const downloadInvoice = async (req, res, next) => {
   try {
     const orderId = req.params.orderId;
     const order = await Order.findById(orderId).populate('userId');
@@ -578,12 +566,11 @@ const downloadInvoice = async (req, res) => {
       fs.unlinkSync(invoicePath);
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).send('An error occurred while generating the invoice');
+    next(error);
   }
 };
 
-const addReview = async (req, res) => {
+const addReview = async (req, res, next) => {
   try {
     const { productId, rating, reviewText } = req.body;
     const userId = req.session.user;
@@ -608,8 +595,7 @@ const addReview = async (req, res) => {
 
     res.status(200).json({ success: true, message: "Review added successfully" });
   } catch (error) {
-    console.error("Error in addReview:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    next(error);
   }
 };
 

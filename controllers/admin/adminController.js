@@ -3,14 +3,12 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
-
-
-
 const ExcelJS = require('exceljs');
 const fs = require('fs');
 const path = require('path');
+const PDFDocument = require('pdfkit');
 
-const generateExcelReport = async (req, res) => {
+const generateExcelReport = async (req, res, next) => {
     try {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Sales Report');
@@ -108,15 +106,11 @@ const generateExcelReport = async (req, res) => {
         });
     } catch (error) {
         console.log("Error generating Excel report", error);
-        res.status(500).send('Error generating Excel report');
+        next(error);
     }
 };
 
-const PDFDocument = require('pdfkit');
-// const fs = require('fs');
-// const path = require('path');
-
-const generatePdfReport = async (req, res) => {
+const generatePdfReport = async (req, res, next) => {
     try {
         const doc = new PDFDocument();
         const filePath = path.join(__dirname, 'report.pdf');
@@ -163,7 +157,7 @@ const generatePdfReport = async (req, res) => {
 
         // Add period with better styling
         doc.fontSize(14).fillColor(colors.secondary)
-           .text(`Period: ${startDate} to ${endDate}`, 50, 120, { align: 'center' });
+            .text(`Period: ${startDate} to ${endDate}`, 50, 120, { align: 'center' });
         doc.moveDown();
 
         // Add order details section
@@ -181,13 +175,13 @@ const generatePdfReport = async (req, res) => {
         // Calculate proportions for columns
         const totalParts = 550; // Total of the original column widths (120+70+60+70+70+70+90)
         const columnWidths = [
-            Math.floor((120/totalParts) * tableWidth),
-            Math.floor((70/totalParts) * tableWidth),
-            Math.floor((60/totalParts) * tableWidth),
-            Math.floor((70/totalParts) * tableWidth),
-            Math.floor((70/totalParts) * tableWidth),
-            Math.floor((70/totalParts) * tableWidth),
-            Math.floor((90/totalParts) * tableWidth)
+            Math.floor((120 / totalParts) * tableWidth),
+            Math.floor((70 / totalParts) * tableWidth),
+            Math.floor((60 / totalParts) * tableWidth),
+            Math.floor((70 / totalParts) * tableWidth),
+            Math.floor((70 / totalParts) * tableWidth),
+            Math.floor((70 / totalParts) * tableWidth),
+            Math.floor((90 / totalParts) * tableWidth)
         ];
 
         // Ensure widths sum exactly to tableWidth
@@ -321,10 +315,10 @@ const generatePdfReport = async (req, res) => {
 
             // Add page numbers
             doc.fontSize(8).fillColor(colors.secondary)
-               .text(`Page ${i + 1} of ${pageCount}`, 50, doc.page.height - 30, {
-                  align: 'center',
-                  width: doc.page.width - 100
-               });
+                .text(`Page ${i + 1} of ${pageCount}`, 50, doc.page.height - 30, {
+                    align: 'center',
+                    width: doc.page.width - 100
+                });
         }
 
         // Finalize the PDF
@@ -341,57 +335,51 @@ const generatePdfReport = async (req, res) => {
         });
     } catch (error) {
         console.log("Error generating PDF report", error);
-        res.status(500).send('Error generating PDF report');
+        next(error);
     }
 };
 
-const  pageerror = async (req,res) =>{
-
-    res.render("admin-error")
-}
-
-
-
-
-const loadLogin = (req,res)=>{
-    if(req.session.admin){
-        return res.redirect("/admin/dashboard")
-    }
-    res.render("admin-login",{message:null})
-}
-
-    
-const login = async (req,res) =>{
-
+const pageError = async (req, res, next) => {
     try {
-        
-        const {email,password} = req.body;
-        const admin = await User.findOne({email,isAdmin:true})
-        if(admin){
-
-            const passwordMatch = bcrypt.compare(password,admin.password);
-            if(passwordMatch) {
-                req.session.admin = true;
-                return res.redirect("/admin")
-            }else{
-                return res.redirect("/login")
-            }
-        }else{
-            return res.redirect("/login")
-        }
-
+        res.render("admin-error");
     } catch (error) {
-        
-
-       console.log("login error",error);
-       return res.redirect("/pageerror")
-       
-
+        next(error);
     }
-}
+};
 
+const loadLogin = (req, res, next) => {
+    try {
+        if (req.session.admin) {
+            return res.redirect("/admin/dashboard");
+        }
+        res.render("admin-login", { message: null });
+    } catch (error) {
+        next(error);
+    }
+};
 
-const loadDashboard = async (req, res) => {
+const login = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+        const admin = await User.findOne({ email, isAdmin: true });
+        if (admin) {
+            const passwordMatch = bcrypt.compare(password, admin.password);
+            if (passwordMatch) {
+                req.session.admin = true;
+                return res.redirect("/admin");
+            } else {
+                return res.redirect("/login");
+            }
+        } else {
+            return res.redirect("/login");
+        }
+    } catch (error) {
+        console.log("login error", error);
+        next(error);
+    }
+};
+
+const loadDashboard = async (req, res, next) => {
     if (req.session.admin) {
         try {
             let { startDate, endDate } = req.query;
@@ -441,44 +429,34 @@ const loadDashboard = async (req, res) => {
             });
         } catch (error) {
             console.log("Dashboard error", error);
-            res.redirect("/pageerror");
+            next(error);
         }
     } else {
         res.redirect("/admin/login");
     }
 };
 
-
-
-const logout = async (req,res) =>{
+const logout = async (req, res, next) => {
     try {
-        req.session.destroy(err=>{
-            if(err){
-                console.log("Error destroying session",err);
-                return res.redirect("/pageerror")
-                
+        req.session.destroy(err => {
+            if (err) {
+                console.log("Error destroying session", err);
+                return next(err);
             }
-            res.redirect("/admin/login")
-        })
+            res.redirect("/admin/login");
+        });
     } catch (error) {
-        
-        console.log("Unexpected error during logout",error);
-        res.redirect("/pageerror")
-        
+        console.log("Unexpected error during logout", error);
+        next(error);
     }
-}
-
-
-
-
+};
 
 module.exports = {
     loadLogin,
     login,
     loadDashboard,
-    pageerror,
+    pageError,
     logout,
     generateExcelReport,
     generatePdfReport,
-
-}
+};

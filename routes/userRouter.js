@@ -10,41 +10,38 @@ const orderController = require("../controllers/user/orderController");
 const walletController = require("../controllers/user/walletController");
 const { userAuth } = require('../middlewares/auth');
 
-
-
 function generateReferralCode() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  const charactersLength = characters.length;
-  for (let i = 0; i < 8; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < 8; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }
-
 
 router.get("/auth/google", passport.authenticate("google", { scope: ['profile', 'email'] }));
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/signup' }), async (req, res) => {
-  try {
-    const user = req.user;
-    if (!user) {
-        return res.redirect('/signup');
-    }
+router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/signup' }), async (req, res, next) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            return res.redirect('/signup');
+        }
 
-    // Check if the user already has a referral code
-    if (!user.referalCode) {
-        user.referalCode = generateReferralCode();
-        await user.save();
-    }
+        // Check if the user already has a referral code
+        if (!user.referalCode) {
+            user.referalCode = generateReferralCode();
+            await user.save();
+        }
 
-    req.session.user = user._id;
-    res.locals.user = req.session.user;
-    console.log("User logged in:", user);
-    res.redirect('/');
-} catch (err) {
-    console.error("Google OAuth Error:", err);
-    res.redirect('/signup');
-}
+        req.session.user = user._id;
+        res.locals.user = req.session.user;
+        console.log("User logged in:", user);
+        res.redirect('/');
+    } catch (err) {
+        console.error("Google OAuth Error:", err);
+        next(err);
+    }
 });
 
 router.get("/pageNotFound", userController.pageNotFound);

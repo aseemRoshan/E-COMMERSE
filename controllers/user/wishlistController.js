@@ -1,7 +1,7 @@
 const User = require("../../models/userSchema");
 const Product = require("../../models/productSchema");
 
-const loadWishlist = async (req, res) => {
+const loadWishlist = async (req, res, next) => {
     try {
         const userId = req.session.user;
         const user = await User.findById(userId);
@@ -11,12 +11,11 @@ const loadWishlist = async (req, res) => {
             wishlist: products,
         });
     } catch (error) {
-        console.error(error);
-        res.redirect("/pageNotFound");
+        next(error);
     }
 };
 
-const addToWishlist = async (req, res) => {
+const addToWishlist = async (req, res, next) => {
     try {
         const productId = req.body.productId;
         const userId = req.session.user;
@@ -28,12 +27,11 @@ const addToWishlist = async (req, res) => {
         await user.save();
         return res.status(200).json({ status: true, message: "Product added to wishlist" });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ status: false, message: "Server error" });
+        next(error);
     }
 };
 
-const removeProduct = async (req, res) => {
+const removeProduct = async (req, res, next) => {
     try {
         const productId = req.query.productId;
         const userId = req.session.user;
@@ -45,8 +43,7 @@ const removeProduct = async (req, res) => {
         }
         return res.redirect("/wishlist");
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ status: false, message: "Server error" });
+        next(error);
     }
 };
 

@@ -6,16 +6,15 @@ const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
 
-const loadSignup = async (req, res) => {
+const loadSignup = async (req, res, next) => {
     try {
         return res.render("signup");
     } catch (error) {
-        console.log("Home page not loading:", error);
-        res.status(500).send("Server Error");
+        next(error);
     }
-}
+};
 
-const loadShopping = async (req, res) => {
+const loadShopping = async (req, res, next) => {
     try {
         const user = req.session.user;
         const userData = await User.findOne({ _id: user });
@@ -40,7 +39,6 @@ const loadShopping = async (req, res) => {
         if (selectedCategory) {
             query.category = selectedCategory;
         }
-        
 
         // Define the sort option based on the selected sort query
         let sortOption = {};
@@ -91,12 +89,11 @@ const loadShopping = async (req, res) => {
             selectedCategory: selectedCategory || null, // Pass the selected category to the view
         });
     } catch (error) {
-        console.log("Shopping page not loading:", error);
-        res.status(500).send("Server Error");
+        next(error);
     }
 };
 
-const filterProduct = async (req, res) => {
+const filterProduct = async (req, res, next) => {
     try {
         const user = req.session.user;
         const category = req.query.category;
@@ -154,14 +151,13 @@ const filterProduct = async (req, res) => {
             currentPage,
             selectedCategory: category || null,
             selectedBrand: brand || null,
-        })
-
+        });
     } catch (error) {
-        res.redirect("/pageNotFound");
+        next(error);
     }
-}
+};
 
-const filterByPrice = async (req, res) => {
+const filterByPrice = async (req, res, next) => {
     try {
         const user = req.session.user;
         const userData = await User.findOne({ _id: user });
@@ -191,14 +187,13 @@ const filterByPrice = async (req, res) => {
             brands: brands,
             totalPages,
             currentPage,
-        })
-
+        });
     } catch (error) {
-        console.log(error);
-        res.redirect("/pageNotFound");
+        next(error);
     }
-}
-const searchProducts = async (req, res) => {
+};
+
+const searchProducts = async (req, res, next) => {
     try {
         const user = req.session.user;
         const userData = await User.findOne({ _id: user });
@@ -226,20 +221,19 @@ const searchProducts = async (req, res) => {
 
         res.json(searchResult);
     } catch (error) {
-        console.log("Error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        next(error);
     }
-}
+};
 
-const pageNotFound = async (req, res) => {
+const pageNotFound = async (req, res, next) => {
     try {
-        res.render("page-404")
+        res.render("page-404");
     } catch (error) {
-        res.redirect("/pageNotFound")
+        next(error);
     }
-}
+};
 
-const loadHomepage = async (req, res) => {
+const loadHomepage = async (req, res, next) => {
     try {
         const userid = req.session.user;
         const categories = await Category.find({ isListed: true });
@@ -253,17 +247,16 @@ const loadHomepage = async (req, res) => {
         products = products.slice(0, 3);
 
         if (userid) {
-            const userData = await User.findById(userid)
-            console.log(userData, 'user')
-            res.render("home", { user: userData, products: products })
+            const userData = await User.findById(userid);
+            console.log(userData, 'user');
+            res.render("home", { user: userData, products: products });
         } else {
-            return res.render("home", { products: products })
+            return res.render("home", { products: products });
         }
     } catch (error) {
-        console.log("Home page is not found");
-        res.status(500).send("Server error")
+        next(error);
     }
-}
+};
 
 function generateOtp() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -280,7 +273,7 @@ async function sendVerificationEmail(email, otp) {
                 user: process.env.NODEMAILER_EMAIL,
                 pass: process.env.NODEMAILER_PASSWORD,
             }
-        })
+        });
 
         const info = await transporter.sendMail({
             from: process.env.NODEMAILER_EMAIL,
@@ -288,15 +281,14 @@ async function sendVerificationEmail(email, otp) {
             subject: "Verify your account",
             text: `Your OTP is ${otp}`,
             html: `<b>Your OTP: ${otp}</b>`,
-        })
+        });
 
-        return info.accepted.length > 0
+        return info.accepted.length > 0;
     } catch (error) {
         console.error("Error sending email", error);
         return false;
     }
 }
-
 
 function generateReferralCode() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -307,7 +299,8 @@ function generateReferralCode() {
     }
     return result;
 }
-const signup = async (req, res) => {
+
+const signup = async (req, res, next) => {
     try {
         const { name, phone, email, password, cPassword, referalCode } = req.body;
 
@@ -360,21 +353,21 @@ const signup = async (req, res) => {
 
         res.render("verify-otp");
     } catch (error) {
-        console.error("Signup error", error);
-        res.redirect("/pageNotFound");
+        next(error);
     }
 };
 
-
 const securePassword = async (password) => {
     try {
-        const passwordHash = await bcrypt.hash(password, 10)
+        const passwordHash = await bcrypt.hash(password, 10);
         return passwordHash;
     } catch (error) {
         console.error("Error hashing password", error);
+        next(error);
     }
-}
-const verifyOtp = async (req, res) => {
+};
+
+const verifyOtp = async (req, res, next) => {
     try {
         const { otp } = req.body;
 
@@ -412,14 +405,11 @@ const verifyOtp = async (req, res) => {
             res.status(400).json({ success: false, message: "Invalid or expired OTP, please try again" });
         }
     } catch (error) {
-        console.error("Error Verify OTP", error);
-        res.status(500).json({ success: false, message: "An error occurred" });
+        next(error);
     }
 };
 
-
-
-const resendOtp = async (req, res) => {
+const resendOtp = async (req, res, next) => {
     try {
         const { email } = req.session.userData;
         if (!email) {
@@ -440,24 +430,23 @@ const resendOtp = async (req, res) => {
             res.status(500).json({ success: false, message: "Failed to resend OTP. Please try again" });
         }
     } catch (error) {
-        console.error("Error resend OTP", error);
-        res.status(500).json({ success: false, message: "Internal Server Error. Please try again" });
+        next(error);
     }
-}
+};
 
-const loadLogin = async (req, res) => {
+const loadLogin = async (req, res, next) => {
     try {
         if (!req.session.user) {
-            return res.render("login")
+            return res.render("login");
         } else {
-            res.redirect("/")
+            res.redirect("/");
         }
     } catch (error) {
-        res.redirect("pageNotFound");
+        next(error);
     }
-}
+};
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -482,12 +471,11 @@ const login = async (req, res) => {
 
         res.redirect("/");
     } catch (error) {
-        console.error("login error", error);
-        res.render("login", { message: "Login failed. Please try again later" });
+        next(error);
     }
-}
+};
 
-const logout = async (req, res) => {
+const logout = async (req, res, next) => {
     try {
         req.session.destroy((err) => {
             if (err) {
@@ -497,10 +485,9 @@ const logout = async (req, res) => {
             return res.redirect("/login");
         });
     } catch (error) {
-        console.log("Logout error", error);
-        res.redirect("/pageNotFound");
+        next(error);
     }
-}
+};
 
 module.exports = {
     loadHomepage,
@@ -516,4 +503,4 @@ module.exports = {
     filterProduct,
     filterByPrice,
     searchProducts,
-}
+};
