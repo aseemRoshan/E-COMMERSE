@@ -2,8 +2,8 @@
 
 <div class="container mt-4">
    <h3 class="mt-3" style="color: #046963; margin-bottom:70px">Edit User Address</h3>
-   <form id="addressForm" method="POST" action="/editAddress?id=<%= address._id.toLocaleString() %>" class="border-0 p-3">
-      
+   <form id="addressForm" method="POST" action="/editAddress?id=<%= address._id.toLocaleString() %>&redirect=<%= redirect %>&userId=<%= user._id%>" class="border-0 p-3">
+
        <div class="row mb-50">
            <div class="form-group col-md-4">
                <label for="addressType">Address Type:</label>

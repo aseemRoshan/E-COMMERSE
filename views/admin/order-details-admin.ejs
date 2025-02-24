@@ -1,267 +1,869 @@
 <%- include("../../views/partials/admin/header") %>
-<main class="container mt-5">
-    <section class="content-main">
-        <div class="content-header mb-4">
-            <h2 class="content-title card-title">Order Details</h2>
-            <p class="lead">Details for Order ID: <%= orders._id %></p>
-        </div>
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row">
-                    <!-- Customer Information -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card border-primary h-100">
-                            <div class="card-body text-center">
-                                <i class="material-icons text-primary display-4">person</i>
-                                <h5 class="card-title mt-3">Customer</h5>
-                                <% if (orders.userId && orders.userId.email) { %>
-                                    <p class="card-text"><%= orders.userId.email %></p>
-                                <% } else { %>
-                                    <p class="card-text">Customer details not available</p>
-                                <% } %>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Order Information -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card border-primary h-100">
-                            <div class="card-body text-center">
-                                <i class="material-icons text-primary display-4">local_shipping</i>
-                                <h5 class="card-title mt-3">Order Info</h5>
-                                <p class="card-text">
-                                    Payment Method: <%= orders.paymentMethod || 'N/A' %> <br>
-                                    Status: <%= orders.status || 'N/A' %> <br>
-                                    Grand Total: ₹<%= (totalGrant || 0).toLocaleString() %> <br>
-                                    Paid Amount: ₹<%= (totalPrice || 0).toLocaleString() %> <br>
-                                    Discount: ₹<%= (discount || 0).toLocaleString() %> <br>
-                                    Final Amount: ₹<%= (finalAmount || 0).toLocaleString() %>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Delivery Information -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card border-primary h-100">
-                            <div class="card-body text-center">
-                                <i class="material-icons text-primary display-4">place</i>
-                                <h5 class="card-title mt-3">Deliver To</h5>
-                                <% if (orders.address) { %>
-                                    <p class="card-text">
-                                        Address: <%= orders.address.street || 'N/A' %>, <%= orders.address.city || 'N/A' %> <br>
-                                        <%= orders.address.state || 'N/A' %>, <%= orders.address.zipCode || 'N/A' %> <br>
-                                        <%= orders.address.country || 'N/A' %>
-                                    </p>
-                                    <% if (orders.status === "Delivered") { %>
-                                        <a href="/admin/downloadInvoice/<%= orders._id %>" class="btn btn-sm btn-primary">Download Invoice</a>
-                                    <% } %>
-                                <% } else { %>
-                                    <p class="card-text">Delivery address not available</p>
-                                <% } %>
-                            </div>
-                        </div>
-                    </div>
+<main class="dashboard-container">
+    <div class="order-details-wrapper">
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="header-content">
+                <h1 class="page-title">Order Details</h1>
+                <div class="order-id">ID: <%= orders._id %></div>
+            </div>
+            <% if (orders.status === "Delivered") { %>
+                <a href="/admin/downloadInvoice/<%= orders._id %>" class="btn-invoice">
+                    <i class="material-icons">download</i>
+                    Download Invoice
+                </a>
+            <% } %>
+        </header>
+
+        <!-- Order Summary Section -->
+        <section class="order-summary-grid">
+            <!-- Customer Information -->
+            <div class="summary-card">
+                <div class="card-icon">
+                    <i class="material-icons">account_circle</i>
                 </div>
-                <!-- Order Details Table -->
-                <div class="table-responsive mt-4">
-                    <table class="table table-bordered table-hover">
-                        <thead class="thead-dark">
-                            <tr class="text-center">
-                                <th width="30%">Product</th>
-                                <th width="20%">Name</th>
-                                <th width="10%">Unit Price</th>
-                                <th width="10%">Quantity</th>
-                                <th width="10%">Total</th>
-                                <th width="10%">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (orders.product && orders.product.length > 0) { %>
-                                <% orders.product.forEach((product) => { %>
-                                    <tr class="text-center">
-                                        <td>
-                                            <img src="/uploads/re-image/<%= product.image || 'default.jpg' %>" style="height: 7rem; width: 7rem;" class="img-fluid" alt="Item">
-                                        </td>
-                                        <td><%= product.name || 'N/A' %></td>
-                                        <td>₹<%= (product.price || 0).toLocaleString() %></td>
-                                        <td><%= product.quantity || 0 %></td>
-                                        <td>₹<%= ((parseInt(product.price) || 0) * (parseInt(product.quantity) || 0)).toLocaleString() %></td>
-                                        <td>
-                                            <% if (product.status === "Canceled") { %>
-                                                <span class="badge bg-danger">Canceled</span>
-                                            <% } else { %>
-                                                <select class="form-select" onchange="handleDropdownChange(this)" data-product-id="<%= product._id %>">
-                                                    <option value="" disabled selected><%= product.status %></option>
-                                                    <% if (product.status === "Pending") { %>
-                                                        <option value="approve">Approve</option>
-                                                        <option value="cancel">Cancel</option>
-                                                    <% } else if (product.status === "Approved") { %>
-                                                        <option value="ship">Ship</option>
-                                                        <option value="cancel">Cancel</option>
-                                                    <% } else if (product.status === "Shipped") { %>
-                                                        <option value="deliver">Deliver</option>
-                                                        <option value="return">Return</option>
-                                                    <% } %>
-                                                </select>
-                                            <% } %>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            <% } else { %>
-                                <tr>
-                                    <td colspan="6" class="text-center">No products found</td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
+                <div class="card-content">
+                    <h3 class="card-title">Customer</h3>
+                    <% if (orders.userId && orders.userId.email) { %>
+                        <p class="customer-name"><%= orders.userId.name || 'No Name' %></p>
+                        <p class="customer-email"><%= orders.userId.email %></p> 
+                    <% } else { %>
+                        <p class="no-data">Customer details not available</p>
+                    <% } %>
                 </div>
             </div>
-        </div>
-    </section>
-</main>
 
+            <!-- Order Status -->
+            <div class="summary-card">
+                <div class="card-icon">
+                    <i class="material-icons">receipt</i>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Status</h3>
+                    <span class="status-pill <%= orders.status?.toLowerCase() %>">
+                        <%= orders.status || 'N/A' %>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="summary-card">
+                <div class="card-icon">
+                    <i class="material-icons">payments</i>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Payment</h3>
+                    <p class="payment-method"><%= orders.payment || 'N/A' %></p>
+                </div>
+            </div>
+
+            <!-- Order Total -->
+            <div class="summary-card">
+                <div class="card-icon">
+                    <i class="material-icons">account_balance_wallet</i>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">Total</h3>
+                    <p class="order-total">₹<%= (finalAmount || 0).toLocaleString() %></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Order Details Section -->
+        <section class="order-details-panel">
+            <div class="panel-grid">
+                <!-- Financial Details -->
+                <div class="details-panel">
+                    <h3 class="panel-title">Financial Details</h3>
+                    <div class="panel-content">
+                        <div class="detail-row">
+                            <span class="detail-label">Grand Total:</span>
+                            <span class="detail-value">₹<%= (totalGrant || 0).toLocaleString() %></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Discount:</span>
+                            <span class="detail-value">₹<%= (discount || 0).toLocaleString() %></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Paid Amount:</span>
+                            <span class="detail-value">₹<%= (totalPrice || 0).toLocaleString() %></span>
+                        </div>
+                        <div class="detail-row highlight">
+                            <span class="detail-label">Final Amount:</span>
+                            <span class="detail-value">₹<%= (finalAmount || 0).toLocaleString() %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="details-panel">
+                    <h3 class="panel-title">Shipping Address</h3>
+                    <div class="panel-content">
+                        <% if (orders.address && orders.address.length > 0) { %>
+                            <% orders.address.forEach((addr) => { %>
+                                <address class="shipping-address">
+                                    <strong><%= addr.name %></strong><br>
+                                    <%= addr.landMark %>, <%= addr.city %><br>
+                                    <%= addr.state %>, <%= addr.pincode %><br>
+                                    Phone: <%= addr.phone %>
+                                </address>
+                            <% }) %>
+                        <% } else { %>
+                            <p class="no-data">Shipping address not available</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Order Items Section -->
+        <section class="order-items">
+            <h2 class="section-title">Order Items</h2>
+            
+            <div class="items-table-wrapper">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-product">Product</th>
+                            <th class="col-name">Name</th>
+                            <th class="col-price">Unit Price</th>
+                            <th class="col-qty">Qty</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-action">Status/Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (orders.product && orders.product.length > 0) { %>
+                            <% orders.product.forEach((product) => { %>
+                                <tr class="item-row <%= product.status?.toLowerCase() %>">
+                                    <td class="col-product">
+                                        <div class="product-image">
+                                            <img src="/uploads/re-image/<%= product.image || 'default.jpg' %>" alt="<%= product.name %>">
+                                        </div>
+                                    </td>
+                                    <td class="col-name">
+                                        <div class="product-name"><%= product.name || 'N/A' %></div>
+                                        <div class="product-id">ID: <%= product._id %></div>
+                                    </td>
+                                    <td class="col-price">₹<%= (product.price || 0).toLocaleString() %></td>
+                                    <td class="col-qty"><%= product.quantity || 0 %></td>
+                                    <td class="col-total">₹<%= ((parseInt(product.price) || 0) * (parseInt(product.quantity) || 0)).toLocaleString() %></td>
+                                    <td class="col-action">
+                                        <% if (product.status === "Canceled") { %>
+                                            <div class="status-chip canceled">Canceled</div>
+                                        <% } else { %>
+                                            <div class="status-action">
+                                                <div class="status-chip <%= product.status?.toLowerCase() %>"><%= product.status %></div>
+                                                <div class="action-dropdown">
+                                                    <select class="action-select" data-product-id="<%= product._id %>" onchange="handleDropdownChange(this)">
+                                                        <option value="" disabled selected>Update Status</option>
+                                                        <% if (product.status === "Pending") { %>
+                                                            <option value="approve">Approve</option>
+                                                            <option value="cancel">Cancel</option>
+                                                        <% } else if (product.status === "Approved") { %>
+                                                            <option value="ship">Ship</option>
+                                                            <option value="cancel">Cancel</option>
+                                                        <% } else if (product.status === "Shipped") { %>
+                                                            <option value="deliver">Deliver</option>
+                                                            <option value="return">Return</option>
+                                                        <% } %>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr class="empty-state">
+                                <td colspan="6">
+                                    <div class="empty-message">
+                                        <i class="material-icons">shopping_cart</i>
+                                        <p>No products found in this order</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
 <script>
 function handleDropdownChange(selectElement) {
-    var selectedValue = selectElement.value;
-    var orderId = document.getElementById("orderId").value;
-    var productId = selectElement.getAttribute('data-product-id');
+    const selectedValue = selectElement.value;
+    if (!selectedValue) return;
+    
+    const orderId = '<%= orderId %>';
+    const productId = selectElement.getAttribute('data-product-id');
+    const actionRow = selectElement.closest('.status-action');
+    const statusChip = actionRow.querySelector('.status-chip');
+    
+    // Save current status text
+    const currentStatus = statusChip.textContent;
+    
+    // Disable select during processing
+    selectElement.disabled = true;
+    
+    // Update status chip to show "Processing..."
+    statusChip.classList.add('processing');
+    statusChip.textContent = 'Processing...';
 
-    if (selectedValue === "approve") {
-        approveProduct(orderId, productId);
-    } else if (selectedValue === "cancel") {
-        confirmCancelProduct(orderId, productId);
-    } else if (selectedValue === "ship") {
-        shipProduct(orderId, productId);
-    } else if (selectedValue === "deliver") {
-        deliverProduct(orderId, productId);
-    } else if (selectedValue === "return") {
-        returnProduct(orderId, productId);
+    // Define action handlers
+    const actions = {
+        "approve": () => processAction('approveProduct', orderId, productId),
+        "cancel": () => confirmCancelProduct(orderId, productId),
+        "ship": () => processAction('shipProduct', orderId, productId),
+        "deliver": () => processAction('deliverProduct', orderId, productId),
+        "return": () => processAction('returnProduct', orderId, productId)
+    };
+
+    // Execute selected action
+    if (actions[selectedValue]) {
+        actions[selectedValue]();
+    } else {
+        // Reset UI if no valid action
+        resetActionUI(statusChip, currentStatus, selectElement);
     }
 }
 
 function confirmCancelProduct(orderId, productId) {
     Swal.fire({
-        title: 'Confirm Cancel Product',
-        text: 'Are you sure you want to cancel this product?',
+        title: 'Cancel Product',
+        text: 'This action cannot be undone. Are you sure?',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, cancel it!'
+        confirmButtonText: 'Yes, cancel it',
+        cancelButtonText: 'No, keep it',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        focusCancel: true
     }).then((result) => {
         if (result.isConfirmed) {
-            cancelProduct(orderId, productId);
+            processAction('cancelProduct', orderId, productId);
+        } else {
+            // Reset UI elements
+            const selectElement = document.querySelector(`select[data-product-id="${productId}"]`);
+            const statusChip = selectElement.closest('.status-action').querySelector('.status-chip');
+            resetActionUI(statusChip, statusChip.getAttribute('data-original-status') || statusChip.textContent, selectElement);
         }
     });
 }
 
-function cancelProduct(orderId, productId) {
+function processAction(actionType, orderId, productId) {
+    const endpoint = `/admin/${actionType}`;
+    
     $.ajax({
-        url: '/admin/cancelProduct',
+        url: endpoint,
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ orderId: orderId, productId: productId }),
-        success: (response) => {
-            if (response.result.modifiedCount === 1) {
-                window.location.reload();
+        data: JSON.stringify({ orderId, productId }),
+        beforeSend: function() {
+            // Show processing overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'processing-overlay';
+            overlay.innerHTML = `
+                <div class="loader"></div>
+                <p>Processing your request...</p>
+            `;
+            document.body.appendChild(overlay);
+        },
+        success: function(response) {
+            if (response.result && response.result.modifiedCount === 1) {
+                showSuccessMessage('Order status updated successfully');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showErrorMessage('No changes were made to the order');
+                resetAllActionUI();
             }
         },
-        error: (error) => {
-            alert(error);
+        error: function(xhr) {
+            let errorMsg = 'Failed to update status';
+            try {
+                const response = JSON.parse(xhr.responseText);
+                errorMsg = response.message || errorMsg;
+            } catch(e) {}
+            
+            showErrorMessage(errorMsg);
+            resetAllActionUI();
+        },
+        complete: function() {
+            // Remove processing overlay
+            const overlay = document.querySelector('.processing-overlay');
+            if (overlay) overlay.remove();
         }
     });
 }
 
-function approveProduct(orderId, productId) {
-    $.ajax({
-        url: '/admin/approveProduct',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ orderId: orderId, productId: productId }),
-        success: (response) => {
-            if (response.result.modifiedCount === 1) {
-                window.location.reload();
-            }
-        },
-        error: (error) => {
-            alert(error);
+function resetActionUI(statusChip, originalStatus, selectElement) {
+    statusChip.classList.remove('processing');
+    statusChip.textContent = originalStatus;
+    selectElement.disabled = false;
+    selectElement.selectedIndex = 0;
+}
+
+function resetAllActionUI() {
+    document.querySelectorAll('.status-chip').forEach(chip => {
+        if (chip.classList.contains('processing')) {
+            const originalStatus = chip.getAttribute('data-original-status') || 'Unknown';
+            chip.classList.remove('processing');
+            chip.textContent = originalStatus;
         }
+    });
+    
+    document.querySelectorAll('.action-select').forEach(select => {
+        select.disabled = false;
+        select.selectedIndex = 0;
     });
 }
 
-function shipProduct(orderId, productId) {
-    $.ajax({
-        url: '/admin/shipProduct',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ orderId: orderId, productId: productId }),
-        success: (response) => {
-            if (response.result.modifiedCount === 1) {
-                window.location.reload();
-            }
-        },
-        error: (error) => {
-            alert(error);
-        }
+function showSuccessMessage(message) {
+    Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: message,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
     });
 }
 
-function deliverProduct(orderId, productId) {
-    $.ajax({
-        url: '/admin/deliverProduct',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ orderId: orderId, productId: productId }),
-        success: (response) => {
-            if (response.result.modifiedCount === 1) {
-                window.location.reload();
-            }
-        },
-        error: (error) => {
-            alert(error);
-        }
+function showErrorMessage(message) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: message,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true
     });
 }
 
-function returnProduct(orderId, productId) {
-    $.ajax({
-        url: '/admin/returnProduct',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ orderId: orderId, productId: productId }),
-        success: (response) => {
-            if (response.result.modifiedCount === 1) {
-                window.location.reload();
-            }
-        },
-        error: (error) => {
-            alert(error);
-        }
+// Store original status values on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.status-chip').forEach(chip => {
+        chip.setAttribute('data-original-status', chip.textContent);
     });
-}
+});
 </script>
 
+<style>
+/* ===== BASE STYLES ===== */
+:root {
+    --primary-color: #4361ee;
+    --primary-light: #4895ef;
+    --primary-dark: #3a0ca3;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+    --info-color: #2196f3;
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --font-sans: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
 
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
+body {
+    font-family: var(--font-sans);
+    color: var(--gray-800);
+    line-height: 1.5;
+    background-color: #f5f7fa;
+}
 
+/* ===== LAYOUT ===== */
+.dashboard-container {
+    padding: 1.5rem;
+    max-width: 1280px;
+    margin: 0 auto;
+}
 
+.order-details-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
 
+/* ===== PAGE HEADER ===== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
 
+.header-content {
+    display: flex;
+    flex-direction: column;
+}
 
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
 
+.order-id {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    font-weight: 500;
+}
 
+.btn-invoice {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    text-decoration: none;
+    transition: var(--transition);
+}
 
+.btn-invoice:hover {
+    background-color: var(--primary-dark);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
 
+.btn-invoice i {
+    font-size: 1.25rem;
+}
 
+/* ===== ORDER SUMMARY GRID ===== */
+.order-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
 
+.summary-card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: var(--transition);
+}
 
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
 
+.card-icon {
+    width: 48px;
+    height: 48px;
+    background-color: rgba(67, 97, 238, 0.1);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
+.card-icon i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
 
+.card-content {
+    flex: 1;
+}
 
+.card-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 0.25rem;
+}
 
+.customer-email {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--gray-900);
+    word-break: break-all;
+}
 
+.status-pill {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
 
+.status-pill.pending {
+    background-color: #fff8e1;
+    color: #ff9800;
+}
+
+.status-pill.approved {
+    background-color: #e8f5e9;
+    color: #4caf50;
+}
+
+.status-pill.shipped {
+    background-color: #e3f2fd;
+    color: #2196f3;
+}
+
+.status-pill.delivered {
+    background-color: #e8f5e9;
+    color: #43a047;
+}
+
+.status-pill.canceled, 
+.status-pill.returned {
+    background-color: #ffebee;
+    color: #f44336;
+}
+
+.status-pill.processing {
+    background-color: #f5f5f5;
+    color: var(--gray-700);
+    animation: pulse 1.5s infinite;
+}
+
+.payment-method {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--gray-900);
+}
+
+.order-total {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+/* ===== ORDER DETAILS PANELS ===== */
+.panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.details-panel {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.panel-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    padding: 1rem;
+    background-color: var(--gray-100);
+    border-bottom: 1px solid var(--gray-300);
+}
+
+.panel-content {
+    padding: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed var(--gray-300);
+}
+
+.detail-row:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.detail-row.highlight {
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.detail-label {
+    color: var(--gray-700);
+}
+
+.detail-value {
+    font-weight: 500;
+}
+
+.shipping-address {
+    font-style: normal;
+    line-height: 1.6;
+}
+
+.no-data {
+    color: var(--gray-600);
+    font-style: italic;
+}
+
+/* ===== ORDER ITEMS TABLE ===== */
+.order-items {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    padding: 1rem;
+    background-color: var(--gray-100);
+    border-bottom: 1px solid var(--gray-300);
+}
+
+.items-table-wrapper {
+    overflow-x: auto;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.items-table th {
+    background-color: var(--gray-100);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--gray-700);
+    font-size: 0.875rem;
+}
+
+.items-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--gray-200);
+    vertical-align: middle;
+}
+
+.items-table tr:last-child td {
+    border-bottom: none;
+}
+
+.item-row:hover {
+    background-color: var(--gray-100);
+}
+
+.col-product {
+    width: 100px;
+}
+
+.product-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-name {
+    font-weight: 500;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.product-id {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+}
+
+.col-price, .col-qty, .col-total {
+    text-align: center;
+}
+
+.col-total {
+    font-weight: 600;
+}
+
+.status-action {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.status-chip {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.status-chip.pending {
+    background-color: #fff8e1;
+    color: #ff9800;
+}
+
+.status-chip.approved {
+    background-color: #e8f5e9;
+    color: #4caf50;
+}
+
+.status-chip.shipped {
+    background-color: #e3f2fd;
+    color: #2196f3;
+}
+
+.status-chip.delivered {
+    background-color: #e8f5e9;
+    color: #43a047;
+}
+
+.status-chip.canceled, 
+.status-chip.returned {
+    background-color: #ffebee;
+    color: #f44336;
+}
+
+.action-select {
+    width: 100%;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--gray-400);
+    border-radius: 4px;
+    background-color: white;
+    color: var(--gray-800);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.action-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+.empty-state td {
+    padding: 3rem 1rem;
+}
+
+.empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--gray-600);
+}
+
+.empty-message i {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+/* ===== PROCESSING OVERLAY ===== */
+.processing-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    z-index: 1000;
+    color: white;
+}
+
+.loader {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .order-summary-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+    }
+    
+    .panel-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .col-product {
+        width: 60px;
+    }
+    
+    .product-image {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .items-table th,
+    .items-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>
+
+<%- include("../../views/partials/admin/footer") %>

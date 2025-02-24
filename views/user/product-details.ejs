@@ -92,9 +92,10 @@
                                 <button class="qty-btn plus">+</button>
                             </div>
                             <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>')">Add to cart</button>
-                            <button class="wishlist-btn">
-                                <i class="fi-rs-heart"></i>
+                            <button class="wishlist-btn" onclick="addToWishlist('<%= product._id %>')">
+                                <i class="fas fa-heart"></i>
                             </button>
+                            
                         </div>
 
                         <!-- Product Meta Information -->
@@ -511,6 +512,39 @@ function addToCart(productId) {
         }
     });
 }
+
+function addToWishlist(productId) {
+        $.ajax({
+            url: '/addToWishlist',
+            method: "POST",
+            data: { productId: productId },
+            success: (response) => {
+                if (response.status) {
+                    Swal.fire({
+                        title: "Added to wishlist",
+                        text: "The product has been added to your wishlist",
+                        icon: "success",
+                        timer: 2000
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Already in wishlist",
+                        text: response.message,
+                        icon: "info",
+                        timer: 2000,
+                    });
+                }
+            },
+            error: (error) => {
+                Swal.fire({
+                    title: "Error",
+                    text: "There was an error adding the product to your wishlist",
+                    icon: "error",
+                    timer: 2000,
+                });
+            }
+        });
+    }
 
 </script>
 

@@ -365,7 +365,7 @@ const login = async (req, res, next) => {
         if (admin) {
             const passwordMatch = bcrypt.compare(password, admin.password);
             if (passwordMatch) {
-                req.session.admin = true;
+                req.session.admin = admin;
                 return res.redirect("/admin");
             } else {
                 return res.redirect("/login");

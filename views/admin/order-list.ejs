@@ -287,7 +287,7 @@
                         <th>Products</th>
                         <th>Total Amount</th>
                         <th>Status</th>
-                        <th>Address</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -335,7 +335,7 @@
                                     data-order-id="<%= order._id %>"
                                     data-user-id="<%= order.userId %>"
                                     onchange="updateStatus(this)"
-                                >    
+                                >
                                     <option value="Confirmed" <%= order.status === 'Confirmed' ? 'selected' : '' %>>Confirmed</option>
                                     <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
                                     <!-- <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option> -->
@@ -345,12 +345,10 @@
                                     <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
                                 </select>
                             </td>
-                            <td data-label="Address">
-                                <div class="address-info">
-                                    <div style="font-weight: 500; color: #1f2937;"><%= order.address[0]?.landMark || 'No Address' %></div>
-                                    <div style="font-size: 0.875rem; color: #6b7280;"><%= order.address[0]?.city || 'No City' %>, <%= order.address[0]?.state || 'No State' %></div>
-                                    <div style="font-size: 0.875rem; color: #6b7280;"><%= order.address[0]?.pincode || 'No Postal Code' %></div>
-                                </div>
+                            <td data-label="Actions">
+                                <a href="/admin/orderDetailsAdmin?id=<%= order._id %>" class="action-button">
+                                    View Details
+                                </a>
                             </td>
                         </tr>
                     <% }) %>

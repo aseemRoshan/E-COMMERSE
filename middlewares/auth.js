@@ -23,29 +23,32 @@ const userAuth = (req,res,next) =>{
 
 
 
-const adminAuth = (req,res,next) =>{
+const adminAuth =async (req,res,next) =>{
     
 
     console.log(req.user_id);
+    if(req.session.admin && req.session.admin._id){
+        await User.findById(req.session.admin._id)
+        .then(data=>{
+            if(data && data.isAdmin){
+                next();
+            }else{
+                res.redirect("/admin/login")
+            }
+        })
+        .catch(error=>{
+            console.log("Error in adminauth middleware",error);
+            res.status(500).send("Internal Server Error")
+            
+        })
+    }
     
     // const isUser = await User.findById(req.user_id)
     // if(isUser && isUser.isAdmin){
 
     // }
 
-    User.findOne({isAdmin:true})
-    .then(data=>{
-        if(data){
-            next();
-        }else{
-            res.redirect("/admin/login")
-        }
-    })
-    .catch(error=>{
-        console.log("Error in adminauth middleware",error);
-        res.status(500).send("Internal Server Error")
-        
-    })
+    
 }
 
 module.exports = {

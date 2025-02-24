@@ -73,13 +73,21 @@ const changeOrderStatus = async (req, res, next) => {
 const getOrderDetailsPageAdmin = async (req, res, next) => {
     try {
         const orderId = req.query.id;
-        const findOrder = await Order.findOne({ _id: orderId }).sort({
-            createdOn: 1,
-        });
+        console.log("Order ID:", orderId);
+
+        if (!orderId) {
+            throw new Error('Order ID is required');
+        }
+
+        const findOrder = await Order.findOne({ _id: orderId })
+            .populate('userId', 'email name') // Populate user details
+            .sort({ createdOn: 1 });
 
         if (!findOrder) {
             throw new Error('Order not found');
         }
+
+        console.log("Order Details:", JSON.stringify(findOrder, null, 2));
 
         // Calculate total grant if needed
         let totalGrant = 0;
@@ -89,23 +97,22 @@ const getOrderDetailsPageAdmin = async (req, res, next) => {
 
         const totalPrice = findOrder.totalPrice;
         const discount = totalGrant - totalPrice;
-        const finalAmount = totalPrice; // Assuming finalAmount is the same as totalPrice
-
-        // Add quantity to each product in findOrder
-        findOrder.product.forEach((product) => {
-            product.quantity = product.quantity || 1; // Set default quantity if not available
-        });
+        const finalAmount = totalPrice;
 
         res.render("order-details-admin", {
             orders: findOrder,
             orderId: orderId,
+            totalGrant: totalGrant,
+            totalPrice: totalPrice,
+            discount: discount,
             finalAmount: finalAmount,
         });
     } catch (error) {
-        console.error(error);
+        console.error("Error in getOrderDetailsPageAdmin:", error);
         next(error);
     }
 };
+
 
 const orderDetailsAdmin = async (req, res, next) => {
     try {
