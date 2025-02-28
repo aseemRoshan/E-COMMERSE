@@ -80,7 +80,7 @@ const getOrderDetailsPageAdmin = async (req, res, next) => {
         }
 
         const findOrder = await Order.findOne({ _id: orderId })
-            .populate('userId', 'email name') // Populate user details
+            .populate('userId', 'email name') 
             .sort({ createdOn: 1 });
 
         if (!findOrder) {
@@ -89,7 +89,7 @@ const getOrderDetailsPageAdmin = async (req, res, next) => {
 
         console.log("Order Details:", JSON.stringify(findOrder, null, 2));
 
-        // Calculate total grant if needed
+        
         let totalGrant = 0;
         findOrder.product.forEach((val) => {
             totalGrant += val.price * val.quantity;

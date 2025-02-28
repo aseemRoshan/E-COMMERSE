@@ -191,31 +191,62 @@ const postNewPassword  = async(req,res) =>{
     }
 }
 
-
-
 const userProfile = async (req, res) => {
-    try {
+  try {
       const userId = req.session.user;
       const userData = await User.findById(userId);
       const addressData = await Address.findOne({ userId: userId });
+
+      // Pagination parameters for orders
+      const ordersPage = parseInt(req.query.ordersPage) || 1;
+      const ordersLimit = 5; // Number of orders per page
+
+      // Fetch orders and sort them by createdOn in descending order
       const orders = await Order.find({ userId: userId }).sort({ createdOn: -1 });
-  
-      // Fetch wallet history
+      const totalOrders = orders.length;
+
+      // Paginate orders
+      const startIndexOrders = (ordersPage - 1) * ordersLimit;
+      const endIndexOrders = ordersPage * ordersLimit;
+      const paginatedOrders = orders.slice(startIndexOrders, endIndexOrders);
+
+      // Calculate total pages for orders
+      const totalOrdersPages = Math.ceil(totalOrders / ordersLimit);
+
+      // Pagination parameters for wallet history
+      const walletHistoryPage = parseInt(req.query.walletHistoryPage) || 1;
+      const walletHistoryLimit = 5; // Number of items per page
+
+      // Fetch wallet history and sort it by date in descending order
       const walletHistory = userData.history || [];
-  
+      walletHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      // Paginate wallet history
+      const startIndexWalletHistory = (walletHistoryPage - 1) * walletHistoryLimit;
+      const endIndexWalletHistory = walletHistoryPage * walletHistoryLimit;
+      const paginatedWalletHistory = walletHistory.slice(startIndexWalletHistory, endIndexWalletHistory);
+
+      // Calculate total pages for wallet history
+      const totalWalletHistoryPages = Math.ceil(walletHistory.length / walletHistoryLimit);
+
       console.log('orders', orders);
       res.render("profile", {
-        user: userData,
-        userAddress: addressData,
-        orders: orders,
-        walletHistory: walletHistory,
+          user: userData,
+          userAddress: addressData,
+          orders: paginatedOrders,
+          totalOrdersPages: totalOrdersPages,
+          currentOrdersPage: ordersPage,
+          walletHistory: paginatedWalletHistory,
+          totalWalletHistoryPages: totalWalletHistoryPages,
+          currentWalletHistoryPage: walletHistoryPage,
       });
-    } catch (error) {
+  } catch (error) {
       console.error("Error retrieving profile data", error);
       res.redirect("/pageNotFound");
-    }
-  };
-  
+  }
+};
+
+
   
 
 

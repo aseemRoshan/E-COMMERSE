@@ -25,47 +25,47 @@ const loadShopping = async (req, res, next) => {
         const limit = 12;
         const skip = (page - 1) * limit;
 
-        // Get the selected category and sort option from the query parameters
+        
         const selectedCategory = req.query.category;
         const sortQuery = req.query.sort;
 
-        // Build the query for products
+    
         let query = {
             isBlocked: false,
             quantity: { $gt: 0 }
         };
 
-        // Add category filter if a category is selected
+        
         if (selectedCategory) {
             query.category = selectedCategory;
         }
 
-        // Define the sort option based on the selected sort query
+
         let sortOption = {};
         switch (sortQuery) {
             case 'price-low':
-                sortOption = { salePrice: 1 }; // Sort by price low to high
+                sortOption = { salePrice: 1 }; 
                 break;
             case 'price-high':
-                sortOption = { salePrice: -1 }; // Sort by price high to low
+                sortOption = { salePrice: -1 }; 
                 break;
             case 'name-asc':
-                sortOption = { productName: 1 }; // Sort by name A to Z
+                sortOption = { productName: 1 }; 
                 break;
             case 'name-desc':
-                sortOption = { productName: -1 }; // Sort by name Z to A
+                sortOption = { productName: -1 }; 
                 break;
             case 'created-new':
-                sortOption = { createdOn: -1 }; // Sort by newest arrivals
+                sortOption = { createdOn: -1 };
                 break;
             case 'created-old':
-                sortOption = { createdOn: 1 }; // Sort by oldest arrivals
+                sortOption = { createdOn: 1 }; 
                 break;
             default:
-                sortOption = { createdOn: -1 }; // Default sorting
+                sortOption = { createdOn: -1 }; 
         }
 
-        // Fetch products based on the query and sort option
+        
         const products = await Product.find(query)
             .sort(sortOption)
             .skip(skip)
@@ -86,7 +86,7 @@ const loadShopping = async (req, res, next) => {
             currentPage: page,
             totalPages: totalPages,
             user: req.session.user || null,
-            selectedCategory: selectedCategory || null, // Pass the selected category to the view
+            selectedCategory: selectedCategory || null, 
         });
     } catch (error) {
         next(error);
@@ -325,6 +325,7 @@ const signup = async (req, res, next) => {
         req.session.userOtp = otp;
         req.session.userOtpExpires = otpExpires;
         req.session.userData = { name, phone, email, password, referalCode: generateReferralCode() };
+        
 
         console.log("OTP Sent:", otp);
         console.log("OTP Expires:", otpExpires);
@@ -333,11 +334,11 @@ const signup = async (req, res, next) => {
         if (referalCode) {
             const referringUser = await User.findOne({ referalCode });
             if (referringUser) {
-                referringUser.wallet += 100; // Referring user gets ₹100
+                referringUser.wallet += 100; 
                 referringUser.referralEarnings += 100;
-                referringUser.redeemedUsers.push(req.session.userData._id); // Use the new user's ID from session
+                referringUser.redeemedUsers.push(req.session.userData._id);
 
-                // Add wallet history for referring user
+                
                 referringUser.history.push({
                     amount: 100,
                     status: "credit",
@@ -347,7 +348,7 @@ const signup = async (req, res, next) => {
 
                 await referringUser.save();
 
-                req.session.userData.wallet = 50; // New user gets ₹50
+                req.session.userData.wallet = 50; 
             }
         }
 
@@ -388,7 +389,7 @@ const verifyOtp = async (req, res, next) => {
                 referalCode: user.referalCode,
             });
 
-            // Add wallet history for new user
+            
             if (user.wallet === 50) {
                 saveUserData.history.push({
                     amount: 50,
@@ -399,7 +400,7 @@ const verifyOtp = async (req, res, next) => {
             }
 
             await saveUserData.save();
-            req.session.user = saveUserData._id;
+            req.session.user = saveUserData;
             res.json({ success: true, redirectUrl: "/" });
         } else {
             res.status(400).json({ success: false, message: "Invalid or expired OTP, please try again" });

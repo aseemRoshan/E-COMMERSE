@@ -23,6 +23,11 @@ const orderSchema = new Schema({
           productStatus: { type: String, required: true },
           name: { type: String }, // Ensure this field exists
           image: { type: String }, // Ensure this field exists
+        //   status:{
+        //     type:String,
+        //     required:true,
+        //     enum : ["Pending","Processing","Shipped","Delivered","Cancelled","Return Request","Returned","Confirmed"]
+        // },
         },
       ],
         orderId:{
@@ -75,7 +80,7 @@ const orderSchema = new Schema({
         status:{
             type:String,
             required:true,
-            enum : ["Pending","Processing","Shipped","Delivered","Cancelled","Return Request","Returned","Confirmed"]
+            enum : ["Pending","Processing","Shipped","Delivered","Cancelled","Return Request","Returned","Confirmed","Payment Pending"]
         },
         createdOn:{
             type:Date,

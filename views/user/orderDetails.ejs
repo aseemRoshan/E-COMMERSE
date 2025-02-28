@@ -71,6 +71,14 @@
                     </article>
                 </div>
             </div>
+            <!-- Retry Payment Button -->
+            <% if (orders.status === "Pending" && orders.payment === "razorpay") { %>
+                <div class="row mb-4">
+                    <div class="col-md-12 text-center">
+                        <button class="btn btn-primary btn-sm" onclick="retryPayment('<%= orders._id %>', <%= finalAmount %>)">Retry Payment</button>
+                    </div>
+                </div>
+            <% } %>
             <!-- Order Details Table -->
             <div class="row">
                 <div class="col-lg">
@@ -91,26 +99,12 @@
                                     <% orders.product.forEach((product) => { %>
                                         <tr>
                                             <td class="text-center">
-                                                <a class="itemside" href="#">
-                                                    <div class="left">
-                                                        <img src="/uploads/re-image/<%= product.image || 'default.jpg' %>" style="height: 7rem; width: 7rem;" class="img-xs" alt="Item">
-                                                    </div>
-                                                </a>
+                                                <img src="/uploads/re-image/<%= product.image || 'default.jpg' %>" style="height: 7rem; width: 7rem;" class="img-xs" alt="Item">
                                             </td>
-                                            <td class="text-center">
-                                                <div class="info">
-                                                    <%= product.name || product.title || 'N/A' %>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                ₹<%= (product.price || 0).toLocaleString() %>
-                                            </td>
-                                            <td class="text-center">
-                                                <%= product.quantity || 0 %>
-                                            </td>
-                                            <td class="text-center">
-                                                ₹<%= ((parseInt(product.price) || 0) * (parseInt(product.quantity) || 0)).toLocaleString() %>
-                                            </td>
+                                            <td class="text-center"><%= product.name || product.title || 'N/A' %></td>
+                                            <td class="text-center">₹<%= (product.price || 0).toLocaleString() %></td>
+                                            <td class="text-center"><%= product.quantity || 0 %></td>
+                                            <td class="text-center">₹<%= ((parseInt(product.price) || 0) * (parseInt(product.quantity) || 0)).toLocaleString() %></td>
                                             <td class="text-center">
                                                 <% if (product.productStatus !== "Cancelled" && product.productStatus !== "Returned") { %>
                                                     <% if (orders.status === "Confirmed" || orders.status === "Pending" || orders.status === "Shipped") { %>
@@ -119,9 +113,7 @@
                                                         <button class="btn btn-warning btn-sm" onclick="showReturnModal('<%= orders._id %>', '<%= product._id %>')">Return Order</button>
                                                     <% } %>
                                                 <% } %>
-                                                
                                             </td>
-                                              
                                         </tr>
                                     <% }) %>
                                 <% } else { %>
@@ -216,77 +208,67 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-    function handleDropdownChange(selectElement) {
-        var selectedValue = selectElement.value;
-        var orderId = document.getElementById("orderId").value;
-
-        if (selectedValue === "cancel") {
-            showCancelModal(orderId);
-        } else if (selectedValue === "returnrequest") {
-            showReturnModal(orderId);
-        }
+    function showCancelModal(orderId, productId) {
+        $('#cancelOrderModal').modal('show');
+        $('#cancelOrderForm').off('submit').on('submit', function(event) {
+            event.preventDefault();
+            var reason = $('#cancelReason').val();
+            $.ajax({
+                url: '/cancelOrder',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ orderId: orderId, productId: productId, reason: reason }),
+                success: (response) => {
+                    if (response.success) {
+                        $('#cancelOrderModal').modal('hide');
+                        window.location.reload();
+                    } else {
+                        alert(response.message || "Failed to cancel the order. Please try again.");
+                    }
+                },
+                error: (error) => {
+                    console.error("Cancellation error:", error);
+                    alert("An error occurred while cancelling the order. Please try again.");
+                }
+            });
+        });
     }
 
-    function showCancelModal(orderId, productId) {
-    $('#cancelOrderModal').modal('show');
-    $('#cancelOrderForm').off('submit').on('submit', function(event) {
-        event.preventDefault();
-        var reason = $('#cancelReason').val();
-        $.ajax({
-            url: '/cancelOrder',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ orderId: orderId, productId: productId, reason: reason }),
-            success: (response) => {
-                if (response.success) {
-                    $('#cancelOrderModal').modal('hide');
-                    window.location.reload();
-                } else {
-                    alert(response.message || "Failed to cancel the order. Please try again.");
+    function showReturnModal(orderId, productId) {
+        $('#returnOrderModal').modal('show');
+        $('#returnOrderForm').off('submit').on('submit', function(event) {
+            event.preventDefault();
+            var reason = $('#returnReason').val();
+            $.ajax({
+                url: '/returnrequestOrder',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ orderId: orderId, productId: productId, reason: reason }),
+                success: (response) => {
+                    if (response.success) {
+                        $('#returnOrderModal').modal('hide');
+                        window.location.reload();
+                    } else {
+                        alert(response.message || "Failed to return the order. Please try again.");
+                    }
+                },
+                error: (error) => {
+                    console.error("Return error:", error);
+                    alert("An error occurred while returning the order. Please try again.");
                 }
-            },
-            error: (error) => {
-                console.error("Cancellation error:", error);
-                alert("An error occurred while cancelling the order. Please try again.");
-            }
+            });
         });
-    });
-}
+    }
 
-function showReturnModal(orderId, productId) {
-    $('#returnOrderModal').modal('show');
-    $('#returnOrderForm').off('submit').on('submit', function(event) {
-        event.preventDefault();
-        var reason = $('#returnReason').val();
-        $.ajax({
-            url: '/returnrequestOrder',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ orderId: orderId, productId: productId, reason: reason }),
-            success: (response) => {
-                if (response.success) {
-                    $('#returnOrderModal').modal('hide');
-                    window.location.reload();
-                } else {
-                    alert(response.message || "Failed to return the order. Please try again.");
-                }
-            },
-            error: (error) => {
-                console.error("Return error:", error);
-                alert("An error occurred while returning the order. Please try again.");
-            }
-        });
-    });
-}
     $(document).ready(function() {
         $('#reviewForm').on('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
+            event.preventDefault();
             var rating = $('#rating').val();
             var reviewText = $('#reviewText').val();
-            var productId = '<%= orders.product[0]._id %>'; // Assuming you want to add a review for the first product
+            var productId = '<%= orders.product[0]._id %>';
 
             $.ajax({
                 url: '/addReview',
@@ -301,7 +283,7 @@ function showReturnModal(orderId, productId) {
                             text: 'Your review and rating have been added successfully!',
                             confirmButtonText: 'OK'
                         }).then(() => {
-                            window.location.reload(); // Reload the page to reflect the changes
+                            window.location.reload();
                         });
                     } else {
                         Swal.fire({
@@ -313,7 +295,7 @@ function showReturnModal(orderId, productId) {
                     }
                 },
                 error: function(error) {
-                    console.error("Review error:", error); // Debugging log
+                    console.error("Review error:", error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
@@ -323,6 +305,150 @@ function showReturnModal(orderId, productId) {
                 }
             });
         });
+    });
+
+    function retryPayment(orderId, amount) {
+        $.ajax({
+            url: '/generateRazorpayOrder',
+            method: 'POST',
+            data: {
+                orderId: orderId,
+                amount: amount
+            },
+            success: function(response) {
+                if (response.success) {
+                    var options = {
+                        "key": "rzp_test_hb0Gpt9IOIzC17",
+                        "amount": Math.round(amount * 100),
+                        "currency": "INR",
+                        "name": "Trend Setter",
+                        "description": "Retry Payment",
+                        "image": "https://firebasestorage.googleapis.com/v0/b/ecommerce-397a7.appspot.com/o/logo.jpg?alt=media&token=07b6be19-1ce8-4797-a3a0-f0eaeaafedad",
+                        "order_id": response.razorPayOrder.id,
+                        "handler": function (status) {
+                            verifyPayment(response.razorPayOrder, status, orderId);
+                        },
+                        "modal": {
+                            "ondismiss": function() {
+                                Swal.fire({
+                                    title: "Payment Failed",
+                                    text: "You closed the payment window before completing the payment. Would you like to retry?",
+                                    icon: "error",
+                                    showCancelButton: true,
+                                    confirmButtonText: "Retry Payment",
+                                    cancelButtonText: "Go to Home",
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        retryPayment(orderId, amount);
+                                    } else {
+                                        window.location.href = '/';
+                                    }
+                                });
+                            }
+                        },
+                        "prefill": {
+                            "name": "Customer Name",
+                            "email": "customer@example.com",
+                            "contact": "9961618585"
+                        },
+                        "theme": {
+                            "color": "#3399cc"
+                        }
+                    };
+                    var rzp1 = new Razorpay(options);
+                    rzp1.open();
+                } else {
+                    Swal.fire({
+                        title: "Error",
+                        text: "Failed to generate payment order",
+                        icon: "error"
+                    });
+                }
+            },
+            error: function(error) {
+                Swal.fire({
+                    title: "Error",
+                    text: "An error occurred while processing your request",
+                    icon: "error"
+                });
+            }
+        });
+    }
+
+    function verifyPayment(order, payment, orderId) {
+        $.ajax({
+            url: '/verifyPayment',
+            method: 'post',
+            data: {
+                order,
+                payment
+            },
+            success: (response) => {
+                if (response.status) {
+                    $.ajax({
+                        url: '/paymentConfirm',
+                        method: 'post',
+                        data: {
+                            orderId: orderId
+                        },
+                        success: (response) => {
+                            if (response.status) {
+                                Swal.fire({
+                                    title: "Payment Successful",
+                                    text: "Payment completed successfully",
+                                    icon: "success",
+                                    confirmButtonText: "OK"
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Payment Failed",
+                        text: "Payment verification failed",
+                        icon: "error"
+                    });
+                }
+            }
+        });
+    }
+
+    // Handle tab closure for pending Razorpay orders
+    let paymentPendingPromptShown = false;
+
+    window.addEventListener('beforeunload', function (e) {
+        const orderStatus = '<%= orders.status %>';
+        const paymentMethod = '<%= orders.payment %>';
+        const orderId = '<%= orders._id %>';
+        const finalAmount = <%= finalAmount %>;
+
+        if (orderStatus === 'Pending' && paymentMethod === 'razorpay' && !paymentPendingPromptShown) {
+            e.preventDefault();
+            e.returnValue = 'You have a pending payment. Are you sure you want to leave?';
+
+            // Show Swal popup (note: this might not block due to browser restrictions)
+            setTimeout(() => {
+                Swal.fire({
+                    title: "Payment Incomplete",
+                    text: "You haven't completed the payment for this order. Would you like to retry?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Retry Payment",
+                    cancelButtonText: "Go to Home",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                }).then((result) => {
+                    paymentPendingPromptShown = true; // Prevent multiple prompts
+                    if (result.isConfirmed) {
+                        retryPayment(orderId, finalAmount);
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        window.location.href = '/';
+                    }
+                });
+            }, 100); // Small delay to ensure Swal renders
+        }
     });
 </script>
 
@@ -399,27 +525,16 @@ function showReturnModal(orderId, productId) {
         </div>
         <div class="border-top copyright">
             <div class="row pt-4">
-                <!-- <div class="col-lg-6">
-                    <p class="mb-2 text-center text-lg-start">Copyright &copy;<script>document.write(new Date().getFullYear());</script>. All Rights Reserved. &mdash; Designed with love by <a href="https://untree.co">Untree.co</a> Distributed By <a hreff="https://themewagon.com">ThemeWagon</a>  <!-- License information: https://untree.co/license/ -->
-    <!-- </p>
-                </div> -->
-                <!-- <div class="col-lg-6 text-center text-lg-end">
-                    <ul class="list-unstyled d-inline-flex ms-auto">
-                        <li class="me-4"><a href="#">Terms &amp; Conditions</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div> -->
+                <!-- Footer content remains unchanged -->
             </div>
         </div>
     </div>
 </footer>
-<!-- End Footer Section -->
 
 <script src="/furni-1.0.0/js/bootstrap.bundle.min.js"></script>
 <script src="/furni-1.0.0/js/tiny-slider.js"></script>
 <script src="/furni-1.0.0/js/custom.js"></script>
-<!--Additional links-->
-
+<!-- Additional links -->
 <script src="js/jquery-3.3.1.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/jquery.nice-select.min.js"></script>
@@ -456,5 +571,4 @@ function showReturnModal(orderId, productId) {
 <script src="./user-assets/js/shopd134.js?v=3.4"></script>
 
 </body>
-
 </html>

@@ -214,7 +214,9 @@
                 <td>
                   <div class="action-buttons">
                  <a href="/admin/editCoupon?id=<%=coupons[i]._id%>">  <button  class="btn btn-edit">Edit</button> </a> 
-                  <a href="" onclick="confirmDelete('<%=coupons[i]._id%>')">  <button class="btn btn-delete">Delete</button> </a>
+                 <a href="" onclick="confirmDelete('<%=coupons[i]._id%>', event)">
+                  <button class="btn btn-delete">Delete</button>
+              </a>
                   </div>
                 </td>
               </tr>
@@ -283,45 +285,46 @@
     return true;
   }
 
-  function confirmDelete(couponId) {
+  function confirmDelete(couponId, event) {
+    event.preventDefault(); // Prevent the default anchor behavior
     Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!",
     }).then((result) => {
-      if (result.isConfirmed) {
-        deleteCoupon(couponId);
-      }
+        if (result.isConfirmed) {
+            deleteCoupon(couponId);
+        }
     });
-  }
+}
 
-  function deleteCoupon(couponId) {
+function deleteCoupon(couponId) {
     $.ajax({
-      url: `/admin/deletecoupon?id=${couponId}`,
-      method: "GET",
-      success: function () {
-        Swal.fire({
-          icon: "success",
-          title: "Deleted!",
-          text: "The coupon has been deleted.",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.reload();
-        });
-      },
-      error: function () {
-        Swal.fire({
-          icon: "error",
-          title: "Error!",
-          text: "Failed to delete the coupon. Please try again.",
-        });
-      },
+        url: `/admin/deletecoupon?id=${couponId}`,
+        method: "GET",
+        success: function () {
+            Swal.fire({
+                icon: "success",
+                title: "Deleted!",
+                text: "The coupon has been deleted.",
+                confirmButtonText: "OK",
+            }).then(() => {
+                window.location.reload(); // Reload the page after successful deletion
+            });
+        },
+        error: function () {
+            Swal.fire({
+                icon: "error",
+                title: "Error!",
+                text: "Failed to delete the coupon. Please try again.",
+            });
+        },
     });
-  }
+}
 
   function setDefaultStartDate() {
     const today = new Date();

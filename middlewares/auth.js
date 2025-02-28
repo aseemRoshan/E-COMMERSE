@@ -41,12 +41,9 @@ const adminAuth =async (req,res,next) =>{
             res.status(500).send("Internal Server Error")
             
         })
+    }else{
+        res.redirect("/admin/login")
     }
-    
-    // const isUser = await User.findById(req.user_id)
-    // if(isUser && isUser.isAdmin){
-
-    // }
 
     
 }

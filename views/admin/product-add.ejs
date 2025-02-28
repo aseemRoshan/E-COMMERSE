@@ -316,8 +316,8 @@ function handleFileSelect(event) {
         const img = document.createElement("img");
         img.src = URL.createObjectURL(file);
         img.alt = "thumbnail";
-        img.style.width = "150px";
-        img.style.height = "150px";
+        img.style.width = "100%";
+        img.style.height = "auto";
         img.style.objectFit = "cover";
         const removeIcon = document.createElement("span");
         removeIcon.classList.add("remove-icon");

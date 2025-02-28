@@ -109,6 +109,14 @@
  .breadcrumb a:hover::after {
    transform: scaleX(1);
  }
+
+ .credit {
+   color: green;
+ }
+
+ .debit {
+   color: red;
+ }
 </style>
 
 <main class="main">
@@ -272,6 +280,14 @@
                          </tbody>
                        </table>
                      </div>
+                     <div class="pagination">
+                       <% if (currentOrdersPage > 1) { %>
+                         <a href="?ordersPage=<%= currentOrdersPage - 1 %>&limit=5#orders" class="btn btn-primary">Previous</a>
+                       <% } %>
+                       <% if (currentOrdersPage < totalOrdersPages) { %>
+                         <a href="?ordersPage=<%= currentOrdersPage + 1 %>&limit=5#orders" style="margin-left: 7px;" class="btn btn-primary">Next</a>
+                       <% } %>
+                     </div>
                    </div>
                  </div>
                </div>
@@ -319,7 +335,9 @@
                                <tr>
                                  <td><%= new Date(transaction.date).toLocaleString() %></td>
                                  <td><%= transaction.status %></td>
-                                 <td>₹<%= transaction.amount %></td>
+                                 <td class="<%= transaction.status === 'credit' ? 'credit' : 'debit' %>">
+                                   <%= transaction.status === 'credit' ? '+' : '-' %> ₹<%= transaction.amount %>
+                                 </td>
                                  <td><%= transaction.description %></td>
                                </tr>
                              <% }) %>
@@ -330,6 +348,14 @@
                            <% } %>
                          </tbody>
                        </table>
+                     </div>
+                     <div class="pagination">
+                       <% if (currentWalletHistoryPage > 1) { %>
+                         <a href="?walletHistoryPage=<%= currentWalletHistoryPage - 1 %>&limit=5#wallet-history" class="btn btn-primary">Previous</a>
+                       <% } %>
+                       <% if (currentWalletHistoryPage < totalWalletHistoryPages) { %>
+                         <a href="?walletHistoryPage=<%= currentWalletHistoryPage + 1 %>&limit=5#wallet-history" style="margin-left: 7px;" class="btn btn-primary">Next</a>
+                       <% } %>
                      </div>
                    </div>
                  </div>
@@ -347,7 +373,7 @@
                     </div>
                 </div>
             </div>
-            
+
              </div>
            </div>
          </div>
@@ -357,3 +383,16 @@
  </section>
 </main>
 <%- include("../../views/partials/user/footer") %>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.location.hash === "#wallet-history") {
+            document.querySelector("#wallet-history").scrollIntoView({ behavior: "smooth" });
+            document.querySelector('#wallet-history-tab').click();
+        }
+        if (window.location.hash === "#orders") {
+            document.querySelector("#orders").scrollIntoView({ behavior: "smooth" });
+            document.querySelector('#orders-tab').click();
+        }
+    });
+</script>

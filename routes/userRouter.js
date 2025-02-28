@@ -28,13 +28,14 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
             return res.redirect('/signup');
         }
 
-        // Check if the user already has a referral code
+
+        
         if (!user.referalCode) {
             user.referalCode = generateReferralCode();
             await user.save();
         }
 
-        req.session.user = user._id;
+        req.session.user = user;
         res.locals.user = req.session.user;
         console.log("User logged in:", user);
         res.redirect('/');
@@ -111,7 +112,7 @@ router.post("/singleProductId", userAuth, orderController.changeSingleProductSta
 router.post('/paymentConfirm', userAuth, orderController.paymentConfirm);
 router.get("/downloadInvoice/:orderId", userAuth, orderController.downloadInvoice);
 router.post("/addReview", userAuth, orderController.addReview);
-
+router.post("/generateRazorpayOrder", userAuth, orderController.generateRazorpayOrder);
 // WalletController
 router.post("/addMoney", userAuth, walletController.addMoneyToWallet);
 router.post("/verify-payment", userAuth, walletController.verify_payment);

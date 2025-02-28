@@ -259,7 +259,6 @@
 
     const sum = document.getElementById("totalValue").textContent;
     const numericValue = parseInt(sum.replace(/[^\d.]/g, ''));
-    console.log(numericValue);
 
     if (!payment) {
       Swal.fire({
@@ -275,10 +274,10 @@
         icon: 'error',
         timer: 3000,
       });
-    } else if (payment === "cod" && numericValue > 100000) {
+    } else if (payment === "cod" && numericValue > 1000) {
       Swal.fire({
         title: 'COD Not Allowed!',
-        text: 'Orders above ₹100000 are not allowed for Cash on Delivery (COD).',
+        text: 'Orders above ₹1000 are not allowed for Cash on Delivery (COD).',
         icon: 'error',
         timer: 3000,
       });
@@ -351,16 +350,107 @@
               }
             } else if (response.method === "razorpay") {
               let orderAmount = Math.round(numericValue * 100);
-              var options = {
+              let razorpayInstance;
+
+              const options = {
                 "key": "rzp_test_hb0Gpt9IOIzC17",
                 "amount": orderAmount,
                 "currency": "INR",
-                "name": "Trend Setter",
+                "name": "Furni",
                 "description": "Test Transaction",
-                "image": "https://firebasestorage.googleapis.com/v0/b/ecommerce-397a7.appspot.com/o/logo.jpg?alt=media&token=07b6be19-1ce8-4797-a3a0-f0eaeaafedad",
+                "image": "https://res.cloudinary.com/dn20pprrf/image/upload/v1740568840/jtbzbwaonl0vsppodtr0.png",
                 "order_id": response.razorPayOrder.id,
-                "handler": function (status) {
-                  verifyPayment(response.razorPayOrder, status, response.order._id);
+                "handler": function (paymentResponse) {
+                  $.ajax({
+                    url: '/verifyPayment',
+                    method: 'post',
+                    data: {
+                      order: response.razorPayOrder,
+                      payment: paymentResponse
+                    },
+                    success: (verifyResponse) => {
+                      if (verifyResponse.status) {
+                        razorpayInstance.paymentSuccess = true;
+                        $.ajax({
+                          url: '/paymentConfirm',
+                          method: 'post',
+                          data: { orderId: orderId },
+                          success: (confirmResponse) => {
+                            if (confirmResponse.status) {
+                              Swal.fire({
+                                title: "Order success",
+                                text: "Order placed successfully",
+                                icon: "success",
+                                showCancelButton: true,
+                                confirmButtonText: "View orders",
+                                cancelButtonText: "Continue shopping",
+                                reverseButtons: true
+                              }).then((result) => {
+                                if (result.value) {
+                                  location.href = `/orderDetails?id=${orderId}`;
+                                } else {
+                                  location.href = '/';
+                                }
+                              });
+                            }
+                          }
+                        });
+                      } else {
+                        razorpayInstance.close();
+                        Swal.fire({
+                          title: "Payment Failed",
+                          text: "Payment was declined by the bank. Would you like to retry?",
+                          icon: "error",
+                          showCancelButton: true,
+                          confirmButtonText: "Retry Payment",
+                          cancelButtonText: "Go to Home",
+                        }).then((result) => {
+                          if (result.isConfirmed) {
+                            openRazorpay(options);
+                          } else {
+                            location.href = '/';
+                          }
+                        });
+                      }
+                    },
+                    error: (error) => {
+                      razorpayInstance.close();
+                      Swal.fire({
+                        title: "Payment Failed",
+                        text: "An error occurred during payment verification. Would you like to retry?",
+                        icon: "error",
+                        showCancelButton: true,
+                        confirmButtonText: "Retry Payment",
+                        cancelButtonText: "Go to Home",
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          openRazorpay(options);
+                        } else {
+                          location.href = '/';
+                        }
+                      });
+                    }
+                  });
+                },
+                "modal": {
+                  "ondismiss": function() {
+                    if (!razorpayInstance.paymentSuccess) {
+                      Swal.fire({
+                        title: "Payment Failed",
+                        text: "You closed the payment window before completing the payment. Would you like to retry?",
+                        icon: "error",
+                        showCancelButton: true,
+                        confirmButtonText: "Retry Payment",
+                        cancelButtonText: "Go to Home",
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          openRazorpay(options);
+                        } else {
+                          location.href = '/';
+                        }
+                      });
+                    }
+                  }
                 },
                 "prefill": {
                   "name": "Customer Name",
@@ -371,8 +461,14 @@
                   "color": "#3399cc"
                 }
               };
-              var rzp1 = new Razorpay(options);
-              rzp1.open();
+
+              function openRazorpay(options) {
+                razorpayInstance = new Razorpay(options);
+                razorpayInstance.paymentSuccess = false;
+                razorpayInstance.open();
+              }
+
+              openRazorpay(options);
             } else {
               Swal.fire({
                 title: 'Error Occurred',
@@ -395,94 +491,6 @@
     }
   }
 
-  function verifyPayment(order, payment, orderId) {
-    $.ajax({
-      url: '/verifyPayment',
-      method: 'post',
-      data: {
-        order,
-        payment
-      },
-      success: (response) => {
-        if (response.status) {
-          $.ajax({
-            url: '/paymentConfirm',
-            method: 'post',
-            data: {
-              orderId: orderId
-            },
-            success: (response) => {
-              if (response.status) {
-                Swal.fire({
-                  title: "Order success",
-                  text: "Order placed successfully",
-                  icon: "success",
-                  showCancelButton: true,
-                  confirmButtonText: "View orders",
-                  cancelButtonText: "Continue shopping",
-                  reverseButtons: true
-                }).then(function (result) {
-                  if (result.value) {
-                    location.href = `/orderDetails?id=${orderId}`;
-                  } else if (result.dismiss === "cancel") {
-                    location.href = '/';
-                  }
-                });
-              } else {
-                Swal.fire({
-                  title: "Error",
-                  text: "Failed to confirm the order",
-                  icon: "error",
-                  showConfirmButton: true,
-                }).then(function (result) {
-                  if (result.value) {
-                    location.href = '/';
-                  }
-                });
-              }
-            },
-            error: (error) => {
-              console.error("Error confirming payment:", error);
-              Swal.fire({
-                title: "Error",
-                text: "Failed to confirm the order",
-                icon: "error",
-                showConfirmButton: true,
-              }).then(function (result) {
-                if (result.value) {
-                  location.href = '/';
-                }
-              });
-            }
-          });
-        } else {
-          Swal.fire({
-            title: "Payment Verification Failed",
-            text: "Payment verification failed",
-            icon: "error",
-            showConfirmButton: true,
-          }).then(function (result) {
-            if (result.value) {
-              location.href = '/';
-            }
-          });
-        }
-      },
-      error: (error) => {
-        console.error("Error verifying payment:", error);
-        Swal.fire({
-          title: "Error",
-          text: "Failed to verify the payment",
-          icon: "error",
-          showConfirmButton: true,
-        }).then(function (result) {
-          if (result.value) {
-            location.href = '/';
-          }
-        });
-      }
-    });
-  }
 
   function showCouponDetails(couponName) {
     Swal.fire({
@@ -501,12 +509,9 @@
     var tempInput = document.createElement('input');
     document.body.appendChild(tempInput);
     tempInput.value = text;
-
     tempInput.select();
     document.execCommand('copy');
-
     document.body.removeChild(tempInput);
-
     Swal.fire({
       title: 'Copied!',
       text: 'Coupon name has been copied to the clipboard.',
@@ -582,5 +587,4 @@
     });
   }
 </script>
-
 <%- include("../../views/partials/user/footer") %>
