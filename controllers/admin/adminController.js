@@ -378,39 +378,21 @@ const loadDashboard = async (req, res, next) => {
                 { $group: { _id: null, total: { $sum: "$finalAmount" } } }
             ]);
 
-            // Daily sales data
             const dailySales = await Order.aggregate([
                 { $match: { createdOn: { $gte: start, $lt: end } } },
-                {
-                    $group: {
-                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdOn" } },
-                        total: { $sum: "$finalAmount" }
-                    }
-                },
+                { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdOn" } }, total: { $sum: "$finalAmount" } } },
                 { $sort: { "_id": 1 } }
             ]);
 
-            // Daily orders count
             const dailyOrders = await Order.aggregate([
                 { $match: { createdOn: { $gte: start, $lt: end } } },
-                {
-                    $group: {
-                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdOn" } },
-                        count: { $sum: 1 }
-                    }
-                },
+                { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdOn" } }, count: { $sum: 1 } } },
                 { $sort: { "_id": 1 } }
             ]);
 
-            // Daily discounts
             const dailyDiscounts = await Order.aggregate([
                 { $match: { createdOn: { $gte: start, $lt: end } } },
-                {
-                    $group: {
-                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdOn" } },
-                        total: { $sum: "$discount" }
-                    }
-                },
+                { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdOn" } }, total: { $sum: "$discount" } } },
                 { $sort: { "_id": 1 } }
             ]);
 
@@ -424,6 +406,67 @@ const loadDashboard = async (req, res, next) => {
             const totalDiscount = await Order.aggregate([
                 { $match: { createdOn: { $gte: start, $lt: end } } },
                 { $group: { _id: null, total: { $sum: "$discount" } } }
+            ]);
+
+            const topProducts = await Order.aggregate([
+                { $match: { createdOn: { $gte: start, $lt: end } } },
+                { $unwind: "$product" },
+                {
+                    $group: {
+                        _id: "$product.productId",
+                        totalSold: { $sum: "$product.quantity" },
+                        totalRevenue: { $sum: { $multiply: ["$product.quantity", "$product.price"] } }
+                    }
+                },
+                { $lookup: { from: "products", localField: "_id", foreignField: "_id", as: "productDetails" } },
+                { $unwind: "$productDetails" },
+                { $sort: { totalSold: -1 } },
+                { $limit: 10 },
+                {
+                    $project: {
+                        name: "$productDetails.productName", // Changed from "name" to "productName"
+                        brand: "$productDetails.brand",
+                        totalSold: 1,
+                        totalRevenue: 1
+                    }
+                }
+            ]);
+            console.log("Top Products:", topProducts);
+
+            const topCategories = await Order.aggregate([
+                { $match: { createdOn: { $gte: start, $lt: end } } },
+                { $unwind: "$product" },
+                { $lookup: { from: "products", localField: "product.productId", foreignField: "_id", as: "productDetails" } },
+                { $unwind: "$productDetails" },
+                {
+                    $group: {
+                        _id: "$productDetails.category",
+                        totalSold: { $sum: "$product.quantity" },
+                        totalRevenue: { $sum: { $multiply: ["$product.quantity", "$product.price"] } }
+                    }
+                },
+                { $lookup: { from: "categories", localField: "_id", foreignField: "_id", as: "categoryDetails" } },
+                { $unwind: "$categoryDetails" },
+                { $sort: { totalSold: -1 } },
+                { $limit: 10 },
+                { $project: { name: "$categoryDetails.name", totalSold: 1, totalRevenue: 1 } }
+            ]);
+
+            const topBrands = await Order.aggregate([
+                { $match: { createdOn: { $gte: start, $lt: end } } },
+                { $unwind: "$product" },
+                { $lookup: { from: "products", localField: "product.productId", foreignField: "_id", as: "productDetails" } },
+                { $unwind: "$productDetails" },
+                {
+                    $group: {
+                        _id: "$productDetails.brand",
+                        totalSold: { $sum: "$product.quantity" },
+                        totalRevenue: { $sum: { $multiply: ["$product.quantity", "$product.price"] } }
+                    }
+                },
+                { $sort: { totalSold: -1 } },
+                { $limit: 10 },
+                { $project: { name: "$_id", totalSold: 1, totalRevenue: 1 } }
             ]);
 
             res.render("dashboard", {
@@ -440,7 +483,10 @@ const loadDashboard = async (req, res, next) => {
                 endDate,
                 dailySales: JSON.stringify(dailySales),
                 dailyOrders: JSON.stringify(dailyOrders),
-                dailyDiscounts: JSON.stringify(dailyDiscounts)
+                dailyDiscounts: JSON.stringify(dailyDiscounts),
+                topProducts: JSON.stringify(topProducts),
+                topCategories: JSON.stringify(topCategories),
+                topBrands: JSON.stringify(topBrands)
             });
         } catch (error) {
             console.log("Dashboard error", error);
@@ -450,7 +496,6 @@ const loadDashboard = async (req, res, next) => {
         res.redirect("/admin/login");
     }
 };
-
 const logout = async (req, res, next) => {
     try {
         req.session.destroy(err => {

@@ -20,13 +20,14 @@
                 <!-- Left Column - Product Images -->
                 <div class="col-md-6">
                     <div class="product-gallery">
-                        <!-- Main Image with Zoom -->
+                        <!-- Main Image with Dynamic Zoom -->
                         <div class="main-image-container">
-                            <img src="/uploads/re-image/<%= product.productImage[0] %>"
-                                 alt="<%= product.productName %>"
-                                 class="main-image"
-                                 id="zoomImage"
-                                 data-zoom-image="/uploads/re-image/<%= product.productImage[0] %>">
+                            <div class="zoom-wrapper">
+                                <img src="/uploads/re-image/<%= product.productImage[0] %>"
+                                     alt="<%= product.productName %>"
+                                     class="main-image"
+                                     id="mainImage">
+                            </div>
                         </div>
 
                         <!-- Thumbnail Images -->
@@ -40,18 +41,15 @@
                     </div>
                 </div>
 
-                
                 <div class="col-md-6">
                     <div class="product-details">
-                        
                         <h1 class="product-title"><%= product.productName %></h1>
 
-                        
                         <div class="product-meta">
                             <div class="brand">
                                 Brands: <a href="#"><%= product.brand %></a>
                             </div>
-                            <div class="reviews" >
+                            <div class="reviews">
                                 <div class="stars">
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
@@ -63,7 +61,6 @@
                             </div>
                         </div>
 
-                        <!-- Price -->
                         <div class="product-price">
                             <span class="current-price">₹<%= product.salePrice %></span>
                             <span class="original-price">₹<%= product.regularPrice %></span>
@@ -72,19 +69,16 @@
                             <% } %>
                         </div>
 
-                        <!-- Description -->
                         <p class="product-description">
                             <%= product.description %>
                         </p>
 
-                        <!-- Features -->
                         <ul class="product-features">
                             <li><i class="fi-rs-crown"></i> 1 Year Brand Warranty</li>
                             <li><i class="fi-rs-refresh"></i> 30 Day Return Policy</li>
                             <li><i class="fi-rs-credit-card"></i> Cash on Delivery available</li>
                         </ul>
 
-                        <!-- Add to Cart Section -->
                         <div class="add-to-cart-section">
                             <div class="quantity-selector">
                                 <button class="qty-btn minus">-</button>
@@ -95,10 +89,8 @@
                             <button class="wishlist-btn" onclick="addToWishlist('<%= product._id %>')">
                                 <i class="fas fa-heart"></i>
                             </button>
-                            
                         </div>
 
-                        <!-- Product Meta Information -->
                         <div class="product-meta-info">
                             <div>Stock Code: <span>FWM15VKT</span></div>
                             <div>Tags: <a href="#"><%= category.name %></a></div>
@@ -110,7 +102,6 @@
         </div>
     </section>
 
-    <!-- Related Products Section -->
     <% if (relatedProducts && relatedProducts.length > 0) { %>
         <section class="related-products-section">
             <div class="container">
@@ -146,7 +137,6 @@
 </main>
 
 <style>
-
 .main {
     padding-top: 20px;
 }
@@ -170,7 +160,6 @@
     color: #999;
 }
 
-
 .product-section {
     padding: 40px 0;
 }
@@ -185,13 +174,28 @@
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 20px;
+    width: 100%;
+    padding-top: 100%; /* Default 1:1 aspect ratio, adjusted by JS */
 }
 
+.zoom-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
 
 .main-image {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: auto;
-    display: block;
+    height: 100%;
+    object-fit: contain; /* Ensures full image is visible without cropping */
+    transform-origin: center center;
+    transition: transform 0.1s ease;
 }
 
 .thumbnail-container {
@@ -216,7 +220,6 @@
     height: 100%;
     object-fit: cover;
 }
-
 
 .product-title {
     font-size: 24px;
@@ -255,7 +258,6 @@
     color: #dc3545;
     margin-left: 15px;
 }
-
 
 .product-features {
     list-style: none;
@@ -320,7 +322,6 @@
     cursor: pointer;
 }
 
-
 .related-products-section {
     padding: 60px 0;
     background-color: #f8f9fa;
@@ -345,7 +346,6 @@
     border-radius: 10px;
     padding: 15px;
     transition: box-shadow 0.3s ease;
-    
 }
 
 .product-card:hover {
@@ -394,28 +394,21 @@
     color: #3BB77E;
 }
 
-
 @media (max-width: 768px) {
     .related-products-slider {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
 
-    .zoom-result {
-        display: none !important;
-    }
-
-    .image-zoom-wrapper {
-        height: 350px;
+    .main-image-container {
+        padding-top: 100%; /* Maintain aspect ratio on mobile */
     }
 }
 </style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
-
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
     // Quantity selector functionality
     const minusBtn = document.querySelector('.minus');
     const plusBtn = document.querySelector('.plus');
@@ -433,63 +426,62 @@
         qtyInput.value = currentValue + 1;
     });
 
-    // Function to initialize zoom
-    function initializeZoom(imageElement) {
-        $(imageElement).elevateZoom({
-            zoomType: "inner",
-            cursor: "crosshair",
-            zoomWindowFadeIn: 500,
-            zoomWindowFadeOut: 500,
-            lensFadeIn: 500,
-            lensFadeOut: 500
-        });
-    }
-
-    // Initial zoom on the first image
-    const zoomImage = document.getElementById('zoomImage');
-    initializeZoom(zoomImage);
-
     // Thumbnail switching functionality
     const thumbnails = document.querySelectorAll('.thumbnail-item img');
+    const mainImage = document.getElementById('mainImage');
+    const zoomWrapper = document.querySelector('.zoom-wrapper');
+    const mainImageContainer = document.querySelector('.main-image-container');
+
+    // Adjust container height based on image aspect ratio
+    function adjustContainerHeight() {
+        const img = new Image();
+        img.src = mainImage.src;
+        img.onload = function() {
+            const aspectRatio = img.height / img.width;
+            mainImageContainer.style.paddingTop = `${aspectRatio * 100}%`;
+        };
+    }
+
+    adjustContainerHeight(); // Initial adjustment
+
     thumbnails.forEach(thumbnail => {
         thumbnail.addEventListener('click', function () {
-            // Remove active class from all thumbnails
             thumbnails.forEach(t => t.parentElement.classList.remove('active'));
             this.parentElement.classList.add('active');
-
-            // Get the new image src
             const newImageSrc = this.getAttribute('src');
-
-            // Remove previous zoom instance completely
-            $('.zoomContainer').remove(); // Removes the zoom container
-            $(zoomImage).removeData('elevateZoom'); // Removes zoom data
-            $(zoomImage).unbind(); // Removes previous event bindings
-
-            // Update the main image dynamically
-            zoomImage.src = newImageSrc;
-            zoomImage.setAttribute('data-zoom-image', newImageSrc);
-            
-            // Wait for the new image to load before re-initializing zoom
-            zoomImage.onload = function () {
-                initializeZoom(zoomImage);
-            };
+            mainImage.src = newImageSrc;
+            adjustContainerHeight(); // Adjust height for new image
         });
     });
+
+    // Dynamic zoom functionality
+    const zoomFactor = 2; // Adjust zoom level here
+
+    zoomWrapper.addEventListener('mousemove', (e) => {
+        const rect = zoomWrapper.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Calculate transform origin based on mouse position
+        const originX = (x / rect.width) * 100;
+        const originY = (y / rect.height) * 100;
+
+        mainImage.style.transformOrigin = `${originX}% ${originY}%`;
+        mainImage.style.transform = `scale(${zoomFactor})`;
+    });
+
+    zoomWrapper.addEventListener('mouseleave', () => {
+        mainImage.style.transform = 'scale(1)';
+        mainImage.style.transformOrigin = 'center center';
+    });
 });
-
-
-
 
 function updateCartCount(count) {
     document.getElementById('cart-count').innerText = count;
 }
 
-// In the success callback of addToCart:
-updateCartCount(response.cartCount);
-
-
 function addToCart(productId) {
-    const quantity = document.querySelector('.qty-input').value; // Get the quantity from the input field
+    const quantity = document.querySelector('.qty-input').value;
     $.ajax({
         url: '/addToCart',
         method: 'POST',
@@ -501,6 +493,7 @@ function addToCart(productId) {
                 icon: 'success',
                 timer: 3000
             });
+            if (response.cartCount) updateCartCount(response.cartCount);
         },
         error: (error) => {
             Swal.fire({
@@ -514,38 +507,37 @@ function addToCart(productId) {
 }
 
 function addToWishlist(productId) {
-        $.ajax({
-            url: '/addToWishlist',
-            method: "POST",
-            data: { productId: productId },
-            success: (response) => {
-                if (response.status) {
-                    Swal.fire({
-                        title: "Added to wishlist",
-                        text: "The product has been added to your wishlist",
-                        icon: "success",
-                        timer: 2000
-                    });
-                } else {
-                    Swal.fire({
-                        title: "Already in wishlist",
-                        text: response.message,
-                        icon: "info",
-                        timer: 2000,
-                    });
-                }
-            },
-            error: (error) => {
+    $.ajax({
+        url: '/addToWishlist',
+        method: "POST",
+        data: { productId: productId },
+        success: (response) => {
+            if (response.status) {
                 Swal.fire({
-                    title: "Error",
-                    text: "There was an error adding the product to your wishlist",
-                    icon: "error",
+                    title: "Added to wishlist",
+                    text: "The product has been added to your wishlist",
+                    icon: "success",
+                    timer: 2000
+                });
+            } else {
+                Swal.fire({
+                    title: "Already in wishlist",
+                    text: response.message,
+                    icon: "info",
                     timer: 2000,
                 });
             }
-        });
-    }
-
+        },
+        error: (error) => {
+            Swal.fire({
+                title: "Error",
+                text: "There was an error adding the product to your wishlist",
+                icon: "error",
+                timer: 2000,
+            });
+        }
+    });
+}
 </script>
 
 <%- include("../../views/partials/user/footer") %>

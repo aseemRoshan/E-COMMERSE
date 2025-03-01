@@ -27,7 +27,6 @@
             </div>
         </div>
         <div class="dashboard-cards">
-            <!-- Cards remain unchanged -->
             <div class="card sales-card">
                 <div class="card-body">
                     <i class="fas fa-chart-line"></i>
@@ -118,6 +117,53 @@
             </div>
             <canvas id="salesChart"></canvas>
         </div>
+        <div class="top-sellers-container">
+            <div class="top-seller-section">
+                <h3>Top 10 Best Selling Products</h3>
+                <div class="top-seller-list" id="topProducts">
+                    <%- topProducts === '[]' ? '<p>No products sold in this period</p>' : '' %>
+                    <% JSON.parse(topProducts).forEach((product, index) => { %>
+                        <div class="top-seller-item">
+                            <span class="rank"><%= index + 1 %></span>
+                            <div class="item-details">
+                                <span class="item-name"><%= product.name %></span>
+                                <span class="item-stats">Sold: <%= product.totalSold %> | Revenue: ₹<%= product.totalRevenue.toFixed(2) %></span>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+            <div class="top-seller-section">
+                <h3>Top 10 Best Selling Categories</h3>
+                <div class="top-seller-list" id="topCategories">
+                    <%- topCategories === '[]' ? '<p>No categories sold in this period</p>' : '' %>
+                    <% JSON.parse(topCategories).forEach((category, index) => { %>
+                        <div class="top-seller-item">
+                            <span class="rank"><%= index + 1 %></span>
+                            <div class="item-details">
+                                <span class="item-name"><%= category.name %></span>
+                                <span class="item-stats">Sold: <%= category.totalSold %> | Revenue: ₹<%= category.totalRevenue.toFixed(2) %></span>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+            <div class="top-seller-section">
+                <h3>Top 10 Best Selling Brands</h3>
+                <div class="top-seller-list" id="topBrands">
+                    <%- topBrands === '[]' ? '<p>No brands sold in this period</p>' : '' %>
+                    <% JSON.parse(topBrands).forEach((brand, index) => { %>
+                        <div class="top-seller-item">
+                            <span class="rank"><%= index + 1 %></span>
+                            <div class="item-details">
+                                <span class="item-name"><%= brand.name %></span>
+                                <span class="item-stats">Sold: <%= brand.totalSold %> | Revenue: ₹<%= brand.totalRevenue.toFixed(2) %></span>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -136,9 +182,89 @@
     --border-radius: 12px;
   }
 
-  /* Existing styles remain mostly unchanged, adding new chart-related styles */
+  /* Existing styles remain mostly unchanged, adding new styles for top sellers */
+  .top-sellers-container {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .top-seller-section {
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 20px;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+  }
+
+  .top-seller-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .top-seller-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--dark-color);
+    border-bottom: 1px solid #eaedf2;
+    padding-bottom: 10px;
+  }
+
+  .top-seller-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .top-seller-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f9fafd;
+    border-radius: 8px;
+    transition: background-color var(--transition-speed);
+  }
+
+  .top-seller-item:hover {
+    background-color: #f0f5ff;
+  }
+
+  .rank {
+    width: 30px;
+    height: 30px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .item-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .item-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  .item-stats {
+    font-size: 14px;
+    color: #64748b;
+  }
+
+  /* Existing styles for context */
   .chart-container {
-    margin-top: 170px;
+    margin-top: 230px;
     padding: 20px;
     background-color: #fff;
     border-radius: var(--border-radius);
@@ -150,62 +276,6 @@
   #salesChart {
     max-height: 400px;
     width: 100%;
-  }
-
-  .chart-controls {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .toggle-switch {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-  }
-
-  .toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .slider {
-    position: relative;
-    padding: 8px 16px 8px 40px;
-    background-color: #e2e8f0;
-    border-radius: 20px;
-    color: #64748b;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all var(--transition-speed);
-  }
-
-  .slider:before {
-    content: '';
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    background-color: white;
-    border-radius: 50%;
-    transition: all var(--transition-speed);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  .toggle-switch input:checked + .slider {
-    background-color: var(--primary-color);
-    color: white;
-  }
-
-  .toggle-switch input:checked + .slider:before {
-    left: calc(100% - 28px);
-    background-color: white;
   }
 
   /* Rest of your existing styles remain unchanged */
@@ -472,6 +542,9 @@
     .dashboard-cards {
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
+    .top-sellers-container {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (max-width: 768px) {
@@ -528,8 +601,6 @@ function updateChart(dailySales, dailyOrders, dailyDiscounts) {
     }
 
     const labels = dailySales.map(sale => sale._id);
-    
-    // Prepare datasets
     const datasets = [
         {
             label: 'Sales Amount (₹)',
@@ -568,33 +639,18 @@ function updateChart(dailySales, dailyOrders, dailyDiscounts) {
 
     salesChart = new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: labels,
-            datasets: datasets
-        },
+        data: { labels, datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: {
-                duration: 1000,
-                easing: 'easeOutQuart'
-            },
+            animation: { duration: 1000, easing: 'easeOutQuart' },
             plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        boxWidth: 20,
-                        padding: 20,
-                        font: {
-                            size: 14
-                        }
-                    }
-                },
+                legend: { position: 'top', labels: { boxWidth: 20, padding: 20, font: { size: 14 } } },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
                     callbacks: {
-                        label: function(context) {
+                        label: context => {
                             let prefix = context.dataset.label === 'Orders Count' ? '' : '₹';
                             return `${context.dataset.label}: ${prefix}${context.parsed.y.toFixed(2)}`;
                         }
@@ -602,45 +658,15 @@ function updateChart(dailySales, dailyOrders, dailyDiscounts) {
                 }
             },
             scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date',
-                        font: {
-                            size: 16
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Values',
-                        font: {
-                            size: 16
-                        }
-                    },
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return value >= 1000 ? `${value / 1000}k` : value;
-                        }
-                    }
+                x: { title: { display: true, text: 'Date', font: { size: 16 } }, grid: { color: 'rgba(0, 0, 0, 0.05)' } },
+                y: { 
+                    title: { display: true, text: 'Values', font: { size: 16 } }, 
+                    beginAtZero: true, 
+                    grid: { color: 'rgba(0, 0, 0, 0.05)' }, 
+                    ticks: { callback: value => value >= 1000 ? `${value / 1000}k` : value }
                 }
             },
-            elements: {
-                line: {
-                    borderWidth: 2
-                },
-                point: {
-                    pointStyle: 'circle'
-                }
-            }
+            elements: { line: { borderWidth: 2 }, point: { pointStyle: 'circle' } }
         }
     });
 }
@@ -651,7 +677,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const dailyDiscounts = JSON.parse('<%- dailyDiscounts %>');
     updateChart(dailySales, dailyOrders, dailyDiscounts);
 
-    // Toggle switches event listeners
     document.getElementById('toggleSales').addEventListener('change', function() {
         salesChart.data.datasets[0].hidden = !this.checked;
         salesChart.update();
@@ -681,13 +706,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const diffTime = Math.abs(end - start);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        if (diffDays === 1) {
-            document.querySelector('[data-range="1"]').classList.add("active");
-        } else if (diffDays === 7) {
-            document.querySelector('[data-range="7"]').classList.add("active");
-        } else if (diffDays === 30) {
-            document.querySelector('[data-range="30"]').classList.add("active");
-        }
+        if (diffDays === 1) document.querySelector('[data-range="1"]').classList.add("active");
+        else if (diffDays === 7) document.querySelector('[data-range="7"]').classList.add("active");
+        else if (diffDays === 30) document.querySelector('[data-range="30"]').classList.add("active");
     }
 
     document.querySelectorAll(".date-filter").forEach(button => {
@@ -718,15 +739,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById("startDate").addEventListener("keyup", function(event) {
-        if (event.key === "Enter") {
-            applyFilter();
-        }
+        if (event.key === "Enter") applyFilter();
     });
 
     document.getElementById("endDate").addEventListener("keyup", function(event) {
-        if (event.key === "Enter") {
-            applyFilter();
-        }
+        if (event.key === "Enter") applyFilter();
     });
 
     const cards = document.querySelectorAll('.card');
@@ -740,9 +757,7 @@ document.addEventListener('DOMContentLoaded', function() {
     cards.forEach(card => {
         card.addEventListener('click', function() {
             this.classList.add('card-clicked');
-            setTimeout(() => {
-                this.classList.remove('card-clicked');
-            }, 300);
+            setTimeout(() => this.classList.remove('card-clicked'), 300);
         });
     });
 });
@@ -793,11 +808,8 @@ window.addEventListener('resize', function() {
     const width = window.innerWidth;
     const dateFilters = document.querySelector('.date-filters');
     
-    if (width <= 768) {
-        dateFilters.classList.add('stacked');
-    } else {
-        dateFilters.classList.remove('stacked');
-    }
+    if (width <= 768) dateFilters.classList.add('stacked');
+    else dateFilters.classList.remove('stacked');
 });
 
 window.dispatchEvent(new Event('resize'));
@@ -855,7 +867,7 @@ window.dispatchEvent(new Event('resize'));
   }
   
   @media print {
-    .date-filters, .profile, .chart-controls {
+    .date-filters, .profile, .chart-controls, .top-sellers-container {
       display: none !important;
     }
     

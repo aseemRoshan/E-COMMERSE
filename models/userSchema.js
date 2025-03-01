@@ -1,121 +1,118 @@
 const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const {Schema} = mongoose;
-
+function generateReferralCode() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < 8; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
 
 const userSchema = new Schema({
-    name:{
-        type:String,
-        required:true
+    name: {
+        type: String,
+        required: true
     },
-    email:{
-        type:String,
-        required:true,
-        unique:true,
+    email: {
+        type: String,
+        required: true,
+        unique: true,
     },
-    phone:{
-        type:String,
-        required:false,
-        unique:true,
-        sparse:true,
-        default:null
+    phone: {
+        type: String,
+        required: false,
+        unique: true,
+        sparse: true,
+        default: null
     },
-     googleId:{
-         type:String,
-        unique:true,
-        //    sparse:true,
-        
-     },
-    password:{
-        type:String,
-        required:false,
+    googleId: {
+        type: String,
+        unique: true,
     },
-    isBlocked:{
-        type:Boolean,
-        default:false
+    password: {
+        type: String,
+        required: false,
     },
-    isAdmin:{
-        type:Boolean,
-        default:false
+    isBlocked: {
+        type: Boolean,
+        default: false
     },
-    cart:{
-        type:Array,
+    isAdmin: {
+        type: Boolean,
+        default: false
     },
-    // cart:[{
-    //     type:Schema.Types.ObjectId,
-    //     ref:"Cart",
-    // }],
-    // cart:[{
-    //     productId:{
-    //         type:Schema.Types.ObjectId,
-    //         ref:"Product",
-    //         required:true,
-    //     },
-    //     quantity:{
-    //         type:Number,
-    //         required:true,
-    //         default:1,
-    //     }
-    // }],
-
-    wallet:{
-        type:Number,
-         default:0,
-
+    cart: {
+        type: Array,
+    },
+    wallet: {
+        type: Number,
+        default: 0,
     },
     history: [
         {
-          amount: { type: Number, required: true },
-          status: { type: String, required: true },
-          date: { type: Date, required: true },
-          description: { type: String }
+            amount: { type: Number, required: true },
+            status: { type: String, required: true },
+            date: { type: Date, required: true },
+            description: { type: String }
         }
-      ],
-      
-    wishlist:[{
-        type:Schema.Types.ObjectId,
-        ref:"Wishlist"
+    ],
+    wishlist: [{
+        type: Schema.Types.ObjectId,
+        ref: "Wishlist"
     }],
-    orderHistory:[{
-        type:Schema.Types.ObjectId,
-        ref:"Order"
+    orderHistory: [{
+        type: Schema.Types.ObjectId,
+        ref: "Order"
     }],
-    createdOn:{
-        type:Date,
-        default:Date.now,
+    createdOn: {
+        type: Date,
+        default: Date.now,
     },
-    referalCode:{
-        type:String,
-        // required:true
-        default:null,
-        unique:true,
+    referalCode: {
+        type: String,
+        unique: true,
     },
-    referralEarnings:{
-        type:Number,
-        default:0,
+    referralEarnings: {
+        type: Number,
+        default: 0,
     },
     redeemedUsers: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    searchHistory:[{
-        category:{
-            type:Schema.Types.ObjectId,
-            ref:"Category",
+    searchHistory: [{
+        category: {
+            type: Schema.Types.ObjectId,
+            ref: "Category",
         },
-        brand:{
-            type:String
+        brand: {
+            type: String
         },
-        searchOn:{
-            type:Date,
-            default:Date.now,
+        searchOn: {
+            type: Date,
+            default: Date.now,
         }
     }],
-    otp:{type:String},
-    otpExpires:{type:Date},
-    isVerified:{type:Boolean, default:false},
+    otp: { type: String },
+    otpExpires: { type: Date },
+    isVerified: { type: Boolean, default: false },
+});
 
-})
+// Pre-save hook to generate unique referral code
+userSchema.pre('save', async function(next) {
+    if (!this.referalCode) {
+        let unique = false;
+        let code;
+        while (!unique) {
+            code = generateReferralCode();
+            const existingUser = await this.constructor.findOne({ referalCode: code });
+            unique = !existingUser;
+        }
+        this.referalCode = code;
+    }
+    next();
+});
 
-
-
-const User = mongoose.model("User",userSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;
