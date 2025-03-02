@@ -112,18 +112,21 @@ const generateExcelReport = async (req, res, next) => {
 
 const generatePdfReport = async (req, res, next) => {
     try {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument({ size: 'A4', autoFirstPage: false, margin: 0 });
         const filePath = path.join(__dirname, 'report.pdf');
         const writeStream = fs.createWriteStream(filePath);
         doc.pipe(writeStream);
 
         const colors = {
-            primary: '#1C4E80',
-            secondary: '#0091D5',
-            accent: '#7AB800',
-            background: '#F7F9FC',
+            primary: '#003087',
+            secondary: '#005EB8',
+            accent: '#00A859',
             text: '#333333',
-            tableHeader: '#E6EEF6'
+            lightGray: '#E0E0E0',
+            tableBorder: '#CCCCCC',
+            summaryBackground: '#D3D3D3', // Darker background for summary
+            summaryText: '#000000', // Dark text for summary
+            summaryHeader: '#000000' // Dark text for summary header
         };
 
         let { startDate, endDate } = req.query;
@@ -144,167 +147,187 @@ const generatePdfReport = async (req, res, next) => {
             .select('orderId createdOn product totalPrice discount finalAmount payment')
             .sort({ createdOn: 1 });
 
-        doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.background);
-
-        doc.roundedRect(50, 40, doc.page.width - 100, 60, 5).fill(colors.primary);
-        doc.fontSize(24).fillColor('white').text('Sales Report', 50, 60, { align: 'center' });
-
-        doc.fontSize(14).fillColor(colors.secondary)
-            .text(`Period: ${startDate} to ${endDate}`, 50, 120, { align: 'center' });
-        doc.moveDown();
-
-        doc.fontSize(16).fillColor(colors.primary).text('Order Details', 50, 160, { underline: false });
-        doc.moveDown();
-
-        const pageWidth = doc.page.width;
-        const margin = 50;
-        const tableWidth = pageWidth - (margin * 2);
-
-        const headers = ['Order ID', 'Date', 'Items', 'Amount', 'Discount', 'Final Amt', 'Payment'];
-
-        const totalParts = 550;
-        const columnWidths = [
-            Math.floor((120 / totalParts) * tableWidth),
-            Math.floor((70 / totalParts) * tableWidth),
-            Math.floor((60 / totalParts) * tableWidth),
-            Math.floor((70 / totalParts) * tableWidth),
-            Math.floor((70 / totalParts) * tableWidth),
-            Math.floor((70 / totalParts) * tableWidth),
-            Math.floor((90 / totalParts) * tableWidth)
-        ];
-
-        const widthSum = columnWidths.reduce((a, b) => a + b, 0);
-        if (widthSum < tableWidth) {
-            columnWidths[0] += tableWidth - widthSum;
-        }
-
-        let x = margin;
-        let y = doc.y;
-
-        doc.fontSize(11).font('Helvetica-Bold');
-        headers.forEach((header, i) => {
-            doc.rect(x, y - 20, columnWidths[i], 20).fillAndStroke(colors.tableHeader, colors.primary);
-            const textHeight = doc.heightOfString(header, { width: columnWidths[i] });
-            const verticalCenter = y + (20 - textHeight) / 2 - 20;
-            doc.fillColor(colors.primary).text(header, x, verticalCenter, { width: columnWidths[i], align: 'center' });
-            x += columnWidths[i];
-        });
-        y += 20;
-        x = margin;
-
-        doc.fontSize(8).font('Courier');
-        orders.forEach((order, index) => {
-            const rowColor = index % 2 === 0 ? 'white' : '#F5F7FA';
-            doc.rect(margin, y, tableWidth, 20).fill(rowColor);
-
-            const itemCount = Array.isArray(order.product) ? order.product.length : 0;
-            const amount = order.totalPrice !== undefined ? `₹${order.totalPrice.toFixed(2)}` : '₹0.00';
-            const discount = order.discount !== undefined ? `₹${order.discount.toFixed(2)}` : '₹0.00';
-            const finalAmount = order.finalAmount !== undefined ? `₹${order.finalAmount.toFixed(2)}` : '₹0.00';
-            const paymentMethod = order.payment || 'N/A';
-            const finalAmountColor = order.finalAmount > 0 ? colors.accent : colors.text;
-
-            if (y + 20 > doc.page.height - 50) {
-                doc.addPage();
-
-                doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.background);
-
-                y = 50;
-                x = margin;
-
-                doc.fontSize(11).font('Helvetica-Bold');
-                headers.forEach((header, i) => {
-                    doc.rect(x, y - 20, columnWidths[i], 20).fillAndStroke(colors.tableHeader, colors.primary);
-                    const textHeight = doc.heightOfString(header, { width: columnWidths[i] });
-                    const verticalCenter = y + (20 - textHeight) / 2 - 20;
-                    doc.fillColor(colors.primary).text(header, x, verticalCenter, { width: columnWidths[i], align: 'center' });
-                    x += columnWidths[i];
-                });
-                y += 20;
-                x = margin;
-            }
-
-            doc.fillColor(colors.text);
-            doc.rect(x, y, columnWidths[0], 20).stroke();
-            doc.text(order.orderId, x + 5, y + 5, { width: columnWidths[0] - 10, align: 'left' });
-            x += columnWidths[0];
-
-            doc.rect(x, y, columnWidths[1], 20).stroke();
-            doc.text(order.createdOn.toLocaleDateString(), x + 5, y + 5, { width: columnWidths[1] - 10, align: 'left' });
-            x += columnWidths[1];
-
-            doc.rect(x, y, columnWidths[2], 20).stroke();
-            doc.text(itemCount.toString(), x + 5, y + 5, { width: columnWidths[2] - 10, align: 'left' });
-            x += columnWidths[2];
-
-            doc.rect(x, y, columnWidths[3], 20).stroke();
-            doc.text(amount, x + 5, y + 5, { width: columnWidths[3] - 10, align: 'left' });
-            x += columnWidths[3];
-
-            doc.rect(x, y, columnWidths[4], 20).stroke();
-            doc.text(discount, x + 5, y + 5, { width: columnWidths[4] - 10, align: 'left' });
-            x += columnWidths[4];
-
-            doc.rect(x, y, columnWidths[5], 20).stroke();
-            doc.fillColor(finalAmountColor).text(finalAmount, x + 5, y + 5, { width: columnWidths[5] - 10, align: 'left' });
-            x += columnWidths[5];
-
-            doc.fillColor(colors.text);
-            doc.rect(x, y, columnWidths[6], 20).stroke();
-            doc.text(paymentMethod, x + 5, y + 5, { width: columnWidths[6] - 10, align: 'left' });
-            x = margin;
-            y += 20;
-        });
-
-        if (y > doc.page.height - 150) {
+        if (orders.length === 0) {
             doc.addPage();
-
-            doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.background);
-            y = 50;
-        } else {
-            doc.moveDown(3);
-            y = doc.y;
+            doc.font('Helvetica').fontSize(12).fillColor(colors.text)
+                .text('No orders found for the selected period.', 50, 50);
+            doc.end();
+            writeStream.on('finish', () => {
+                res.download(filePath, 'report.pdf', (err) => {
+                    if (err) console.log("Error downloading file", err);
+                    fs.unlinkSync(filePath);
+                });
+            });
+            return;
         }
 
-        doc.roundedRect(50, y, doc.page.width - 100, 120, 5).fillAndStroke('#F0F4F8', colors.secondary);
-        doc.fontSize(18).fillColor(colors.primary).text('Summary', 60, y + 10, { underline: false });
-        doc.moveDown(1);
+        const pageWidth = 595;
+        const pageHeight = 842;
+        const margin = 50;
+        // Adjusted column widths for better spacing
+        const columnWidths = [100, 80, 40, 70, 70, 70, 70];
+        const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
+        const headers = ['Order ID', 'Date', 'Items', 'Amount', 'Discount', 'Final Amt', 'Payment'];
+        const headerHeight = 100;
+        const rowHeight = 25;
+        const summaryHeight = 130;
+        const tableX = (pageWidth - totalTableWidth) / 2; // Center the table
+        const maxRowsPerPage = Math.floor((pageHeight - headerHeight - margin * 2) / rowHeight);
+        const maxRowsLastPage = Math.floor((pageHeight - headerHeight - margin * 2 - summaryHeight) / rowHeight);
 
-        const totalOrders = orders.length;
-        const totalAmount = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0).toFixed(2);
-        const totalDiscount = orders.reduce((sum, order) => sum + (order.discount || 0), 0).toFixed(2);
-        const totalFinalAmount = orders.reduce((sum, order) => sum + (order.finalAmount || 0), 0).toFixed(2);
+        let y = margin;
+        let pageNumber = 0;
 
-        doc.fontSize(12).fillColor(colors.text);
-        doc.text(`Total Orders: ${totalOrders}`, 60, doc.y + 10);
-        doc.text(`Total Amount: ₹${totalAmount}`, 60, doc.y + 5);
-        doc.text(`Total Discount: ₹${totalDiscount}`, 60, doc.y + 5);
-        doc.fillColor(colors.accent).text(`Total Final Amount: ₹${totalFinalAmount}`, 60, doc.y + 5);
+        const addHeader = () => {
+            doc.fillColor(colors.primary).font('Helvetica-Bold').fontSize(20)
+                .text('Sales Report', margin, 20, { align: 'center' });
+            doc.fillColor(colors.secondary).fontSize(12)
+                .text(`Period: ${startDate} to ${endDate}`, margin, 45, { align: 'center' });
+            doc.moveTo(margin, 70).lineTo(pageWidth - margin, 70)
+                .strokeColor(colors.lightGray).stroke();
+        };
 
-        // Add page numbers after all content has been added
-        const pageCount = doc.bufferedPageRange().count;
-        if (pageCount > 0) {
-            for (let i = 0; i < pageCount; i++) {
-                doc.switchToPage(i);
+        const addFooter = () => {
+            doc.fillColor(colors.text).font('Helvetica').fontSize(10)
+                .text(`Page ${pageNumber}`, pageWidth - margin - 30, pageHeight - 30, { align: 'right' });
+        };
 
-                doc.lineWidth(0.5);
-                doc.rect(15, 15, doc.page.width - 30, doc.page.height - 30).stroke(colors.secondary);
+        const drawTableBorders = (startY, rowCount) => {
+            const tableHeight = rowHeight * rowCount;
+            let xPos = tableX;
 
-                doc.fontSize(8).fillColor(colors.secondary)
-                    .text(`Page ${i + 1} of ${pageCount}`, 50, doc.page.height - 30, {
-                        align: 'center',
-                        width: doc.page.width - 100
-                    });
+            // Vertical lines
+            for (let i = 0; i <= columnWidths.length; i++) {
+                doc.moveTo(xPos, startY)
+                    .lineTo(xPos, startY + tableHeight)
+                    .strokeColor(colors.tableBorder)
+                    .stroke();
+                xPos += columnWidths[i] || 0;
             }
+
+            // Horizontal lines
+            for (let i = 0; i <= rowCount; i++) {
+                doc.moveTo(tableX, startY + (i * rowHeight))
+                    .lineTo(tableX + totalTableWidth, startY + (i * rowHeight))
+                    .strokeColor(colors.tableBorder)
+                    .stroke();
+            }
+        };
+
+        const renderPageContent = (startIndex, endIndex, isLastPage = false) => {
+            doc.addPage();
+            pageNumber++;
+            y = margin;
+
+            addHeader();
+            y = 80;
+
+            // Table Title
+            doc.font('Helvetica-Bold').fontSize(12).fillColor(colors.primary)
+                .text('Order Details', tableX, y);
+            y += 20;
+
+            const tableStartY = y;
+            let xPos = tableX;
+
+            // Table Headers
+            doc.font('Helvetica-Bold').fontSize(9).fillColor(colors.primary);
+            headers.forEach((header, i) => {
+                doc.text(header, xPos + 5, y + 5, { width: columnWidths[i] - 10, align: 'center' });
+                xPos += columnWidths[i];
+            });
+            y += rowHeight;
+
+            // Table Rows
+            doc.font('Helvetica').fontSize(8).fillColor(colors.text);
+            for (let i = startIndex; i <= endIndex && i < orders.length; i++) {
+                const order = orders[i];
+                const itemCount = Array.isArray(order.product) ? order.product.length : 0;
+                xPos = tableX;
+
+                const rowData = [
+                    order.orderId.slice(0, 15),
+                    order.createdOn.toLocaleDateString(),
+                    itemCount.toString(),
+                    order.totalPrice !== undefined ? `₹${order.totalPrice.toFixed(2)}` : '₹0.00',
+                    order.discount !== undefined ? `₹${order.discount.toFixed(2)}` : '₹0.00',
+                    order.finalAmount !== undefined ? `₹${order.finalAmount.toFixed(2)}` : '₹0.00',
+                    order.payment || 'N/A'
+                ];
+
+                rowData.forEach((data, j) => {
+                    doc.text(data, xPos + 5, y + 5, { width: columnWidths[j] - 10, align: j > 2 ? 'right' : 'left' });
+                    xPos += columnWidths[j];
+                });
+                y += rowHeight;
+            }
+
+            // Draw table borders
+            const rowCount = (endIndex - startIndex + 1) + 1; // +1 for header
+            drawTableBorders(tableStartY, rowCount);
+
+            if (isLastPage) {
+                if (y + summaryHeight > pageHeight - margin) {
+                    addFooter();
+                    doc.addPage();
+                    pageNumber++;
+                    y = margin;
+                    addHeader();
+                } else {
+                    y += 20;
+                }
+
+                // Summary Section
+                const summaryTop = y + 20; // Adjusted position
+                doc.font('Helvetica-Bold').fontSize(16).fillColor(colors.summaryHeader)
+                    .text('Summary', margin, y); // Adjusted position
+                y += 35; // Increased spacing
+
+                const totalOrders = orders.length;
+                const totalAmount = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0).toFixed(2);
+                const totalDiscount = orders.reduce((sum, order) => sum + (order.discount || 0), 0).toFixed(2);
+                const totalFinalAmount = orders.reduce((sum, order) => sum + (order.finalAmount || 0), 0).toFixed(2);
+
+                const summaryWidth = pageWidth - (margin * 2);
+                doc.rect(margin, summaryTop, summaryWidth, 80)
+                    .fillOpacity(1)
+                    .fill(colors.summaryBackground)
+                    .stroke(colors.tableBorder);
+
+                doc.font('Helvetica').fontSize(14).fillColor(colors.summaryText);
+                doc.text(`Total Orders: ${totalOrders}`, margin + 15, summaryTop + 15);
+                doc.text(`Total Amount: ₹${totalAmount}`, margin + 200, summaryTop + 15);
+                doc.text(`Total Discount: ₹${totalDiscount}`, margin + 15, summaryTop + 40);
+                doc.fillColor(colors.accent)
+                    .text(`Final Amount: ₹${totalFinalAmount}`, margin + 200, summaryTop + 40);
+            }
+
+            addFooter();
+        };
+
+        // Pagination
+        let i = 0;
+        const totalOrders = orders.length;
+        const totalPages = Math.ceil(totalOrders / maxRowsPerPage);
+        const rowsPerPage = Math.min(maxRowsPerPage, Math.ceil(totalOrders / totalPages));
+
+        while (i < orders.length) {
+            const startIndex = i;
+            const remainingOrders = totalOrders - i;
+            const isLastPage = (i + rowsPerPage >= totalOrders || remainingOrders <= maxRowsLastPage);
+            const rowsForThisPage = isLastPage ? remainingOrders : rowsPerPage;
+            const endIndex = i + rowsForThisPage - 1;
+
+            renderPageContent(startIndex, endIndex, isLastPage);
+            i += rowsForThisPage;
+            y = margin;
         }
 
         doc.end();
 
         writeStream.on('finish', () => {
             res.download(filePath, 'report.pdf', (err) => {
-                if (err) {
-                    console.log("Error downloading file", err);
-                }
+                if (err) console.log("Error downloading file", err);
                 fs.unlinkSync(filePath);
             });
         });
@@ -313,8 +336,6 @@ const generatePdfReport = async (req, res, next) => {
         next(error);
     }
 };
-
-
 
 const pageError = async (req, res, next) => {
     try {
