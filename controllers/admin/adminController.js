@@ -280,8 +280,8 @@ const generatePdfReport = async (req, res, next) => {
                 // Summary Section
                 const summaryTop = y + 20; // Adjusted position
                 doc.font('Helvetica-Bold').fontSize(16).fillColor(colors.summaryHeader)
-                    .text('Summary', margin, y); // Adjusted position
-                y += 35; // Increased spacing
+                    .text('Summary', margin, y); 
+                y += 35; 
 
                 const totalOrders = orders.length;
                 const totalAmount = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0).toFixed(2);
@@ -305,7 +305,7 @@ const generatePdfReport = async (req, res, next) => {
             addFooter();
         };
 
-        // Pagination
+        
         let i = 0;
         const totalOrders = orders.length;
         const totalPages = Math.ceil(totalOrders / maxRowsPerPage);
@@ -336,7 +336,6 @@ const generatePdfReport = async (req, res, next) => {
         next(error);
     }
 };
-
 const pageError = async (req, res, next) => {
     try {
         res.render("admin-error");
@@ -445,7 +444,7 @@ const loadDashboard = async (req, res, next) => {
                 { $limit: 10 },
                 {
                     $project: {
-                        name: "$productDetails.productName", // Changed from "name" to "productName"
+                        name: "$productDetails.productName", 
                         brand: "$productDetails.brand",
                         totalSold: 1,
                         totalRevenue: 1

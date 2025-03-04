@@ -88,6 +88,12 @@
                             <span class="detail-label">Paid Amount:</span>
                             <span class="detail-value">₹<%= (totalPrice || 0).toLocaleString() %></span>
                         </div>
+                        <% if (deliveryCharge && deliveryCharge > 0) { %>
+                            <div class="detail-row">
+                                <span class="detail-label">Delivery Charge:</span>
+                                <span class="detail-value">₹<%= deliveryCharge.toLocaleString() %></span>
+                            </div>
+                        <% } %>
                         <div class="detail-row highlight">
                             <span class="detail-label">Final Amount:</span>
                             <span class="detail-value">₹<%= (finalAmount || 0).toLocaleString() %></span>
@@ -135,7 +141,7 @@
                     <tbody>
                         <% if (orders.product && orders.product.length > 0) { %>
                             <% orders.product.forEach((product) => { %>
-                                <tr class="item-row <%= product.status?.toLowerCase() %>">
+                                <tr class="item-row <%= product.productStatus?.toLowerCase() %>">
                                     <td class="col-product">
                                         <div class="product-image">
                                             <img src="/uploads/re-image/<%= product.image || 'default.jpg' %>" alt="<%= product.name %>">
@@ -149,21 +155,18 @@
                                     <td class="col-qty"><%= product.quantity || 0 %></td>
                                     <td class="col-total">₹<%= ((parseInt(product.price) || 0) * (parseInt(product.quantity) || 0)).toLocaleString() %></td>
                                     <td class="col-action">
-                                        <% if (product.status === "Canceled") { %>
-                                            <div class="status-chip canceled">Canceled</div>
+                                        <% if (product.productStatus === "Cancelled") { %>
+                                            <div class="status-chip canceled">Cancelled</div>
                                         <% } else { %>
                                             <div class="status-action">
-                                                <div class="status-chip <%= product.status?.toLowerCase() %>"><%= product.status %></div>
+                                                <div class="status-chip <%= product.productStatus?.toLowerCase() %>"><%= product.productStatus %></div>
                                                 <div class="action-dropdown">
                                                     <select class="action-select" data-product-id="<%= product._id %>" onchange="handleDropdownChange(this)">
                                                         <option value="" disabled selected>Update Status</option>
-                                                        <% if (product.status === "Pending") { %>
-                                                            <option value="approve">Approve</option>
-                                                            <option value="cancel">Cancel</option>
-                                                        <% } else if (product.status === "Approved") { %>
+                                                        <% if (product.productStatus === "Confirmed") { %>
                                                             <option value="ship">Ship</option>
                                                             <option value="cancel">Cancel</option>
-                                                        <% } else if (product.status === "Shipped") { %>
+                                                        <% } else if (product.productStatus === "Shipped") { %>
                                                             <option value="deliver">Deliver</option>
                                                             <option value="return">Return</option>
                                                         <% } %>
@@ -190,11 +193,14 @@
         </section>
     </div>
 </main>
+
+<!-- External Styles and Scripts -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
+<!-- JavaScript -->
 <script>
 function handleDropdownChange(selectElement) {
     const selectedValue = selectElement.value;
@@ -217,9 +223,8 @@ function handleDropdownChange(selectElement) {
 
     // Define action handlers
     const actions = {
-        "approve": () => processAction('approveProduct', orderId, productId),
-        "cancel": () => confirmCancelProduct(orderId, productId),
         "ship": () => processAction('shipProduct', orderId, productId),
+        "cancel": () => confirmCancelProduct(orderId, productId),
         "deliver": () => processAction('deliverProduct', orderId, productId),
         "return": () => processAction('returnProduct', orderId, productId)
     };
@@ -357,6 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- CSS -->
 <style>
 /* ===== BASE STYLES ===== */
 :root {
@@ -531,7 +537,7 @@ body {
     color: #ff9800;
 }
 
-.status-pill.approved {
+.status-pill.confirmed {
     background-color: #e8f5e9;
     color: #4caf50;
 }
@@ -546,7 +552,7 @@ body {
     color: #43a047;
 }
 
-.status-pill.canceled, 
+.status-pill.cancelled, 
 .status-pill.returned {
     background-color: #ffebee;
     color: #f44336;
@@ -736,12 +742,7 @@ body {
     text-transform: capitalize;
 }
 
-.status-chip.pending {
-    background-color: #fff8e1;
-    color: #ff9800;
-}
-
-.status-chip.approved {
+.status-chip.confirmed {
     background-color: #e8f5e9;
     color: #4caf50;
 }
@@ -756,7 +757,7 @@ body {
     color: #43a047;
 }
 
-.status-chip.canceled, 
+.status-chip.cancelled, 
 .status-chip.returned {
     background-color: #ffebee;
     color: #f44336;

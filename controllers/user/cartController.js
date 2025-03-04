@@ -28,7 +28,6 @@ const getCartPage = async (req, res, next) => {
 
         const total = cartItems.reduce((acc, item) => acc + item.total, 0);
 
-        // Check if any item is out of stock
         const outOfStockItems = cartItems.filter(item => item.stock < item.quantity);
         const outOfStockMessages = outOfStockItems.map(item => `The product "${item.name}" is out of stock.`);
 
@@ -141,7 +140,6 @@ const changeQuantity = async (req, res, next) => {
             return res.status(404).json({ message: "Product not found in cart" });
         }
 
-        // Update the quantity
         cartItem.quantity = quantity;
         cartItem.totalPrice = cartItem.quantity * cartItem.productId.salePrice;
 

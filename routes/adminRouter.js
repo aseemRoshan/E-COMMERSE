@@ -23,16 +23,18 @@ router.get("/export-pdf", adminAuth, adminController.generatePdfReport);
 
 // Customer management
 router.get("/customers", adminAuth, customerController.customerInfo);
-router.get("/blockCustomer", adminAuth, customerController.customerBlocked);
-router.get("/unblockCustomer", adminAuth, customerController.customerUnBlocked);
+router.patch("/customers/:id/block", adminAuth, customerController.customerBlocked);
+router.patch("/customers/:id/unblock", adminAuth, customerController.customerUnBlocked);
+
+// Category Routes
 router.get("/category", adminAuth, categoryController.categoryInfo);
-router.post("/addCategory", adminAuth, categoryController.addCategory);
-router.post("/addCategoryOffer", adminAuth, categoryController.addCategoryOffer);
-router.post("/removeCategoryOffer", adminAuth, categoryController.removeCategoryOffer);
-router.get("/listCategory", adminAuth, categoryController.getListCategory);
-router.get("/unlistCategory", adminAuth, categoryController.getUnlistCategory);
-router.get("/editCategory", adminAuth, categoryController.getEditCategory);
-router.post("/editCategory/:id", adminAuth, categoryController.editCategory);
+router.post("/category", adminAuth, categoryController.addCategory); 
+router.patch("/category/:id/offer", adminAuth, categoryController.addCategoryOffer); 
+router.delete("/category/:id/offer", adminAuth, categoryController.removeCategoryOffer); 
+router.patch("/category/:id/unlist", adminAuth, categoryController.getListCategory); 
+router.patch("/category/:id/list", adminAuth, categoryController.getUnlistCategory); 
+router.get("/category/:id/edit", adminAuth, categoryController.getEditCategory); 
+router.patch("/category/:id", adminAuth, categoryController.editCategory); 
 
 // Brand Management
 router.get("/brands", adminAuth, brandController.getBrandPage);

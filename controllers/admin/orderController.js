@@ -80,7 +80,7 @@ const getOrderDetailsPageAdmin = async (req, res, next) => {
         }
 
         const findOrder = await Order.findOne({ _id: orderId })
-            .populate('userId', 'email name') 
+            .populate('userId', 'email name')
             .sort({ createdOn: 1 });
 
         if (!findOrder) {
@@ -89,15 +89,16 @@ const getOrderDetailsPageAdmin = async (req, res, next) => {
 
         console.log("Order Details:", JSON.stringify(findOrder, null, 2));
 
-        
-        let totalGrant = 0;
+        // Calculate totals
+        let totalGrant = 0; // Sum of product price * quantity (before discount)
         findOrder.product.forEach((val) => {
             totalGrant += val.price * val.quantity;
         });
 
-        const totalPrice = findOrder.totalPrice;
-        const discount = totalGrant - totalPrice;
-        const finalAmount = totalPrice;
+        const totalPrice = findOrder.totalPrice; // Before discount
+        const discount = findOrder.discount || 0;
+        const deliveryCharge = findOrder.deliveryCharge || 0;
+        const finalAmount = findOrder.finalAmount; // Use the stored finalAmount directly
 
         res.render("order-details-admin", {
             orders: findOrder,
@@ -105,6 +106,7 @@ const getOrderDetailsPageAdmin = async (req, res, next) => {
             totalGrant: totalGrant,
             totalPrice: totalPrice,
             discount: discount,
+            deliveryCharge: deliveryCharge,
             finalAmount: finalAmount,
         });
     } catch (error) {

@@ -18,7 +18,7 @@ const categoryInfo = async (req, res, next) => {
             cat: categoryData,
             currentPage: page,
             totalPages: totalPages,
-            totalCategories: totalCategories
+            totalCategories: totalCategories,
         });
     } catch (error) {
         next(error);
@@ -28,11 +28,10 @@ const categoryInfo = async (req, res, next) => {
 const addCategory = async (req, res, next) => {
     const { name, description } = req.body;
     try {
-        // Convert the input name to lowercase
         const lowerCaseName = name.toLowerCase();
-
-        // Check if a category with the same name (case-insensitive) already exists
-        const existingCategory = await Category.findOne({ name: { $regex: `^${lowerCaseName}$`, $options: 'i' } });
+        const existingCategory = await Category.findOne({
+            name: { $regex: `^${lowerCaseName}$`, $options: "i" },
+        });
         if (existingCategory) {
             return res.status(400).json({ error: "Category already exists" });
         }
@@ -52,7 +51,7 @@ const addCategory = async (req, res, next) => {
 const addCategoryOffer = async (req, res, next) => {
     try {
         const percentage = parseInt(req.body.percentage);
-        const categoryId = req.body.categoryId;
+        const categoryId = req.params.id; // Changed to params
         const category = await Category.findById(categoryId);
         if (!category) {
             return res.status(404).json({ status: false, message: "Category not found" });
@@ -60,7 +59,10 @@ const addCategoryOffer = async (req, res, next) => {
         const products = await Product.find({ category: category._id });
         const hasProductOffer = products.some((product) => product.productOffer > percentage);
         if (hasProductOffer) {
-            return res.json({ status: false, message: "Products within this category already have product offers" });
+            return res.json({
+                status: false,
+                message: "Products within this category already have product offers",
+            });
         }
 
         await Category.updateOne({ _id: categoryId }, { $set: { categoryOffer: percentage } });
@@ -78,7 +80,7 @@ const addCategoryOffer = async (req, res, next) => {
 
 const removeCategoryOffer = async (req, res, next) => {
     try {
-        const categoryId = req.body.categoryId;
+        const categoryId = req.params.id; // Changed to params
         const category = await Category.findById(categoryId);
 
         if (!category) {
@@ -105,9 +107,9 @@ const removeCategoryOffer = async (req, res, next) => {
 
 const getListCategory = async (req, res, next) => {
     try {
-        let id = req.query.id;
+        const id = req.params.id; // Changed to params
         await Category.updateOne({ _id: id }, { $set: { isListed: false } });
-        res.redirect("/admin/category");
+        res.json({ status: true, message: "Category unlisted" }); // Changed to JSON response
     } catch (error) {
         next(error);
     }
@@ -115,9 +117,9 @@ const getListCategory = async (req, res, next) => {
 
 const getUnlistCategory = async (req, res, next) => {
     try {
-        let id = req.query.id;
+        const id = req.params.id; // Changed to params
         await Category.updateOne({ _id: id }, { $set: { isListed: true } });
-        res.redirect("/admin/category");
+        res.json({ status: true, message: "Category listed" }); // Changed to JSON response
     } catch (error) {
         next(error);
     }
@@ -125,8 +127,11 @@ const getUnlistCategory = async (req, res, next) => {
 
 const getEditCategory = async (req, res, next) => {
     try {
-        const id = req.query.id;
+        const id = req.params.id; // Changed to params
         const category = await Category.findOne({ _id: id });
+        if (!category) {
+            return res.status(404).send("Category not found");
+        }
         res.render("edit-category", { category: category });
     } catch (error) {
         next(error);
@@ -138,22 +143,28 @@ const editCategory = async (req, res, next) => {
         const id = req.params.id;
         const { categoryName, description } = req.body;
 
-        // Convert the input name to lowercase
         const lowerCaseName = categoryName.toLowerCase();
-
-        // Check if a category with the same name (case-insensitive) already exists
-        const existingCategory = await Category.findOne({ name: { $regex: `^${lowerCaseName}$`, $options: 'i' }, _id: { $ne: id } });
+        const existingCategory = await Category.findOne({
+            name: { $regex: `^${lowerCaseName}$`, $options: "i" },
+            _id: { $ne: id },
+        });
         if (existingCategory) {
-            return res.status(400).json({ error: "Category already exists, please choose another name" });
+            return res
+                .status(400)
+                .json({ error: "Category already exists, please choose another name" });
         }
 
-        const updateCategory = await Category.findByIdAndUpdate(id, {
-            name: categoryName,
-            description: description,
-        }, { new: true });
+        const updateCategory = await Category.findByIdAndUpdate(
+            id,
+            {
+                name: categoryName,
+                description: description,
+            },
+            { new: true }
+        );
 
         if (updateCategory) {
-            res.redirect("/admin/category");
+            res.json({ status: true, message: "Category updated successfully" });
         } else {
             res.status(404).json({ error: "Category not found" });
         }

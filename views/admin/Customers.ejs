@@ -286,7 +286,7 @@
 
     <!-- Search Section -->
     <section class="search-section">
-        <form action="/admin/user/" method="get">
+        <form action="/admin/customers" method="get">
             <div class="search-container">
                 <input
                     type="text"
@@ -357,43 +357,43 @@
 <script>
     async function blockCustomer(id) {
         try {
-            const response = await fetch(`/admin/blockCustomer?id=${id}`, {
-                method: 'GET',
+            const response = await fetch(`/admin/customers/${id}/block`, {
+                method: "PATCH",
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             });
             const data = await response.json();
             if (data.success) {
-                Swal.fire('Success', data.message, 'success').then(() => {
-                    location.reload(); // Reload the page to reflect the changes
+                Swal.fire("Success", data.message, "success").then(() => {
+                    location.reload();
                 });
             } else {
-                Swal.fire('Error', data.message, 'error');
+                Swal.fire("Error", data.message, "error");
             }
         } catch (error) {
-            Swal.fire('Error', 'An error occurred while blocking the customer', 'error');
+            Swal.fire("Error", "An error occurred while blocking the customer", "error");
         }
     }
 
     async function unblockCustomer(id) {
         try {
-            const response = await fetch(`/admin/unblockCustomer?id=${id}`, {
-                method: 'GET',
+            const response = await fetch(`/admin/customers/${id}/unblock`, {
+                method: "PATCH",
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             });
             const data = await response.json();
             if (data.success) {
-                Swal.fire('Success', data.message, 'success').then(() => {
-                    location.reload(); // Reload the page to reflect the changes
+                Swal.fire("Success", data.message, "success").then(() => {
+                    location.reload();
                 });
             } else {
-                Swal.fire('Error', data.message, 'error');
+                Swal.fire("Error", data.message, "error");
             }
         } catch (error) {
-            Swal.fire('Error', 'An error occurred while unblocking the customer', 'error');
+            Swal.fire("Error", "An error occurred while unblocking the customer", "error");
         }
     }
 </script>

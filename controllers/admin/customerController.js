@@ -40,20 +40,22 @@ const customerInfo = async (req, res, next) => {
 
 const customerBlocked = async (req, res, next) => {
     try {
-        let id = req.query.id;
+        const id = req.params.id;
         await User.updateOne({ _id: id }, { $set: { isBlocked: true } });
         res.json({ success: true, message: "Customer blocked successfully" });
     } catch (error) {
+        console.error("Error blocking customer:", error);
         next(error);
     }
 };
 
 const customerUnBlocked = async (req, res, next) => {
     try {
-        let id = req.query.id;
+        const id = req.params.id;
         await User.updateOne({ _id: id }, { $set: { isBlocked: false } });
         res.json({ success: true, message: "Customer unblocked successfully" });
     } catch (error) {
+        console.error("Error unblocking customer:", error);
         next(error);
     }
 };

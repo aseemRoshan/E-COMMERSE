@@ -7,6 +7,7 @@ const passport = require("./config/passport.js");
 const db = require('./config/db');
 const userRouter = require("./routes/userRouter.js");
 const adminRouter = require("./routes/adminRouter");
+const errorHandler = require("./middlewares/errorHandler.js")
 db();
 
 app.use(express.json());
@@ -37,11 +38,11 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", userRouter);
 app.use("/admin", adminRouter);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
-});
+
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
+
+
 
 const PORT = process.env.PORT || 3004;
 app.listen(process.env.PORT, () => {

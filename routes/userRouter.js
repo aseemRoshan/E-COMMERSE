@@ -75,7 +75,7 @@ router.get("/userProfile", userAuth, profileController.userProfile);
 router.get("/change-email", userAuth, profileController.changeEmail);
 router.post("/change-email", userAuth, profileController.changeEmailValid);
 router.post("/verify-email-otp", userAuth, profileController.verifyEmailOtp);
-router.post("/update-email", userAuth, profileController.updateEmail);
+router.post("/update-email", userAuth, profileController.updateEmail); //
 router.get("/change-password", userAuth, profileController.changePassword);
 router.post("/change-password", userAuth, profileController.changePasswordValid);
 router.post("/verify-changepassword-otp", userAuth, profileController.verifyChangePassOtp);
@@ -95,20 +95,20 @@ router.get("/removeFromWishlist", userAuth, wishlistController.removeProduct);
 // Cart Management
 router.get("/cart", userAuth, cartController.getCartPage);
 router.post("/addToCart", userAuth, cartController.addToCart);
-router.post("/deleteItem", userAuth, cartController.deleteItem);
+router.delete("/deleteItem", userAuth, cartController.deleteItem);
 router.post("/changeQuantity", userAuth, cartController.changeQuantity);
 router.post("/checkProductInCart", userAuth, cartController.checkProductInCart);
 
 // Order Management
 router.get("/checkout", userAuth, orderController.getCheckoutPage);
-router.get("/deleteItem", userAuth, orderController.deleteProduct);
+router.delete("/deleteItem", userAuth, orderController.deleteProduct); 
 router.post("/applyCoupon", userAuth, orderController.applyCoupon);
 router.post("/orderPlaced", userAuth, orderController.orderPlaced);
 router.get("/orderDetails", userAuth, orderController.getOrderDetailsPage);
-router.post("/cancelOrder", userAuth, orderController.cancelOrder);
-router.post("/returnrequestOrder", userAuth, orderController.returnorder);
+router.put("/cancelOrder", userAuth, orderController.cancelOrder); 
+router.put("/returnrequestOrder", userAuth, orderController.returnorder); 
 router.post("/verifyPayment", userAuth, orderController.verify);
-router.post("/singleProductId", userAuth, orderController.changeSingleProductStatus);
+router.put("/singleProductId", userAuth, orderController.changeSingleProductStatus); 
 router.post('/paymentConfirm', userAuth, orderController.paymentConfirm);
 router.get("/downloadInvoice/:orderId", userAuth, orderController.downloadInvoice);
 router.post("/addReview", userAuth, orderController.addReview);

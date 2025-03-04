@@ -104,50 +104,41 @@
         </form>
     </div>
 </div>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 <script>
-    document.getElementById('editCategoryForm').addEventListener('submit', function(event) {
+    document.getElementById("editCategoryForm").addEventListener("submit", function(event) {
         event.preventDefault();
 
-        const categoryName = document.getElementById('categoryName').value;
-        const description = document.getElementById('description').value;
-        const categoryId = '<%= category._id %>';
+        const categoryName = document.getElementById("categoryName").value;
+        const description = document.getElementById("description").value;
+        const categoryId = "<%= category._id %>";
 
-        fetch(`/admin/editCategory/${categoryId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ categoryName, description })
+        fetch(`/admin/category/${categoryId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ categoryName, description }),
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: data.error
-                });
-            } else {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Category updated successfully'
-                }).then(() => {
-                    window.location.href = '/admin/category';
-                });
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error); });
             }
+            return response.json();
+        })
+        .then(data => {
+            Swal.fire({
+                icon: "success",
+                title: "Success",
+                text: "Category updated successfully",
+            }).then(() => {
+                window.location.href = "/admin/category";
+            });
         })
         .catch(error => {
             Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'An error occurred while updating the category'
+                icon: "error",
+                title: "Oops...",
+                text: error.message || "An error occurred while updating the category",
             });
         });
     });
