@@ -78,8 +78,6 @@ const deleteProduct = async (req, res, next) => {
   try {
     const productId = req.query.id;
     const userId = req.session.user;
-    console.log("Product ID to delete:", productId);
-    console.log("User ID from session:", userId);
 
     if (!productId || !userId) {
       console.error("Missing product ID or user ID");
@@ -566,10 +564,11 @@ const downloadInvoice = async (req, res, next) => {
         "address": order.address[0].landMark + ", " + order.address[0].city,
         "zip": order.address[0].pincode,
         "city": order.address[0].state,
-        "country": "India"
+        "country": "India",
+        "custom1": "",  
+        "custom2": `Order Number: ${order.orderId}`  
       },
       "information": {
-        "number": order.orderId,
         "date": moment(order.createdOn).format("YYYY-MM-DD HH:mm:ss"), 
       },
       "products": products,
@@ -593,6 +592,7 @@ const downloadInvoice = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+    console.log("error",error)
   }
 };
 

@@ -499,6 +499,75 @@ const about = async (req,res) =>{
     }
 }
 
+const contact = async (req,res) =>{
+    try {
+        res.render("contact")
+    } catch (error) {
+        res.redirect("/pageNotFound")
+    }
+}
+
+const sendContactEmail = async (req, res, next) => {
+    try {
+        const { fname, lname, email, message } = req.body;
+
+        // Log the incoming data
+        console.log("Incoming data:", { fname, lname, email, message });
+
+        // Server-side validation (optional, since client-side is already in place)
+        if (!fname || !lname || !email || !message) {
+            return res.status(400).json({ success: false, message: "All fields are required" });
+        }
+        if (message.length < 10) {
+            return res.status(400).json({ success: false, message: "Message must be at least 10 characters long" });
+        }
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            return res.status(400).json({ success: false, message: "Invalid email address" });
+        }
+
+        // Configure Nodemailer transporter (reusing your existing setup)
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            port: 587,
+            secure: false,
+            requireTLS: true,
+            auth: {
+                user: process.env.NODEMAILER_EMAIL,
+                pass: process.env.NODEMAILER_PASSWORD,
+            }
+        });
+
+        // Email content
+        const mailOptions = {
+            from: process.env.NODEMAILER_EMAIL,
+            to: "aseemroshan86@gmail.com",
+            replyTo: email, // Allows replying directly to the sender
+            subject: `New Contact Form Submission from ${fname} ${lname}`,
+            text: `
+                Name: ${fname} ${lname}
+                Email: ${email}
+                Message: ${message}
+            `,
+            html: `
+                <h3>New Contact Form Submission</h3>
+                <p><strong>Name:</strong> ${fname} ${lname}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Message:</strong> ${message}</p>
+            `,
+        };
+
+        // Send the email
+        await transporter.sendMail(mailOptions);
+
+        // Send success response to client
+        res.status(200).json({ success: true, message: "Message sent successfully!" });
+    } catch (error) {
+        console.error("Error sending contact email:", error);
+        next(error); // Pass to error handler
+    }
+};
+
 module.exports = {
     loadHomepage,
     pageNotFound,
@@ -514,4 +583,6 @@ module.exports = {
     filterByPrice,
     searchProducts,
     about,
+    contact,
+    sendContactEmail,
 };

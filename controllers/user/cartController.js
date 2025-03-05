@@ -174,5 +174,5 @@ module.exports = {
     deleteItem,
     changeQuantity,
     checkProductInCart,
-    getCartCount, // Export the new route
+    getCartCount, 
 };

@@ -52,6 +52,8 @@ router.get("/login", userController.loadLogin);
 router.post('/login', userController.login);
 router.get("/logout", userController.logout);
 router.get("/about",userController.about);
+router.get("/contact",userController.contact);
+router.post("/send-contact-email", userController.sendContactEmail);
 
 // Shopping page
 router.get("/filter", userController.filterProduct);
