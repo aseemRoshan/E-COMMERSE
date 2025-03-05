@@ -95,6 +95,10 @@ const orderSchema = new Schema({
   },
   deliveryDate: {
     type: Date,
+  },
+  originalTotalPrice: {
+    type: Number,
+    required: true
   }
 });
 

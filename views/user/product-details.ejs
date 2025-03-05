@@ -86,8 +86,8 @@
                                 <button class="qty-btn plus">+</button>
                             </div>
                             <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>')">Add to cart</button>
-                            <button class="wishlist-btn" onclick="addToWishlist('<%= product._id %>')">
-                                <i class="fas fa-heart"></i>
+                            <button class="wishlist-btn" id="wishlistBtn" onclick="toggleWishlist('<%= product._id %>')">
+                                <i class="fas fa-heart" id="wishlistHeart"></i>
                             </button>
                         </div>
 
@@ -320,6 +320,18 @@
     background: none;
     border-radius: 5px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wishlist-btn .fas.fa-heart {
+    color: #999; /* Default color when not in wishlist */
+    transition: color 0.3s ease; /* Smooth color transition */
+}
+
+.wishlist-btn.in-wishlist .fas.fa-heart {
+    color: #dc3545; /* Red color when in wishlist */
 }
 
 .related-products-section {
@@ -474,6 +486,9 @@ document.addEventListener('DOMContentLoaded', function () {
         mainImage.style.transform = 'scale(1)';
         mainImage.style.transformOrigin = 'center center';
     });
+
+    // Check if product is already in wishlist on page load
+    checkWishlistStatus('<%= product._id %>');
 });
 
 function updateCartCount(count) {
@@ -506,37 +521,101 @@ function addToCart(productId) {
     });
 }
 
-function addToWishlist(productId) {
+// New function to check wishlist status
+function checkWishlistStatus(productId) {
     $.ajax({
-        url: '/addToWishlist',
-        method: "POST",
-        data: { productId: productId },
+        url: '/getWishlistCount', // Assuming this endpoint can be modified to check specific product
+        method: 'GET',
         success: (response) => {
-            if (response.status) {
-                Swal.fire({
-                    title: "Added to wishlist",
-                    text: "The product has been added to your wishlist",
-                    icon: "success",
-                    timer: 2000
-                });
-            } else {
-                Swal.fire({
-                    title: "Already in wishlist",
-                    text: response.message,
-                    icon: "info",
-                    timer: 2000,
-                });
-            }
+            // Assuming response contains an array of wishlist items or a count
+            $.ajax({
+                url: '/checkProductInWishlist', // New endpoint needed to check specific product
+                method: 'POST',
+                data: { productId: productId },
+                success: (result) => {
+                    const wishlistBtn = document.getElementById('wishlistBtn');
+                    if (result.inWishlist) {
+                        wishlistBtn.classList.add('in-wishlist');
+                    } else {
+                        wishlistBtn.classList.remove('in-wishlist');
+                    }
+                },
+                error: (error) => {
+                    console.error('Error checking wishlist status:', error);
+                }
+            });
         },
         error: (error) => {
-            Swal.fire({
-                title: "Error",
-                text: "There was an error adding the product to your wishlist",
-                icon: "error",
-                timer: 2000,
-            });
+            console.error('Error fetching wishlist count:', error);
         }
     });
+}
+
+// Updated function to toggle wishlist and change heart color
+function toggleWishlist(productId) {
+    const wishlistBtn = document.getElementById('wishlistBtn');
+    const isInWishlist = wishlistBtn.classList.contains('in-wishlist');
+
+    if (isInWishlist) {
+        // Remove from wishlist
+        $.ajax({
+            url: '/removeFromWishlist',
+            method: 'GET',
+            data: { productId: productId },
+            success: (response) => {
+                if (response.success) {
+                    wishlistBtn.classList.remove('in-wishlist');
+                    Swal.fire({
+                        title: 'Removed from Wishlist',
+                        text: 'The product has been removed from your wishlist',
+                        icon: 'success',
+                        timer: 2000
+                    });
+                }
+            },
+            error: (error) => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'There was an error removing the product from your wishlist',
+                    icon: 'error',
+                    timer: 2000
+                });
+            }
+        });
+    } else {
+        // Add to wishlist
+        $.ajax({
+            url: '/addToWishlist',
+            method: 'POST',
+            data: { productId: productId },
+            success: (response) => {
+                if (response.status) {
+                    wishlistBtn.classList.add('in-wishlist');
+                    Swal.fire({
+                        title: 'Added to Wishlist',
+                        text: 'The product has been added to your wishlist',
+                        icon: 'success',
+                        timer: 2000
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Already in Wishlist',
+                        text: response.message,
+                        icon: 'info',
+                        timer: 2000
+                    });
+                }
+            },
+            error: (error) => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'There was an error adding the product to your wishlist',
+                    icon: 'error',
+                    timer: 2000
+                });
+            }
+        });
+    }
 }
 </script>
 

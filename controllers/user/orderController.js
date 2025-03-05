@@ -104,6 +104,7 @@ const deleteProduct = async (req, res, next) => {
     next(error);
   }
 };
+
 const applyCoupon = async (req, res, next) => {
   try {
     const userId = req.session.user;
@@ -174,12 +175,12 @@ const orderPlaced = async (req, res, next) => {
       user: userId
     }));
 
-    
     const deliveryCharge = totalPrice < 4000 ? 200 : 0;
     const finalAmount = totalPrice - (discount || 0) + deliveryCharge;
 
     const newOrder = new Order({
       product: orderedProducts,
+      originalTotalPrice: totalPrice,
       totalPrice: totalPrice,
       discount: discount || 0,
       deliveryCharge: deliveryCharge,
@@ -270,17 +271,21 @@ const getOrderDetailsPage = async (req, res, next) => {
       return res.redirect("/pageNotFound");
     }
 
+    const originalTotalPrice = findOrder.originalTotalPrice;
+    const couponDiscount = findOrder.discount;
     const totalPrice = findOrder.totalPrice;
-    const discount = totalGrant - totalPrice;
     const finalAmount = findOrder.finalAmount;
+    const orderDate = moment(findOrder.createdOn).format("MMMM Do YYYY, h:mm:ss a");
 
     res.render("orderDetails", {
       orders: findOrder,
       user: findUser,
       totalGrant: totalGrant,
+      originalTotalPrice: originalTotalPrice,
+      couponDiscount: couponDiscount,
       totalPrice: totalPrice,
-      discount: discount,
       finalAmount: finalAmount,
+      orderDate: orderDate,
     });
   } catch (error) {
     next(error);
@@ -310,7 +315,7 @@ const changeSingleProductStatus = async (req, res, next) => {
 
   const order = await Order.findOne({ _id: orderId });
   const productIndex = order.product.findIndex((product) => product._id.toString() === singleProductId);
-  const orderedProductDataPrice = order.product[productIndex].price;
+  const orderedProductDataPrice = order.product[productIndex].price * order.product[productIndex].quantity;
   const newPrice = order.totalPrice - orderedProductDataPrice;
 
   try {
@@ -319,6 +324,7 @@ const changeSingleProductStatus = async (req, res, next) => {
       $set: {
         "product.$[elem].productStatus": status,
         totalPrice: newPrice,
+        finalAmount: order.finalAmount - orderedProductDataPrice
       },
     };
     const options = {
@@ -360,19 +366,21 @@ const cancelOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Product is already cancelled" });
     }
 
+    const refundAmount = productData.price * productData.quantity;
+
     if (findOrder.payment === "razorpay" && findOrder.status === "Pending") {
       findOrder.product[productIndex].productStatus = "Cancelled";
-      findOrder.totalPrice -= productData.price * productData.quantity;
-      findOrder.finalAmount -= productData.price * productData.quantity;
+      findOrder.totalPrice -= refundAmount;
+      findOrder.finalAmount -= refundAmount;
     } else {
       if (findOrder.payment === "razorpay" || findOrder.payment === "wallet") {
-        findUser.wallet += productData.price * productData.quantity;
+        findUser.wallet += refundAmount;
         await User.updateOne(
           { _id: userId },
           {
             $push: {
               history: {
-                amount: productData.price * productData.quantity,
+                amount: refundAmount,
                 status: "credit",
                 date: Date.now(),
                 description: `Order ${orderId} product ${productId} cancelled`,
@@ -384,8 +392,8 @@ const cancelOrder = async (req, res, next) => {
       }
 
       findOrder.product[productIndex].productStatus = "Cancelled";
-      findOrder.totalPrice -= productData.price * productData.quantity;
-      findOrder.finalAmount -= productData.price * productData.quantity;
+      findOrder.totalPrice -= refundAmount;
+      findOrder.finalAmount -= refundAmount;
     }
 
     await findOrder.save();
@@ -433,13 +441,15 @@ const returnorder = async (req, res, next) => {
       return res.status(400).json({ message: "Product is already returned" });
     }
 
-    findUser.wallet += productData.price * productData.quantity;
+    const refundAmount = productData.price * productData.quantity;
+
+    findUser.wallet += refundAmount;
     await User.updateOne(
       { _id: userId },
       {
         $push: {
           history: {
-            amount: productData.price * productData.quantity,
+            amount: refundAmount,
             status: "credit",
             date: Date.now(),
             description: `Order ${orderId} product ${productId} returned`,
@@ -450,8 +460,8 @@ const returnorder = async (req, res, next) => {
     await findUser.save();
 
     findOrder.product[productIndex].productStatus = "Returned";
-    findOrder.totalPrice -= productData.price * productData.quantity;
-    findOrder.finalAmount -= productData.price * productData.quantity;
+    findOrder.totalPrice -= refundAmount;
+    findOrder.finalAmount -= refundAmount;
 
     await findOrder.save();
 
@@ -520,21 +530,36 @@ const downloadInvoice = async (req, res, next) => {
       return res.status(404).send('Order not found');
     }
 
-    
-    let products = order.product.map(prod => ({
+    // Filter out returned or cancelled products
+    let activeProducts = order.product.filter(prod => 
+      prod.productStatus !== "Returned" && prod.productStatus !== "Cancelled"
+    );
+
+    // Map active products for the invoice
+    let products = activeProducts.map(prod => ({
       "quantity": prod.quantity,
       "description": prod.name || prod.title,
       "tax": 0,
       "price": prod.price,
     }));
 
-    
-    if (order.deliveryCharge && order.deliveryCharge > 0) {
+    // Add delivery charge if applicable and there are active products
+    if (order.deliveryCharge && order.deliveryCharge > 0 && activeProducts.length > 0) {
       products.push({
         "quantity": 1,
         "description": "Delivery Charge",
         "tax": 0,
         "price": order.deliveryCharge,
+      });
+    }
+
+    // If no active products remain, generate a minimal invoice or notify user
+    if (products.length === 0) {
+      products.push({
+        "quantity": 1,
+        "description": "No active products (all items returned/cancelled)",
+        "tax": 0,
+        "price": 0,
       });
     }
 
@@ -564,11 +589,11 @@ const downloadInvoice = async (req, res, next) => {
         "zip": order.address[0].pincode,
         "city": order.address[0].state,
         "country": "India",
-        "custom1": "",  
-        "custom2": `Order Number: ${order.orderId}`  
+        "custom1": "",
+        "custom2": `Order Number: ${order._id}`
       },
       "information": {
-        "date": moment(order.createdOn).format("YYYY-MM-DD HH:mm:ss"), 
+        "date": moment(order.createdOn).format("YYYY-MM-DD HH:mm:ss"),
       },
       "products": products,
       "bottomNotice": "Thank you for your business",
@@ -591,7 +616,7 @@ const downloadInvoice = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
-    console.log("error",error)
+    console.log("error", error);
   }
 };
 
