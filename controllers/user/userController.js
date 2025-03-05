@@ -490,6 +490,15 @@ const logout = async (req, res, next) => {
     }
 };
 
+
+const about = async (req,res) =>{
+    try {
+        res.render("about")
+    } catch (error) {
+        res.redirect("/pageNotFound")
+    }
+}
+
 module.exports = {
     loadHomepage,
     pageNotFound,
@@ -504,4 +513,5 @@ module.exports = {
     filterProduct,
     filterByPrice,
     searchProducts,
+    about,
 };

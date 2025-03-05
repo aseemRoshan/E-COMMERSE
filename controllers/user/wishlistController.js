@@ -47,8 +47,24 @@ const removeProduct = async (req, res, next) => {
     }
 };
 
+// New route to get wishlist count
+const getWishlistCount = async (req, res, next) => {
+    try {
+        if (!req.session.user) {
+            return res.json({ count: 0 });
+        }
+        const userId = req.session.user;
+        const user = await User.findById(userId);
+        const count = user.wishlist.length;
+        res.json({ count });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     loadWishlist,
     addToWishlist,
     removeProduct,
+    getWishlistCount, // Export the new route
 };

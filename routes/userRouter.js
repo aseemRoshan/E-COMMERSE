@@ -27,14 +27,10 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
         if (!user) {
             return res.redirect('/signup');
         }
-
-
-        
         if (!user.referalCode) {
             user.referalCode = generateReferralCode();
             await user.save();
         }
-
         req.session.user = user;
         res.locals.user = req.session.user;
         console.log("User logged in:", user);
@@ -55,6 +51,7 @@ router.post("/resend-otp", userController.resendOtp);
 router.get("/login", userController.loadLogin);
 router.post('/login', userController.login);
 router.get("/logout", userController.logout);
+router.get("/about",userController.about);
 
 // Shopping page
 router.get("/filter", userController.filterProduct);
@@ -75,7 +72,7 @@ router.get("/userProfile", userAuth, profileController.userProfile);
 router.get("/change-email", userAuth, profileController.changeEmail);
 router.post("/change-email", userAuth, profileController.changeEmailValid);
 router.post("/verify-email-otp", userAuth, profileController.verifyEmailOtp);
-router.post("/update-email", userAuth, profileController.updateEmail); //
+router.post("/update-email", userAuth, profileController.updateEmail);
 router.get("/change-password", userAuth, profileController.changePassword);
 router.post("/change-password", userAuth, profileController.changePasswordValid);
 router.post("/verify-changepassword-otp", userAuth, profileController.verifyChangePassOtp);
@@ -91,6 +88,7 @@ router.get("/deleteAddress", userAuth, profileController.deleteAddress);
 router.get("/wishlist", userAuth, wishlistController.loadWishlist);
 router.post("/addToWishlist", userAuth, wishlistController.addToWishlist);
 router.get("/removeFromWishlist", userAuth, wishlistController.removeProduct);
+router.get("/getWishlistCount", userAuth, wishlistController.getWishlistCount); // Added
 
 // Cart Management
 router.get("/cart", userAuth, cartController.getCartPage);
@@ -98,6 +96,7 @@ router.post("/addToCart", userAuth, cartController.addToCart);
 router.delete("/deleteItem", userAuth, cartController.deleteItem);
 router.post("/changeQuantity", userAuth, cartController.changeQuantity);
 router.post("/checkProductInCart", userAuth, cartController.checkProductInCart);
+router.get("/getCartCount", userAuth, cartController.getCartCount); // Added
 
 // Order Management
 router.get("/checkout", userAuth, orderController.getCheckoutPage);
@@ -113,6 +112,7 @@ router.post('/paymentConfirm', userAuth, orderController.paymentConfirm);
 router.get("/downloadInvoice/:orderId", userAuth, orderController.downloadInvoice);
 router.post("/addReview", userAuth, orderController.addReview);
 router.post("/generateRazorpayOrder", userAuth, orderController.generateRazorpayOrder);
+
 // WalletController
 router.post("/addMoney", userAuth, walletController.addMoneyToWallet);
 router.post("/verify-payment", userAuth, walletController.verify_payment);

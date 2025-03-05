@@ -16,140 +16,160 @@
   <meta name="description" content="" />
   <meta name="keywords" content="bootstrap, bootstrap4" />
 
-		<!-- Bootstrap CSS -->
-		<link href="/furni-1.0.0/css/bootstrap.min.css" rel="stylesheet">
-		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-		<link href="/furni-1.0.0/css/tiny-slider.css" rel="stylesheet">
-		<link href="/furni-1.0.0/css/style.css" rel="stylesheet">
-		<link rel="stylesheet" href="/css/maind134.css">
-		<title>Furni Free Bootstrap 5 Template for Furniture and Interior Design Websites by Untree.co </title>
+  <!-- Bootstrap CSS -->
+  <link href="/furni-1.0.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="/furni-1.0.0/css/tiny-slider.css" rel="stylesheet">
+  <link href="/furni-1.0.0/css/style.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/maind134.css">
+  <title>Furni Free Bootstrap 5 Template for Furniture and Interior Design Websites by Untree.co </title>
 
+<style>
+  .dropdown {
+    display: inline-block;
+    position: relative;
+  }
 
-    <style>
-         
-		 .dropdown{
-			
-			display: inline-block;
-			position: relative;
-		 }
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    right: 0;
+  }
 
-		 .dropdown-content{
-			display: none;
-			position: absolute;
-			background-color: white;
-			min-width: 160px;
-			box-shadow: 0px 8px 16px 0px rgba(0, 0,0, 0.2);
-			z-index: 1000;
-			right: 0;
-		 }
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+  }
 
-		 .dropdown-content a {
-			color:blak;
-			padding: 12px 16px;
-			text-decoration: none;
-			display: block;
-			width: 100%;
-		 }
+  .dropdown-content a:hover {
+    background-color: #f1f1f1;
+  }
 
-		 .dropdown-content a:hover{
-			background-color:#f1f1f1;
-		 }
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
 
-		 .dropdown:hover .dropdown-content{
-			display: block;
-		 }
+  .header {
+    position: relative;
+    z-index: 500;
+  }
 
-		 .header{
-			position: relative;
-			z-index: 500;
-		 }
+  .dropdown {
+    margin-top: 0.5rem;
+  }
 
-		 .dropdown{
-			margin-top: 0.5rem
-		 }
+  .sign-in-link {
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+  }
 
-		 .sign-in-link{
-			color:white;
-			font-weight: bold;
-			text-decoration: none;
-		 }
-		 .navbar-brand{
-			color:white
-		 }
-		 .btn.btn-secondary {
+  .navbar-brand {
+    color: white;
+  }
+
+  .btn.btn-secondary {
     color: #2f2f2f;
     background: #f9bf29;
     border-color: #f9bf29;
-	border-radius: 20px;
-}
-.btn.btn-white-outline {
+    border-radius: 20px;
+  }
+
+  .btn.btn-white-outline {
     background: transparent;
     border-width: 2px;
     border-color: rgba(255, 255, 255, 0.3);
-	border-radius: 20px;
-}
+    border-radius: 20px;
+  }
 
+  /* Updated Circular Badge Styling with Higher Specificity */
+  .custom-navbar-cta .badge {
+    font-size: 0.7rem;
+    padding: 0.4em;
+    width: 1.8rem;
+    height: 1.8rem;
+    line-height: 1rem;
+    text-align: center;
+    background-color: #dc3545 !important; /* Red background */
+    color: white !important; /* White text */
+    border-radius: 50%; /* Circular shape */
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease-in-out;
+  }
 
+  .custom-navbar-cta .badge:hover {
+    transform: scale(1.1);
+    background-color: #c82333 !important; /* Darker red on hover */
+  }
 
-	</style>
+  .position-relative {
+    position: relative;
+  }
+</style>
+</head>
 
-
-	</head>
-
-	<body>
-
-		<!-- Start Header/Navigation -->
-		<nav class="custom-navbar navbar navbar-expand-md" aria-label="Furni navigation bar">
-			<div class="container">
-			  <a class="navbar-brand" href="index.html">Furni<span>.</span></a>
-			  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			  </button>
-			  <div class="collapse navbar-collapse" id="navbarsFurni">
-				<ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
-				  <li class="nav-item <%= currentPage === 'home' ? 'active' : '' %>">
-					<a class="nav-link" href="/">Home</a>
-				  </li>
-				  <li class="nav-item <%= currentPage === 'shop' ? 'active' : '' %>">
-					<a class="nav-link" href="/shop">Shop</a>
-				  </li>
-				  <li class="nav-item <%= currentPage === 'about' ? 'active' : '' %>">
-					<a class="nav-link" href="/about">About us</a>
-				  </li>
-				  <li class="nav-item <%= currentPage === 'contact' ? 'active' : '' %>">
-					<a class="nav-link" href="/contact">Contact us</a>
-				  </li>
-				  <% if (locals.user) { %>
-					<div class="dropdown">
-					  <a href="#" class="sign-in-link"><%= locals.user.name %></a>
-					  <div class="dropdown-content">
-						<a href="/userProfile">Profile</a>
-						<a href="/logout">Logout</a>
-					  </div>
-					</div>
-				  <% } else { %>
-					<li class="nav-item <%= currentPage === 'signup' ? 'active' : '' %>">
-					  <a class="nav-link" href="/signup">Sign</a>
-					</li>
-					<li class="nav-item <%= currentPage === 'login' ? 'active' : '' %>">
-					  <a class="nav-link" href="/login">Log in</a>
-					</li>
-				  <% } %>
-				</ul>
-				<ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
-				  <li>
-					<a class="nav-link" style="width: 2.6rem; filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(288deg) brightness(100%) contrast(100%);" href="/wishlist">
-					  <img src="/furni-1.0.0/images/wishlist-1-removebg-preview.png">
-					</a>
-				  </li>
-				  <li>
-					<a class="nav-link" href="/cart">
-					  <img src="/furni-1.0.0/images/cart.svg">
-					</a>
-				  </li>
-				</ul>
-			  </div>
-			</div>
-		  </nav>
-		  
-		<!-- End Header/Navigation -->
+<body>
+  <!-- Start Header/Navigation -->
+  <nav class="custom-navbar navbar navbar-expand-md" aria-label="Furni navigation bar">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Furni<span>.</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarsFurni">
+        <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+          <li class="nav-item <%= currentPage === 'home' ? 'active' : '' %>">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item <%= currentPage === 'shop' ? 'active' : '' %>">
+            <a class="nav-link" href="/shop">Shop</a>
+          </li>
+          <li class="nav-item <%= currentPage === 'about' ? 'active' : '' %>">
+            <a class="nav-link" href="/about">About us</a>
+          </li>
+          <li class="nav-item <%= currentPage === 'contact' ? 'active' : '' %>">
+            <a class="nav-link" href="/contact">Contact us</a>
+          </li>
+          <% if (locals.user) { %>
+            <div class="dropdown">
+              <a href="#" class="sign-in-link"><%= locals.user.name %></a>
+              <div class="dropdown-content">
+                <a href="/userProfile">Profile</a>
+                <a href="/logout">Logout</a>
+              </div>
+            </div>
+          <% } else { %>
+            <li class="nav-item <%= currentPage === 'signup' ? 'active' : '' %>">
+              <a class="nav-link" href="/signup">Sign</a>
+            </li>
+            <li class="nav-item <%= currentPage === 'login' ? 'active' : '' %>">
+              <a class="nav-link" href="/login">Log in</a>
+            </li>
+          <% } %>
+        </ul>
+        <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
+          <li class="position-relative">
+            <a class="nav-link" style="width: 2.6rem; filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(288deg) brightness(100%) contrast(100%);" href="/wishlist">
+              <img src="/furni-1.0.0/images/wishlist-1-removebg-preview.png">
+              <span class="badge position-absolute top-0 start-100 translate-middle" id="wishlistCount" style="display: none;">0</span>
+            </a>
+          </li>
+          <li class="position-relative">
+            <a class="nav-link" href="/cart">
+              <img src="/furni-1.0.0/images/cart.svg">
+              <span class="badge position-absolute top-0 start-100 translate-middle" id="cartCount" style="display: none;">0</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <!-- End Header/Navigation -->

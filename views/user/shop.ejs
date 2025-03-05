@@ -18,6 +18,7 @@
   <link href="/furni-1.0.0/css/tiny-slider.css" rel="stylesheet">
   <link href="/furni-1.0.0/css/style.css" rel="stylesheet">
   <title>Furni Free Bootstrap 5 Template for Furniture and Interior Design Websites by Untree.co</title>
+
   <style>
     .main-container {
       max-width: 1200px;
@@ -82,7 +83,7 @@
       padding: 20px;
       background-color: #fff;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       height: fit-content;
     }
 
@@ -162,22 +163,22 @@
       border-radius: 12px;
       padding: 15px;
       transition: transform 0.3s, box-shadow 0.3s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       display: flex;
       flex-direction: column;
-      min-height: 400px; /* Minimum height for consistency */
-      height: auto; /* Allow natural height */
+      min-height: 400px;
+      height: auto;
     }
 
     .product-item:hover {
       transform: translateY(-5px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
     }
 
     .product-thumbnail {
       width: 100%;
-      height: 200px; /* Fixed height */
-      object-fit: cover; /* Maintain aspect ratio */
+      height: 200px;
+      object-fit: cover;
       border-radius: 8px;
       margin-bottom: 15px;
     }
@@ -187,14 +188,14 @@
       margin: 10px 0;
       color: #333;
       text-decoration: none;
-      text-align: center; /* Center multi-line titles */
+      text-align: center;
     }
 
     .product-brand {
       font-size: 0.9rem;
       color: #666;
       margin: 5px 0;
-      text-align: center; /* Center the brand */
+      text-align: center;
     }
 
     .product-pricing {
@@ -225,7 +226,7 @@
       border-radius: 50%;
       cursor: pointer;
       border: none;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       transition: transform 0.2s;
       width: 35px;
       height: 35px;
@@ -252,26 +253,30 @@
       margin-bottom: 15px;
       outline: none;
     }
-    .btn{
+
+    .btn {
       color: grey;
       background-color: white;
     }
-    .pagination{
+
+    .pagination {
       display: flex;
       justify-content: center;
       align-items: center;
       margin-top: 20px;
-      gap:1rem
+      gap: 1rem;
     }
 
     .pagination a:hover {
       background-color: #28a745;
       color: white;
     }
+
     .pagination a.active {
       background-color: #28a745;
       color: white;
     }
+
     .add-to-cart-btn {
       padding: 10px 15px;
       background-color: #28a745;
@@ -283,7 +288,7 @@
       width: 100%;
       text-align: center;
       font-size: 14px;
-      margin-top: auto; /* Still push to bottom */
+      margin-top: auto;
     }
 
     .add-to-cart-btn:hover {
@@ -299,7 +304,6 @@
     .product-content {
       display: flex;
       flex-direction: column;
-      /* Removed flex-grow: 1 to prevent stretching */
     }
 
     .page-header {
@@ -357,7 +361,8 @@
         <form action="/search" method="POST" class="search-form" onsubmit="event.preventDefault(); performSearch();">
           <input type="text" id="product-search" name="query" placeholder="Search products..." class="search-input">
           <button type="submit" class="search-button">Search</button>
-        </div>
+        </form>
+      </div>
 
       <div class="product-list-container">
         <aside class="sidebar">
@@ -497,12 +502,53 @@
       document.querySelectorAll('.wishlist-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
-          this.classList.toggle('active');
         });
       });
     }
 
     initWishlistButtons();
+
+    function updateCartCount() {
+      $.ajax({
+        url: '/getCartCount',
+        method: 'GET',
+        success: (response) => {
+          console.log('Cart Count Response:', response); // Debug log
+          const cartBadge = $('#cartCount');
+          if (response && response.count >= 0) {
+            cartBadge.text(response.count);
+            cartBadge.css('display', response.count > 0 ? 'inline-block' : 'none');
+          } else {
+            cartBadge.hide();
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching cart count:', error.responseText || error);
+          $('#cartCount').hide();
+        }
+      });
+    }
+
+    function updateWishlistCount() {
+      $.ajax({
+        url: '/getWishlistCount',
+        method: 'GET',
+        success: (response) => {
+          console.log('Wishlist Count Response:', response); // Debug log
+          const wishlistBadge = $('#wishlistCount');
+          if (response && response.count >= 0) {
+            wishlistBadge.text(response.count);
+            wishlistBadge.css('display', response.count > 0 ? 'inline-block' : 'none');
+          } else {
+            wishlistBadge.hide();
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching wishlist count:', error.responseText || error);
+          $('#wishlistCount').hide();
+        }
+      });
+    }
 
     function addToCart(productId, button) {
       button.disabled = true;
@@ -520,6 +566,7 @@
           });
           button.disabled = false;
           button.textContent = 'Add to Cart';
+          updateCartCount();
         },
         error: (error) => {
           Swal.fire({
@@ -550,6 +597,7 @@
               timer: 2000
             });
             button.classList.add('active');
+            updateWishlistCount();
           } else {
             Swal.fire({
               title: 'Already in wishlist',
@@ -563,7 +611,7 @@
         error: (error) => {
           Swal.fire({
             title: 'Error',
-            text: 'There was an error adding the product to your wishlist',
+            text: error.responseJSON?.message || 'There was an error adding the product to your wishlist',
             icon: 'error',
             timer: 2000
           });
@@ -581,7 +629,13 @@
       }
       window.location.href = url;
     }
+
+    // Initialize counts when page loads
+    $(document).ready(function() {
+      updateCartCount();
+      updateWishlistCount();
+    });
   </script>
-  <%-include("../../views/partials/user/footer")%>
+  <%- include("../../views/partials/user/footer") %>
 </body>
 </html>

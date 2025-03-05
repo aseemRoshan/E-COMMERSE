@@ -39,11 +39,7 @@ const getCartPage = async (req, res, next) => {
 
 const addToCart = async (req, res, next) => {
     try {
-        console.log("Request Body:", req.body);
-        console.log("Session User:", req.session.user);
-
         if (!req.session.user) {
-            console.log("User not logged in");
             return res.status(401).json({ message: "User not logged in" });
         }
 
@@ -51,39 +47,27 @@ const addToCart = async (req, res, next) => {
         const productId = req.body.productId;
         const quantity = req.body.quantity || 1;
 
-        console.log("User ID:", userId);
-        console.log("Product ID:", productId);
-
         if (!mongodb.ObjectId.isValid(productId)) {
-            console.log("Invalid product ID");
             return res.status(400).json({ message: "Invalid product ID" });
         }
 
         const product = await Product.findById(productId);
         if (!product) {
-            console.log("Product not found");
             return res.status(404).json({ message: "Product not found" });
         }
-
-        console.log("Product found:", product);
 
         let cart = await Cart.findOne({ userId });
 
         if (!cart) {
-            console.log("Creating new cart for user");
             cart = new Cart({ userId, items: [] });
         }
-
-        console.log("Cart before update:", cart);
 
         const existingItem = cart.items.find(item => item.productId.toString() === productId);
 
         if (existingItem) {
-            console.log("Product already in cart, updating quantity");
             existingItem.quantity += quantity;
             existingItem.totalPrice = existingItem.quantity * product.salePrice;
         } else {
-            console.log("Adding new product to cart");
             cart.items.push({
                 productId,
                 quantity,
@@ -93,8 +77,6 @@ const addToCart = async (req, res, next) => {
         }
 
         await cart.save();
-
-        console.log("Cart saved successfully");
 
         res.json({ message: "Product added to cart successfully", cart });
     } catch (error) {
@@ -171,10 +153,26 @@ const checkProductInCart = async (req, res, next) => {
     }
 };
 
+// New route to get cart count
+const getCartCount = async (req, res, next) => {
+    try {
+        if (!req.session.user) {
+            return res.json({ count: 0 });
+        }
+        const userId = req.session.user._id;
+        const cart = await Cart.findOne({ userId });
+        const count = cart ? cart.items.length : 0;
+        res.json({ count });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getCartPage,
     addToCart,
     deleteItem,
     changeQuantity,
     checkProductInCart,
+    getCartCount, // Export the new route
 };
