@@ -43,7 +43,7 @@ const getCheckoutPage = async (req, res, next) => {
         return total + item.quantity * item.productId.salePrice;
       }, 0);
 
-      // Calculate delivery charge
+      
       const deliveryCharge = grandTotal < 4000 ? 200 : 0;
       const totalWithDelivery = grandTotal + deliveryCharge;
 
@@ -177,7 +177,7 @@ const orderPlaced = async (req, res, next) => {
       user: userId
     }));
 
-    // Apply delivery charge logic
+    
     const deliveryCharge = totalPrice < 4000 ? 200 : 0;
     const finalAmount = totalPrice - (discount || 0) + deliveryCharge;
 
@@ -523,7 +523,7 @@ const downloadInvoice = async (req, res, next) => {
       return res.status(404).send('Order not found');
     }
 
-    // Prepare the base products array
+    
     let products = order.product.map(prod => ({
       "quantity": prod.quantity,
       "description": prod.name || prod.title,
@@ -531,7 +531,7 @@ const downloadInvoice = async (req, res, next) => {
       "price": prod.price,
     }));
 
-    // Add delivery charge as a line item if it exists
+    
     if (order.deliveryCharge && order.deliveryCharge > 0) {
       products.push({
         "quantity": 1,
@@ -570,7 +570,7 @@ const downloadInvoice = async (req, res, next) => {
       },
       "information": {
         "number": order.orderId,
-        "date": moment(order.createdOn).format("YYYY-MM-DD HH:mm:ss"), // Changed order.date to order.createdOn
+        "date": moment(order.createdOn).format("YYYY-MM-DD HH:mm:ss"), 
       },
       "products": products,
       "bottomNotice": "Thank you for your business",

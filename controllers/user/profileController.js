@@ -197,36 +197,36 @@ const userProfile = async (req, res) => {
       const userData = await User.findById(userId);
       const addressData = await Address.findOne({ userId: userId });
 
-      // Pagination parameters for orders
+      
       const ordersPage = parseInt(req.query.ordersPage) || 1;
-      const ordersLimit = 5; // Number of orders per page
+      const ordersLimit = 5; 
 
-      // Fetch orders and sort them by createdOn in descending order
+      
       const orders = await Order.find({ userId: userId }).sort({ createdOn: -1 });
       const totalOrders = orders.length;
 
-      // Paginate orders
+      
       const startIndexOrders = (ordersPage - 1) * ordersLimit;
       const endIndexOrders = ordersPage * ordersLimit;
       const paginatedOrders = orders.slice(startIndexOrders, endIndexOrders);
 
-      // Calculate total pages for orders
+      
       const totalOrdersPages = Math.ceil(totalOrders / ordersLimit);
 
-      // Pagination parameters for wallet history
+      
       const walletHistoryPage = parseInt(req.query.walletHistoryPage) || 1;
-      const walletHistoryLimit = 5; // Number of items per page
+      const walletHistoryLimit = 5; 
 
-      // Fetch wallet history and sort it by date in descending order
+      
       const walletHistory = userData.history || [];
       walletHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      // Paginate wallet history
+      
       const startIndexWalletHistory = (walletHistoryPage - 1) * walletHistoryLimit;
       const endIndexWalletHistory = walletHistoryPage * walletHistoryLimit;
       const paginatedWalletHistory = walletHistory.slice(startIndexWalletHistory, endIndexWalletHistory);
 
-      // Calculate total pages for wallet history
+      
       const totalWalletHistoryPages = Math.ceil(walletHistory.length / walletHistoryLimit);
 
       console.log('orders', orders);

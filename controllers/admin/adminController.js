@@ -124,9 +124,9 @@ const generatePdfReport = async (req, res, next) => {
             text: '#333333',
             lightGray: '#E0E0E0',
             tableBorder: '#CCCCCC',
-            summaryBackground: '#D3D3D3', // Darker background for summary
-            summaryText: '#000000', // Dark text for summary
-            summaryHeader: '#000000' // Dark text for summary header
+            summaryBackground: '#D3D3D3', 
+            summaryText: '#000000', 
+            summaryHeader: '#000000' 
         };
 
         let { startDate, endDate } = req.query;
@@ -164,14 +164,14 @@ const generatePdfReport = async (req, res, next) => {
         const pageWidth = 595;
         const pageHeight = 842;
         const margin = 50;
-        // Adjusted column widths for better spacing
+        
         const columnWidths = [100, 80, 40, 70, 70, 70, 70];
         const totalTableWidth = columnWidths.reduce((sum, width) => sum + width, 0);
         const headers = ['Order ID', 'Date', 'Items', 'Amount', 'Discount', 'Final Amt', 'Payment'];
         const headerHeight = 100;
         const rowHeight = 25;
         const summaryHeight = 130;
-        const tableX = (pageWidth - totalTableWidth) / 2; // Center the table
+        const tableX = (pageWidth - totalTableWidth) / 2; 
         const maxRowsPerPage = Math.floor((pageHeight - headerHeight - margin * 2) / rowHeight);
         const maxRowsLastPage = Math.floor((pageHeight - headerHeight - margin * 2 - summaryHeight) / rowHeight);
 
@@ -196,7 +196,7 @@ const generatePdfReport = async (req, res, next) => {
             const tableHeight = rowHeight * rowCount;
             let xPos = tableX;
 
-            // Vertical lines
+        
             for (let i = 0; i <= columnWidths.length; i++) {
                 doc.moveTo(xPos, startY)
                     .lineTo(xPos, startY + tableHeight)
@@ -205,7 +205,7 @@ const generatePdfReport = async (req, res, next) => {
                 xPos += columnWidths[i] || 0;
             }
 
-            // Horizontal lines
+            
             for (let i = 0; i <= rowCount; i++) {
                 doc.moveTo(tableX, startY + (i * rowHeight))
                     .lineTo(tableX + totalTableWidth, startY + (i * rowHeight))
@@ -222,7 +222,7 @@ const generatePdfReport = async (req, res, next) => {
             addHeader();
             y = 80;
 
-            // Table Title
+            
             doc.font('Helvetica-Bold').fontSize(12).fillColor(colors.primary)
                 .text('Order Details', tableX, y);
             y += 20;
@@ -230,7 +230,7 @@ const generatePdfReport = async (req, res, next) => {
             const tableStartY = y;
             let xPos = tableX;
 
-            // Table Headers
+            
             doc.font('Helvetica-Bold').fontSize(9).fillColor(colors.primary);
             headers.forEach((header, i) => {
                 doc.text(header, xPos + 5, y + 5, { width: columnWidths[i] - 10, align: 'center' });
@@ -238,7 +238,7 @@ const generatePdfReport = async (req, res, next) => {
             });
             y += rowHeight;
 
-            // Table Rows
+            
             doc.font('Helvetica').fontSize(8).fillColor(colors.text);
             for (let i = startIndex; i <= endIndex && i < orders.length; i++) {
                 const order = orders[i];
@@ -262,8 +262,8 @@ const generatePdfReport = async (req, res, next) => {
                 y += rowHeight;
             }
 
-            // Draw table borders
-            const rowCount = (endIndex - startIndex + 1) + 1; // +1 for header
+            
+            const rowCount = (endIndex - startIndex + 1) + 1; 
             drawTableBorders(tableStartY, rowCount);
 
             if (isLastPage) {
@@ -277,8 +277,8 @@ const generatePdfReport = async (req, res, next) => {
                     y += 20;
                 }
 
-                // Summary Section
-                const summaryTop = y + 20; // Adjusted position
+                
+                const summaryTop = y + 20; 
                 doc.font('Helvetica-Bold').fontSize(16).fillColor(colors.summaryHeader)
                     .text('Summary', margin, y); 
                 y += 35; 

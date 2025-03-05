@@ -26,6 +26,7 @@ const createCoupon = async (req, res, next) => {
             expireOn: data.endDate,
             offerPrice: data.offerPrice,
             minimumPrice: data.minimumPrice,
+            isList: true // Default to listed when created
         });
         await newCoupon.save();
         return res.redirect("/admin/coupon");
@@ -64,35 +65,60 @@ const updateCoupon = async (req, res, next) => {
                         offerPrice: parseInt(req.body.offerPrice),
                         minimumPrice: parseInt(req.body.minimumPrice),
                     }
-                }, { new: true }
+                },
+                { new: true }
             );
 
-            if (updatedCoupon != null) {
+            if (updatedCoupon.modifiedCount > 0) {
                 res.send("Coupon updated successfully");
             } else {
                 res.status(500).send("Coupon update failed");
             }
+        } else {
+            res.status(404).send("Coupon not found");
         }
     } catch (error) {
         next(error);
     }
 };
 
-const deleteCoupon = async (req, res, next) => {
+const listCoupon = async (req, res, next) => {
     try {
-        const id = req.query.id;
-        await Coupon.deleteOne({ _id: id });
-        res.status(200).send({ success: true, message: "Coupon deleted successfully" });
+        const id = req.params.id;
+        const result = await Coupon.updateOne({ _id: id }, { $set: { isList: true } });
+        if (result.modifiedCount > 0) {
+            res.json({ status: true, message: "Coupon listed successfully" });
+        } else {
+            res.status(400).json({ status: false, message: "Failed to list coupon" });
+        }
     } catch (error) {
-        console.error("Error deleting coupon:", error);
         next(error);
     }
 };
+
+const unlistCoupon = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const result = await Coupon.updateOne({ _id: id }, { $set: { isList: false } });
+        if (result.modifiedCount > 0) {
+            res.json({ status: true, message: "Coupon unlisted successfully" });
+        } else {
+            res.status(400).json({ status: false, message: "Failed to unlist coupon" });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+
 
 module.exports = {
     loadCoupon,
     createCoupon,
     editCoupon,
     updateCoupon,
-    deleteCoupon,
+    listCoupon,
+    unlistCoupon,
+
 };

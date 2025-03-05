@@ -163,6 +163,10 @@
       padding: 15px;
       transition: transform 0.3s, box-shadow 0.3s;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      min-height: 400px; /* Minimum height for consistency */
+      height: auto; /* Allow natural height */
     }
 
     .product-item:hover {
@@ -172,7 +176,8 @@
 
     .product-thumbnail {
       width: 100%;
-      height: auto;
+      height: 200px; /* Fixed height */
+      object-fit: cover; /* Maintain aspect ratio */
       border-radius: 8px;
       margin-bottom: 15px;
     }
@@ -181,6 +186,22 @@
       font-size: 1.1rem;
       margin: 10px 0;
       color: #333;
+      text-decoration: none;
+      text-align: center; /* Center multi-line titles */
+    }
+
+    .product-brand {
+      font-size: 0.9rem;
+      color: #666;
+      margin: 5px 0;
+      text-align: center; /* Center the brand */
+    }
+
+    .product-pricing {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 5px 0;
     }
 
     .product-price {
@@ -246,52 +267,59 @@
     .pagination a:hover {
       background-color: #28a745;
       color: white;
-   }
+    }
     .pagination a.active {
-       background-color: #28a745;
-       color: white;
-  }
-  .add-to-cart-btn {
-  padding: 10px 15px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-  margin-top: 10px;
-  width: 100%;
-  text-align: center;
-  font-size: 14px;
-}
+      background-color: #28a745;
+      color: white;
+    }
+    .add-to-cart-btn {
+      padding: 10px 15px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      width: 100%;
+      text-align: center;
+      font-size: 14px;
+      margin-top: auto; /* Still push to bottom */
+    }
 
-.add-to-cart-btn:hover {
-  background-color: #218838;
-  transform: scale(1.05);
-}
+    .add-to-cart-btn:hover {
+      background-color: #218838;
+      transform: scale(1.05);
+    }
 
-.page-header {
-    background-color: #f7f8fa;
-    padding: 15px 0;
-}
+    .add-to-cart-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
 
-.breadcrumb-nav {
-    font-size: 14px;
-}
+    .product-content {
+      display: flex;
+      flex-direction: column;
+      /* Removed flex-grow: 1 to prevent stretching */
+    }
 
-.breadcrumb-nav a {
-    color: #333;
-    text-decoration: none;
-}
+    .page-header {
+      background-color: #f7f8fa;
+      padding: 15px 0;
+    }
 
-.breadcrumb-nav span {
-    margin: 0 10px;
-    color: #999;
-}
+    .breadcrumb-nav {
+      font-size: 14px;
+    }
 
-.product-section {
-    padding: 40px 0;
-}
+    .breadcrumb-nav a {
+      color: #333;
+      text-decoration: none;
+    }
+
+    .breadcrumb-nav span {
+      margin: 0 10px;
+      color: #999;
+    }
 
     @media (max-width: 768px) {
       .product-list-container {
@@ -307,51 +335,21 @@
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       }
     }
-
   </style>
 </head>
 
 <body>
-  <!-- Start Header/Navigation -->
-  <!-- <nav class="custom-navbar navbar navbar-expand-md navbar-dark bg-dark" arial-label="Furni navigation bar">
-    <div class="container">
-      <a class="navbar-brand" href="index.html">Furni<span>.</span></a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsFurni" aria-controls="navbarsFurni" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarsFurni">
-        <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
-          <li class="nav-item">
-            <a class="nav-link" href="/">Home</a>
-          </li>
-          <li class="active"><a class="nav-link" href="shop.html">Shop</a></li>
-          <li><a class="nav-link" href="about.html">About us</a></li>
-          <li><a class="nav-link" href="services.html">Services</a></li>
-          <li><a class="nav-link" href="blog.html">Blog</a></li>
-          <li><a class="nav-link" href="contact.html">Contact us</a></li>
-        </ul>
-        <ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
-          <li><a class="nav-link"  style="  filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(288deg) brightness(100%) contrast(100%);" href="/wishlist"><img  style="width: 1.6rem;" src="/furni-1.0.0/images/wishlist-1-removebg-preview.png"></a></li>
-          <li><a class="nav-link" href="/cart"><img src="/furni-1.0.0/images/cart.svg"></a></li>
-        </ul>
-      </div>
-    </div>
-  </nav> -->
-  <!-- End Header/Navigation -->
-
   <div class="page-header">
     <div class="container">
-        <nav class="breadcrumb-nav">
-            <a href="/">Home</a>
-            <span>/</span>
-            <a href="/shop">Shop</a>
-            <!-- <span>/</span>
-            <span>Product Detail Page</span> -->
-        </nav>
+      <nav class="breadcrumb-nav">
+        <a href="/">Home</a>
+        <span>/</span>
+        <a href="/shop">Shop</a>
+      </nav>
     </div>
-</div>
+  </div>
 
-<div class="main-container">
+  <div class="main-container">
     <div class="shop-container">
       <h1 class="shop-title">Shop</h1>
 
@@ -373,7 +371,7 @@
               <option value="name-desc">Name: Z to A</option>
               <option value="created-new">Newest Arrivals</option>
               <option value="created-old">Oldest Arrivals</option>
-          </select>
+            </select>
           </div>
 
           <div class="filter-section">
@@ -401,16 +399,6 @@
               </ul>
             </div>
           </div>
-
-          <!-- <div class="filter-section">
-            <div class="filter-title">Price Range</div>
-            <div class="price-options">
-              <a href="/filterPrice?gt=0&lt=2000"><button class="price-button" onclick="filterProductsByPrice(500)">Under ₹2000</button></a>
-              <a href="/filterPrice?gt=2000&lt=6000"><button class="price-button" onclick="filterProductsByPrice(1000)">₹2000 - ₹6000</button></a>
-              <a href="/filterPrice?gt=6000&lt=12000"><button class="price-button" onclick="filterProductsByPrice(1500)">₹6000 - ₹12000</button></a>
-              <a href="/filterPrice?gt=12000&lt=1000000"><button class="price-button" onclick="filterProductsByPrice(1501)">Above ₹12000</button></a>
-            </div>
-          </div> -->
         </aside>
 
         <div class="product-grid" id="productContainer">
@@ -419,14 +407,18 @@
               <button class="wishlist-btn" onclick="addToWishlist('<%=product._id%>')">
                 <i class="fas fa-heart"></i>
               </button>
-              <a href="/product-details?id=<%= product._id %>">
-                <img src="/uploads/re-image/<%= product.productImage[0] %>" class="img-fluid product-thumbnail">
-                <h3 class="product-title"><%= product.productName %></h3>
-                <p>Brand:<%=product.brand%></p>
-                <strong class="product-price" style="text-decoration: line-through;">₹<%= product.regularPrice %></strong>
-                <strong class="productsale-price">₹<%= product.salePrice %></strong>
-              </a>
-              <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>')">Add to Cart</button>
+              <div class="product-content">
+                <a href="/product-details?id=<%= product._id %>" style="text-decoration: none;">
+                  <img src="/uploads/re-image/<%= product.productImage[0] %>" class="img-fluid product-thumbnail" loading="lazy">
+                  <h3 class="product-title"><%= product.productName %></h3>
+                  <p class="product-brand">Brand: <%= product.brand %></p>
+                  <div class="product-pricing">
+                    <strong class="product-price" style="text-decoration: line-through;">₹<%= product.regularPrice %></strong>
+                    <strong class="productsale-price">₹<%= product.salePrice %></strong>
+                  </div>
+                </a>
+              </div>
+              <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>', this)">Add to Cart</button>
             </div>
           <% }) %>
         </div>
@@ -446,157 +438,150 @@
         <a class="btn" href="/shop?page=<%= currentPage + 1 %>">Next</a>
       <% } %>
     </div>
+  </div>
 
-</div><!--exect this-->
+  <!-- Start Footer Section -->
+  <footer class="footer-section">
+    <!-- Your existing footer content -->
+  </footer>
+  <!-- End Footer Section -->
 
-<!-- Start Footer Section -->
-<footer class="footer-section">
-  <!-- Your existing footer content -->
-</footer>
-<!-- End Footer Section -->
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-  // Filter and search functions
-function performSearch() {
-    const query = document.getElementById('product-search').value;
-    fetch(`/search?query=${encodeURIComponent(query)}`, {
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    function performSearch() {
+      const query = document.getElementById('product-search').value;
+      fetch(`/search?query=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
-    })
-    .then(response => response.json())
-    .then(data => {
+      })
+      .then(response => response.json())
+      .then(data => {
         updateProductContainer(data);
-    })
-    .catch(error => {
+      })
+      .catch(error => {
         console.error('Error:', error);
-    });
-}
-
-function updateProductContainer(data) {
-    const productContainer = document.getElementById('productContainer');
-    productContainer.innerHTML = '';
-    data.forEach(product => {
-        const productHTML = `
-            <div class="product-item">
-                <button class="wishlist-btn" onclick="addToWishlist('${product._id}')">
-                    <i class="fas fa-heart"></i>
-                </button>
-                <a href="/product-details?id=${product._id}">
-                    <img src="/uploads/re-image/${product.productImage[0]}" class="img-fluid product-thumbnail">
-                    <h3 class="product-title">${product.productName}</h3>
-                    <p>Brand: ${product.brand}</p>
-                    <strong class="product-price" style="text-decoration: line-through;">₹${product.regularPrice}</strong>
-                    <strong class="productsale-price">₹${product.salePrice}</strong>
-                </a>
-                <button class="add-to-cart-btn" onclick="addToCart('${product._id}')">Add to Cart</button>
-            </div>
-        `;
-        productContainer.innerHTML += productHTML;
-    });
-}
-
-  // Wishlist functionality
-  function initWishlistButtons() {
-    document.querySelectorAll('.wishlist-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        this.classList.toggle('active');
-        // Add your wishlist API call here
       });
-    });
-  }
-
-  // Initialize wishlist buttons on page load
-  initWishlistButtons();
-
-  // Add to Cart functionality
-  function addToCart(productId) {
-    $.ajax({
-      url: '/addToCart',
-      method: 'POST',
-      data: { productId: productId },
-      success: (response) => {
-        Swal.fire({
-          title: 'Success',
-          text: response.message,
-          icon: 'success',
-          timer: 3000 // Increase the timer duration
-        });
-      },
-      error: (error) => {
-        if (error.responseJSON && error.responseJSON.message) {
-          Swal.fire({
-            title: 'Error',
-            text: error.responseJSON.message,
-            icon: 'error',
-            timer: 3000 // Increase the timer duration
-          });
-        } else {
-          Swal.fire({
-            title: 'Error',
-            text: 'There was an error adding the product to your cart',
-            icon: 'error',
-            timer: 3000 // Increase the timer duration
-          });
-        }
-      }
-    });
-  }
-</script>
-<%-include("../../views/partials/user/footer")%>
-
-<script>
-  function addToWishlist(productId){
-    $.ajax({
-      url:'/addToWishlist',
-      method:"POST",
-      data:{productId : productId},
-      success: (response) =>{
-        if(response.status){
-          Swal.fire({
-            title:"Added to wishlist",
-            text:"The product has been added to your wishlist",
-            icon:"success",
-            timer:"2000"
-          })
-        }else{
-          Swal.fire({
-            title:"Already in wishlist",
-            text:response.message,
-            icon:"info",
-            timer:2000,
-          })
-        }
-      },
-      error : (error) =>{
-        Swal.fire({
-          title:"Error",
-          text:"There was an error adding the product to your wishlist",
-          icon:"error",
-          timer:2000,
-        })
-      }
-    })
-  }
-
-
-
-
-
-  function sortProducts(sortOption) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const category = urlParams.get('category'); // Get the selected category from the URL
-    let url = `/shop?sort=${sortOption}`;
-
-    if (category) {
-        url += `&category=${category}`; // Append the category to the URL if it exists
     }
 
-    window.location.href = url; // Redirect to the updated URL
-}
+    function updateProductContainer(data) {
+      const productContainer = document.getElementById('productContainer');
+      productContainer.innerHTML = '';
+      data.forEach(product => {
+        const productHTML = `
+          <div class="product-item">
+            <button class="wishlist-btn" onclick="addToWishlist('${product._id}')">
+              <i class="fas fa-heart"></i>
+            </button>
+            <div class="product-content">
+              <a href="/product-details?id=${product._id}" style="text-decoration: none;">
+                <img src="/uploads/re-image/${product.productImage[0]}" class="img-fluid product-thumbnail" loading="lazy">
+                <h3 class="product-title">${product.productName}</h3>
+                <p class="product-brand">Brand: ${product.brand}</p>
+                <div class="product-pricing">
+                  <strong class="product-price" style="text-decoration: line-through;">₹${product.regularPrice}</strong>
+                  <strong class="productsale-price">₹${product.salePrice}</strong>
+                </div>
+              </a>
+            </div>
+            <button class="add-to-cart-btn" onclick="addToCart('${product._id}', this)">Add to Cart</button>
+          </div>
+        `;
+        productContainer.innerHTML += productHTML;
+      });
+    }
 
-</script>
+    function initWishlistButtons() {
+      document.querySelectorAll('.wishlist-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          this.classList.toggle('active');
+        });
+      });
+    }
+
+    initWishlistButtons();
+
+    function addToCart(productId, button) {
+      button.disabled = true;
+      button.textContent = 'Adding...';
+      $.ajax({
+        url: '/addToCart',
+        method: 'POST',
+        data: { productId: productId },
+        success: (response) => {
+          Swal.fire({
+            title: 'Success',
+            text: response.message,
+            icon: 'success',
+            timer: 3000
+          });
+          button.disabled = false;
+          button.textContent = 'Add to Cart';
+        },
+        error: (error) => {
+          Swal.fire({
+            title: 'Error',
+            text: error.responseJSON?.message || 'There was an error adding the product to your cart',
+            icon: 'error',
+            timer: 3000
+          });
+          button.disabled = false;
+          button.textContent = 'Add to Cart';
+        }
+      });
+    }
+
+    function addToWishlist(productId) {
+      const button = event.currentTarget;
+      button.disabled = true;
+      $.ajax({
+        url: '/addToWishlist',
+        method: 'POST',
+        data: { productId: productId },
+        success: (response) => {
+          if (response.status) {
+            Swal.fire({
+              title: 'Added to wishlist',
+              text: 'The product has been added to your wishlist',
+              icon: 'success',
+              timer: 2000
+            });
+            button.classList.add('active');
+          } else {
+            Swal.fire({
+              title: 'Already in wishlist',
+              text: response.message,
+              icon: 'info',
+              timer: 2000
+            });
+          }
+          button.disabled = false;
+        },
+        error: (error) => {
+          Swal.fire({
+            title: 'Error',
+            text: 'There was an error adding the product to your wishlist',
+            icon: 'error',
+            timer: 2000
+          });
+          button.disabled = false;
+        }
+      });
+    }
+
+    function sortProducts(sortOption) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const category = urlParams.get('category');
+      let url = `/shop?sort=${sortOption}`;
+      if (category) {
+        url += `&category=${category}`;
+      }
+      window.location.href = url;
+    }
+  </script>
+  <%-include("../../views/partials/user/footer")%>
+</body>
+</html>

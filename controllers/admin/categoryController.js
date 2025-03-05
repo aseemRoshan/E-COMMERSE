@@ -51,7 +51,7 @@ const addCategory = async (req, res, next) => {
 const addCategoryOffer = async (req, res, next) => {
     try {
         const percentage = parseInt(req.body.percentage);
-        const categoryId = req.params.id; // Changed to params
+        const categoryId = req.params.id; 
         const category = await Category.findById(categoryId);
         if (!category) {
             return res.status(404).json({ status: false, message: "Category not found" });
@@ -80,7 +80,7 @@ const addCategoryOffer = async (req, res, next) => {
 
 const removeCategoryOffer = async (req, res, next) => {
     try {
-        const categoryId = req.params.id; // Changed to params
+        const categoryId = req.params.id; 
         const category = await Category.findById(categoryId);
 
         if (!category) {
@@ -107,9 +107,9 @@ const removeCategoryOffer = async (req, res, next) => {
 
 const getListCategory = async (req, res, next) => {
     try {
-        const id = req.params.id; // Changed to params
+        const id = req.params.id; 
         await Category.updateOne({ _id: id }, { $set: { isListed: false } });
-        res.json({ status: true, message: "Category unlisted" }); // Changed to JSON response
+        res.json({ status: true, message: "Category unlisted" }); 
     } catch (error) {
         next(error);
     }
@@ -117,9 +117,9 @@ const getListCategory = async (req, res, next) => {
 
 const getUnlistCategory = async (req, res, next) => {
     try {
-        const id = req.params.id; // Changed to params
+        const id = req.params.id; 
         await Category.updateOne({ _id: id }, { $set: { isListed: true } });
-        res.json({ status: true, message: "Category listed" }); // Changed to JSON response
+        res.json({ status: true, message: "Category listed" }); 
     } catch (error) {
         next(error);
     }
@@ -127,7 +127,7 @@ const getUnlistCategory = async (req, res, next) => {
 
 const getEditCategory = async (req, res, next) => {
     try {
-        const id = req.params.id; // Changed to params
+        const id = req.params.id; 
         const category = await Category.findOne({ _id: id });
         if (!category) {
             return res.status(404).send("Category not found");
