@@ -491,30 +491,32 @@ const logout = async (req, res, next) => {
 };
 
 
-const about = async (req,res) =>{
+const about = async (req, res) => {
     try {
-        res.render("about")
+        const user = req.session.user || null; 
+        res.render("about", { user }); 
     } catch (error) {
-        res.redirect("/pageNotFound")
+        res.redirect("/pageNotFound");
     }
-}
+};
 
-const contact = async (req,res) =>{
+const contact = async (req, res) => {
     try {
-        res.render("contact")
+        const user = req.session.user || null; 
+        res.render("contact", { user }); 
     } catch (error) {
-        res.redirect("/pageNotFound")
+        res.redirect("/pageNotFound");
     }
-}
+};
 
 const sendContactEmail = async (req, res, next) => {
     try {
         const { fname, lname, email, message } = req.body;
 
-        // Log the incoming data
+        
         console.log("Incoming data:", { fname, lname, email, message });
 
-        // Server-side validation (optional, since client-side is already in place)
+        
         if (!fname || !lname || !email || !message) {
             return res.status(400).json({ success: false, message: "All fields are required" });
         }
@@ -526,7 +528,7 @@ const sendContactEmail = async (req, res, next) => {
             return res.status(400).json({ success: false, message: "Invalid email address" });
         }
 
-        // Configure Nodemailer transporter (reusing your existing setup)
+        
         const transporter = nodemailer.createTransport({
             service: "gmail",
             port: 587,
@@ -538,11 +540,11 @@ const sendContactEmail = async (req, res, next) => {
             }
         });
 
-        // Email content
+    
         const mailOptions = {
             from: process.env.NODEMAILER_EMAIL,
             to: "aseemroshan86@gmail.com",
-            replyTo: email, // Allows replying directly to the sender
+            replyTo: email, 
             subject: `New Contact Form Submission from ${fname} ${lname}`,
             text: `
                 Name: ${fname} ${lname}
@@ -557,14 +559,14 @@ const sendContactEmail = async (req, res, next) => {
             `,
         };
 
-        // Send the email
+    
         await transporter.sendMail(mailOptions);
 
-        // Send success response to client
+        
         res.status(200).json({ success: true, message: "Message sent successfully!" });
     } catch (error) {
         console.error("Error sending contact email:", error);
-        next(error); // Pass to error handler
+        next(error); 
     }
 };
 

@@ -21,7 +21,11 @@ let instance = new razorpay({
 
 const getCheckoutPage = async (req, res, next) => {
   try {
-    const userId = req.query.userId;
+    const userId = req.session.user;
+
+    if (!userId) {
+      return res.redirect("/login");
+    }
 
     const findUser = await User.findOne({ _id: userId });
 
@@ -43,7 +47,6 @@ const getCheckoutPage = async (req, res, next) => {
         return total + item.quantity * item.productId.salePrice;
       }, 0);
 
-      
       const deliveryCharge = grandTotal < 4000 ? 200 : 0;
       const totalWithDelivery = grandTotal + deliveryCharge;
 
@@ -66,7 +69,6 @@ const getCheckoutPage = async (req, res, next) => {
         Coupon: findCoupons,
       });
     } else {
-      console.log("Redirecting to shop page because the cart is empty.");
       res.redirect("/shop");
     }
   } catch (error) {
@@ -80,31 +82,28 @@ const deleteProduct = async (req, res, next) => {
     const userId = req.session.user;
 
     if (!productId || !userId) {
-      console.error("Missing product ID or user ID");
       return res.redirect("/pageNotFound");
     }
 
     const cart = await Cart.findOne({ userId: userId });
-    if (!cart) {
-      console.error("Cart not found");
-      return res.redirect("/pageNotFound");
+
+    if (!cart || !cart.items.length) {
+      return res.redirect("/checkout");
     }
 
     const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId);
-    if (itemIndex !== -1) {
-      cart.items.splice(itemIndex, 1);
-      await cart.save();
 
-      res.redirect("/checkout");
-    } else {
-      console.error("Product not found in cart");
-      res.redirect("/pageNotFound");
+    if (itemIndex === -1) {
+      return res.redirect("/checkout");
     }
+
+    cart.items.splice(itemIndex, 1);
+    await cart.save();
+    res.redirect("/checkout");
   } catch (error) {
     next(error);
   }
 };
-
 const applyCoupon = async (req, res, next) => {
   try {
     const userId = req.session.user;

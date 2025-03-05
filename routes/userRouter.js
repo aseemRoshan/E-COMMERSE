@@ -102,7 +102,7 @@ router.get("/getCartCount", userAuth, cartController.getCartCount); // Added
 
 // Order Management
 router.get("/checkout", userAuth, orderController.getCheckoutPage);
-router.delete("/deleteItem", userAuth, orderController.deleteProduct); 
+router.get("/deleteItem", userAuth, orderController.deleteProduct); 
 router.post("/applyCoupon", userAuth, orderController.applyCoupon);
 router.post("/orderPlaced", userAuth, orderController.orderPlaced);
 router.get("/orderDetails", userAuth, orderController.getOrderDetailsPage);

@@ -5,16 +5,15 @@ const Brand = require("../../models/brandSchema");
 
 const productDetails = async (req, res, next) => {
     try {
-        const userId = req.session.user;
-        const userData = await User.findById(userId);
+        const userId = req.session.user; // This is likely the user object or ID from session
+        const user = userId ? await User.findById(typeof userId === 'object' ? userId._id : userId) : null; // Fetch user data or set to null
         const productId = req.query.id;
-
-        const product = await Product.findById(productId).populate('category');
 
         if (!productId) {
             return res.status(400).send("Product ID is missing");
         }
 
+        const product = await Product.findById(productId).populate('category');
         if (!product) {
             console.log("Product not found for ID:", productId);
             return res.redirect("/pageNotFound");
@@ -25,8 +24,8 @@ const productDetails = async (req, res, next) => {
             _id: { $ne: productId },
             isBlocked: false
         })
-        .limit(4)
-        .select('productName productImage salePrice regularPrice');
+            .limit(4)
+            .select('productName productImage salePrice regularPrice');
 
         const totalOffer = Math.round(
             ((product.regularPrice - product.salePrice) / product.regularPrice) * 100
@@ -38,13 +37,13 @@ const productDetails = async (req, res, next) => {
         const combinedOffer = categoryOffer + productOffer;
 
         res.render("product-details", {
-            product: product,
+            user, // Pass user explicitly
+            product,
             relatedProducts,
             totalOffer: combinedOffer,
             quantity: product.quantity,
             category: findCategory,
         });
-
     } catch (error) {
         next(error);
     }
@@ -52,10 +51,11 @@ const productDetails = async (req, res, next) => {
 
 const getProductDetails = async (req, res, next) => {
     try {
+        const userId = req.session.user; // Get user from session
+        const user = userId ? await User.findById(typeof userId === 'object' ? userId._id : userId) : null; // Fetch user data or set to null
         const productId = req.params.id;
 
         const product = await Product.findById(productId);
-
         if (!product) {
             return res.status(404).send('Product not found');
         }
@@ -64,19 +64,19 @@ const getProductDetails = async (req, res, next) => {
             category: product.category,
             _id: { $ne: productId }
         })
-        .limit(4)
-        .select('productName productImage salePrice regularPrice');
+            .limit(4)
+            .select('productName productImage salePrice regularPrice');
 
         const totalOffer = calculateOffer(product.regularPrice, product.salePrice);
 
         res.render('product-details', {
+            user, 
             product,
             relatedProducts,
             totalOffer,
             quantity: product.quantity,
             category: await Category.findById(product.category)
         });
-
     } catch (error) {
         next(error);
     }

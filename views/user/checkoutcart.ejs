@@ -70,7 +70,7 @@
                       <td>
                         <%= product[i].productDetails[0].salePrice * product[i].quantity %>
                       </td>
-                      <td class="action" data-title="Remove" onclick="return confirm('Are you sure you want to remove this product from cart?')">
+                      <td class="action" data-title="Remove">
                         <a class="btn btn-sm" href="/deleteItem?id=<%= product[i].productDetails[0]._id %>">
                           <i class="fi-rs-trash"></i>
                         </a>
