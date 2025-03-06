@@ -1,3 +1,4 @@
+// app.js (alternative)
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -7,7 +8,9 @@ const passport = require("./config/passport.js");
 const db = require('./config/db');
 const userRouter = require("./routes/userRouter.js");
 const adminRouter = require("./routes/adminRouter");
-const errorHandler = require("./middlewares/errorHandler.js")
+const errorHandler = require("./middlewares/errorHandler.js");
+const methodOverride = require('method-override');
+
 db();
 
 app.use(express.json());
@@ -35,17 +38,25 @@ app.set("view engine", "ejs");
 app.set("views", [path.join(__dirname, "views/user"), path.join(__dirname, "views/admin")]);
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", userRouter);
-app.use("/admin", adminRouter);
-
-
-const methodOverride = require('method-override');
 app.use(methodOverride('_method'));
+
+// Routes
+app.use("/admin", adminRouter);
+app.use("/", userRouter);
+
+// Global 404 handler
+app.use((req, res, next) => {
+    if (req.path.startsWith('/admin')) {
+        res.redirect('/admin/pageerror'); // Admin 404
+    } else {
+        res.render('page-404'); // User 404
+    }
+});
 
 
 
 const PORT = process.env.PORT || 3004;
-app.listen(process.env.PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server Running on`, PORT);
 });
 

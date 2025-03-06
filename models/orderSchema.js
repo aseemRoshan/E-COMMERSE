@@ -11,6 +11,11 @@ const orderSchema = new Schema({
       productStatus: { type: String, required: true },
       name: { type: String },
       image: { type: String },
+      returnStatus: {  // New field for return tracking
+        type: String,
+        enum: ["Pending", "Approved", "Rejected", null],
+        default: null,
+      },
     },
   ],
   orderId: {

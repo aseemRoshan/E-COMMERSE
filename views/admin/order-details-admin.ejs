@@ -7,12 +7,6 @@
                 <h1 class="page-title">Order Details</h1>
                 <div class="order-id">ID: <%= orders._id %></div>
             </div>
-            <% if (orders.status === "Delivered") { %>
-                <a href="/admin/downloadInvoice/<%= orders._id %>" class="btn-invoice">
-                    <i class="material-icons">download</i>
-                    Download Invoice
-                </a>
-            <% } %>
         </header>
 
         <!-- Order Summary Section -->
@@ -157,6 +151,19 @@
                                     <td class="col-action">
                                         <% if (product.productStatus === "Cancelled") { %>
                                             <div class="status-chip canceled">Cancelled</div>
+                                        <% } else if (product.productStatus === "Return Requested") { %>
+                                            <div class="status-action">
+                                                <div class="status-chip return-requested">Return Requested</div>
+                                                <div class="action-dropdown">
+                                                    <select class="action-select" data-product-id="<%= product._id %>" onchange="handleDropdownChange(this)">
+                                                        <option value="" disabled selected>Update Return</option>
+                                                        <option value="approveReturn">Approve Return</option>
+                                                        <option value="rejectReturn">Reject Return</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        <% } else if (product.productStatus === "Returned") { %>
+                                            <div class="status-chip returned">Returned</div>
                                         <% } else { %>
                                             <div class="status-action">
                                                 <div class="status-chip <%= product.productStatus?.toLowerCase() %>"><%= product.productStatus %></div>
@@ -206,7 +213,7 @@ function handleDropdownChange(selectElement) {
     const selectedValue = selectElement.value;
     if (!selectedValue) return;
     
-    const orderId = '<%= orderId %>';
+    const orderId = '<%= orders._id %>';
     const productId = selectElement.getAttribute('data-product-id');
     const actionRow = selectElement.closest('.status-action');
     const statusChip = actionRow.querySelector('.status-chip');
@@ -226,7 +233,9 @@ function handleDropdownChange(selectElement) {
         "ship": () => processAction('shipProduct', orderId, productId),
         "cancel": () => confirmCancelProduct(orderId, productId),
         "deliver": () => processAction('deliverProduct', orderId, productId),
-        "return": () => processAction('returnProduct', orderId, productId)
+        "return": () => processAction('returnProduct', orderId, productId),
+        "approveReturn": () => processAction('approveReturn', orderId, productId),
+        "rejectReturn": () => processAction('rejectReturn', orderId, productId)
     };
 
     // Execute selected action
@@ -280,11 +289,11 @@ function processAction(actionType, orderId, productId) {
             document.body.appendChild(overlay);
         },
         success: function(response) {
-            if (response.result && response.result.modifiedCount === 1) {
-                showSuccessMessage('Order status updated successfully');
+            if (response.success) {
+                showSuccessMessage(response.message || 'Order status updated successfully');
                 setTimeout(() => window.location.reload(), 1500);
             } else {
-                showErrorMessage('No changes were made to the order');
+                showErrorMessage(response.message || 'No changes were made to the order');
                 resetAllActionUI();
             }
         },
@@ -443,29 +452,6 @@ body {
     font-weight: 500;
 }
 
-.btn-invoice {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius);
-    font-weight: 500;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.btn-invoice:hover {
-    background-color: var(--primary-dark);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.btn-invoice i {
-    font-size: 1.25rem;
-}
-
 /* ===== ORDER SUMMARY GRID ===== */
 .order-summary-grid {
     display: grid;
@@ -562,6 +548,11 @@ body {
     background-color: #f5f5f5;
     color: var(--gray-700);
     animation: pulse 1.5s infinite;
+}
+
+.status-pill.return-requested {
+    background-color: #fff8e1;
+    color: #ff9800;
 }
 
 .payment-method {
@@ -761,6 +752,11 @@ body {
 .status-chip.returned {
     background-color: #ffebee;
     color: #f44336;
+}
+
+.status-chip.return-requested {
+    background-color: #fff8e1;
+    color: #ff9800;
 }
 
 .action-select {

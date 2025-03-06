@@ -1,148 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            display: flex;
-            height: 100vh;
-            background-color: #121212;
-            color: #ffffff;
-        }
-        .dashboard-container {
-            display: flex;
-            width: 100%;
-            position: relative; 
-        }
-        .sidebar {
-            width: 250px;
-            background: #1e1e1e;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .sidebar h2 {
-            color: #fff;
-            text-align: center;
-        }
-        .sidebar a {
-            text-decoration: none;
-            color: #ccc;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        .sidebar a:hover {
-            background: #333;
-        }
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            background: #181818;
-        }
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background: #1e1e1e;
-            border-radius: 5px;
-        }
-        .profile {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: url('your-photo.jpg') no-repeat center/cover;
-        }
-
-        
-        .error-overlay {
-            display: flex; 
-            position: absolute; 
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8); 
-            color: #fff;
-            flex-direction: column; 
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            z-index: 100; 
-        }
-
-        .error-overlay h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .error-overlay p {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-        }
-
-        .error-overlay button {
-            padding: 10px 20px;
-            border: none;
-            background: #ff4757;
-            color: #fff;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
-        .error-overlay button:hover {
-            background: #e84118;
-        }
-    </style>
-</head>
-<body>
-    <div class="dashboard-container">
-        <div class="sidebar">
-            <h2>Furniture Admin</h2>
-            <a href="#">🏠 Dashboard</a>
-            <a href="#">👤 Customers</a>
-            <a href="#">📁 Category</a>
-            <a href="#">🏷️ Brands</a>
-            <a href="#">➕ Add Product</a>
-            <a href="#">📦 Products</a>
-            <a href="#">🎟️ Coupon</a>
-            <a href="#">🖼️ Banner</a>
-            <a href="#">🛒 Orders</a>
-        </div>
-
-        <div class="main-content">
-            <div class="topbar">
-                <h1>Dashboard</h1>
-                <div class="profile"></div>
-            </div>
-
-            <!-- Error Overlay -->
-            <div class="error-overlay" id="errorOverlay">
-                <h1>Error Occurred</h1>
-                <p>Something went wrong. Please try again later.</p>
-                <button onclick="goToDashboard()">Return to Dashboard</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        function goToDashboard() {
-            document.getElementById('errorOverlay').style.display = 'none';
-        }
-    </script>
-</body>
-</html>
+<%- include("../partials/admin/header") %>
+<div class="error-overlay">
+    <h1>404 - Admin Page Not Found</h1>
+    <p>The admin page you’re looking for doesn’t exist.</p>
+    <button onclick="window.location.href='/admin/dashboard'">Return to Dashboard</button>
+</div>
+<style>
+    .error-overlay {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        z-index: 1000;
+    }
+    h1 { font-size: 2rem; margin-bottom: 10px; }
+    p { font-size: 1.2rem; margin-bottom: 20px; }
+    button {
+        padding: 10px 20px;
+        border: none;
+        background: #ff4757;
+        color: #fff;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+    button:hover { background: #e84118; }
+</style>
+<%- include("../partials/admin/footer") %>

@@ -155,9 +155,88 @@ const orderDetailsAdmin = async (req, res, next) => {
     }
 };
 
+
+
+const approveReturn = async (req, res, next) => {
+    try {
+      const { orderId, productId } = req.body;
+  
+      const order = await Order.findOne({ _id: orderId });
+      if (!order) {
+        return res.status(404).json({ success: false, message: "Order not found" });
+      }
+  
+      const productIndex = order.product.findIndex(p => p._id.toString() === productId);
+      if (productIndex === -1 || order.product[productIndex].productStatus !== "Return Requested") {
+        return res.status(400).json({ success: false, message: "Invalid return request" });
+      }
+  
+      const productData = order.product[productIndex];
+      const refundAmount = productData.price * productData.quantity;
+  
+      // Update order
+      order.product[productIndex].productStatus = "Returned";
+      order.product[productIndex].returnStatus = "Approved";
+      order.totalPrice -= refundAmount;
+      order.finalAmount -= refundAmount;
+      await order.save();
+  
+      // Credit user's wallet
+      const user = await User.findById(order.userId);
+      if (user) {
+        user.wallet += refundAmount;
+        user.history.push({
+          amount: refundAmount,
+          status: "credit",
+          date: Date.now(),
+          description: `Refund for returned product ${productId} in order ${orderId}`,
+        });
+        await user.save();
+      }
+  
+      // Restock product
+      const product = await Product.findById(productData.productId);
+      if (product) {
+        product.quantity += productData.quantity;
+        await product.save();
+      }
+  
+      res.status(200).json({ success: true, message: "Return approved and wallet credited" });
+    } catch (error) {
+      next(error);
+    }
+  };
+  
+  const rejectReturn = async (req, res, next) => {
+    try {
+      const { orderId, productId } = req.body;
+  
+      const order = await Order.findOne({ _id: orderId });
+      if (!order) {
+        return res.status(404).json({ success: false, message: "Order not found" });
+      }
+  
+      const productIndex = order.product.findIndex(p => p._id.toString() === productId);
+      if (productIndex === -1 || order.product[productIndex].productStatus !== "Return Requested") {
+        return res.status(400).json({ success: false, message: "Invalid return request" });
+      }
+  
+      // Revert to previous status (e.g., "Delivered") and mark return as rejected
+      order.product[productIndex].productStatus = "Delivered"; // Or whatever status it was before
+      order.product[productIndex].returnStatus = "Rejected";
+      await order.save();
+  
+      res.status(200).json({ success: true, message: "Return request rejected" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
 module.exports = {
     getOrderListPageAdmin,
     changeOrderStatus,
     getOrderDetailsPageAdmin,
     orderDetailsAdmin,
+    approveReturn,
+    rejectReturn,
 };

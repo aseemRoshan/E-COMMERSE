@@ -60,6 +60,8 @@ router.post("/deleteImage", adminAuth, productController.deleteSingleImage);
 router.get("/order-list", adminAuth, orderController.getOrderListPageAdmin);
 router.get("/orderDetailsAdmin", adminAuth, orderController.getOrderDetailsPageAdmin);
 router.get("/changeStatus", adminAuth, orderController.changeOrderStatus);
+router.post("/approveReturn", adminAuth, orderController.approveReturn);
+router.post("/rejectReturn", adminAuth, orderController.rejectReturn);
 
 // Coupon Management
 router.get("/coupon", adminAuth, couponController.loadCoupon);
@@ -68,6 +70,12 @@ router.get("/editCoupon", adminAuth, couponController.editCoupon);
 router.post("/updateCoupon", adminAuth, couponController.updateCoupon);
 router.patch("/coupon/:id/list", adminAuth, couponController.listCoupon); 
 router.patch("/coupon/:id/unlist", adminAuth, couponController.unlistCoupon); 
+
+
+
+router.use((req, res, next) => {
+    res.redirect("/admin/pageerror"); // Redirect to the existing pageerror route
+});
 
 
 module.exports = router;

@@ -41,6 +41,7 @@
 
     .form-group {
       margin-bottom: 15px;
+      position: relative; /* For positioning error messages */
     }
 
     .form-group label {
@@ -86,6 +87,13 @@
     .form-group input:focus {
       outline: none;
       border-color: #007BFF;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none; /* Hidden by default */
     }
 
     .btn {
@@ -169,10 +177,11 @@
       </div>
     <% } %>
 
-    <form method="post" action="/login">
+    <form method="post" action="/login" onsubmit="return validateForm(event)">
       <div class="form-group">
         <label for="email">Email Address</label>
         <input type="email" id="email" name="email" placeholder="Enter email">
+        <div id="email-error" class="error-message">Please enter your email</div>
       </div>
       <div class="form-group">
         <label for="password">Password</label>
@@ -184,6 +193,7 @@
             </span>
           </div>
         </div>
+        <div id="password-error" class="error-message">Please enter your password</div>
       </div>
 
       <div class="form-group d-flex justify-content-end">
@@ -216,6 +226,41 @@
         eyeIcon.classList.remove("fa-eye-slash");
         eyeIcon.classList.add("fa-eye"); // Change icon to "eye"
       }
+    }
+
+    // Form validation
+    function validateForm(event) {
+      event.preventDefault(); // Prevent form submission initially
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const emailError = document.getElementById("email-error");
+      const passwordError = document.getElementById("password-error");
+
+      let isValid = true;
+
+      // Reset error messages
+      emailError.style.display = "none";
+      passwordError.style.display = "none";
+
+      // Check if email is empty
+      if (!email) {
+        emailError.style.display = "block";
+        isValid = false;
+      }
+
+      // Check if password is empty
+      if (!password) {
+        passwordError.style.display = "block";
+        isValid = false;
+      }
+
+      // If all fields are filled, allow form submission
+      if (isValid) {
+        document.querySelector("form").submit(); // Submit the form
+      }
+
+      return isValid;
     }
   </script>
 </body>

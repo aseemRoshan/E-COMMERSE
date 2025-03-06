@@ -119,4 +119,7 @@ router.post("/generateRazorpayOrder", userAuth, orderController.generateRazorpay
 router.post("/addMoney", userAuth, walletController.addMoneyToWallet);
 router.post("/verify-payment", userAuth, walletController.verify_payment);
 
+// router.all('*', userController.pageNotFound);
+
+
 module.exports = router;

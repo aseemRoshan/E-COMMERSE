@@ -426,6 +426,10 @@ const returnorder = async (req, res, next) => {
 
     const { orderId, productId, reason } = req.body;
 
+    if (!mongoose.Types.ObjectId.isValid(orderId) || !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: "Invalid order ID or product ID format" });
+    }
+
     const findOrder = await Order.findOne({ _id: orderId });
     if (!findOrder) {
       return res.status(404).json({ message: "Order not found" });
@@ -437,41 +441,16 @@ const returnorder = async (req, res, next) => {
     }
 
     const productData = findOrder.product[productIndex];
-    if (productData.productStatus === "Returned") {
-      return res.status(400).json({ message: "Product is already returned" });
+    if (productData.productStatus === "Returned" || productData.productStatus === "Return Requested") {
+      return res.status(400).json({ message: "Product is already returned or return requested" });
     }
 
-    const refundAmount = productData.price * productData.quantity;
-
-    findUser.wallet += refundAmount;
-    await User.updateOne(
-      { _id: userId },
-      {
-        $push: {
-          history: {
-            amount: refundAmount,
-            status: "credit",
-            date: Date.now(),
-            description: `Order ${orderId} product ${productId} returned`,
-          },
-        },
-      }
-    );
-    await findUser.save();
-
-    findOrder.product[productIndex].productStatus = "Returned";
-    findOrder.totalPrice -= refundAmount;
-    findOrder.finalAmount -= refundAmount;
-
+    // Set return status to Pending instead of crediting wallet immediately
+    findOrder.product[productIndex].productStatus = "Return Requested";
+    findOrder.product[productIndex].returnStatus = "Pending";
     await findOrder.save();
 
-    const allProductsReturned = findOrder.product.every((product) => product.productStatus === "Returned");
-    if (allProductsReturned) {
-      findOrder.status = "Returned";
-      await findOrder.save();
-    }
-
-    res.status(200).json({ success: true, message: "Return request initiated successfully" });
+    res.status(200).json({ success: true, message: "Return request submitted successfully" });
   } catch (error) {
     next(error);
   }

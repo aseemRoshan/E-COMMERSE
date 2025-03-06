@@ -518,19 +518,13 @@ const loadDashboard = async (req, res, next) => {
 };
 const logout = async (req, res, next) => {
     try {
-        req.session.destroy(err => {
-            if (err) {
-                console.log("Error destroying session", err);
-                return next(err);
-            }
-            res.redirect("/admin/login");
-        });
+        delete req.session.admin; // Remove only the admin session data
+        res.redirect("/admin/login");
     } catch (error) {
         console.log("Unexpected error during logout", error);
         next(error);
     }
 };
-
 module.exports = {
     loadLogin,
     login,

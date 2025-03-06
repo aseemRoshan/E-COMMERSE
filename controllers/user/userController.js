@@ -6,6 +6,14 @@ const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
 
+
+
+
+
+
+
+
+
 const loadSignup = async (req, res, next) => {
     try {
         return res.render("signup");
@@ -478,18 +486,12 @@ const login = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
     try {
-        req.session.destroy((err) => {
-            if (err) {
-                console.log("Session destruction error", err.message);
-                return res.redirect("/pageNotFound");
-            }
-            return res.redirect("/login");
-        });
+        delete req.session.user; // Remove only the user session data
+        res.redirect("/login");
     } catch (error) {
         next(error);
     }
 };
-
 
 const about = async (req, res) => {
     try {
