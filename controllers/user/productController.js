@@ -5,8 +5,8 @@ const Brand = require("../../models/brandSchema");
 
 const productDetails = async (req, res, next) => {
     try {
-        const userId = req.session.user; // This is likely the user object or ID from session
-        const user = userId ? await User.findById(typeof userId === 'object' ? userId._id : userId) : null; // Fetch user data or set to null
+        const userId = req.session.user;
+        const user = userId ? await User.findById(typeof userId === 'object' ? userId._id : userId) : null;
         const productId = req.query.id;
 
         if (!productId) {
@@ -37,7 +37,7 @@ const productDetails = async (req, res, next) => {
         const combinedOffer = categoryOffer + productOffer;
 
         res.render("product-details", {
-            user, // Pass user explicitly
+            user,
             product,
             relatedProducts,
             totalOffer: combinedOffer,
@@ -48,7 +48,6 @@ const productDetails = async (req, res, next) => {
         next(error);
     }
 };
-
 const getProductDetails = async (req, res, next) => {
     try {
         const userId = req.session.user; // Get user from session

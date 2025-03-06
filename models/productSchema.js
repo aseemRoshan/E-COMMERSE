@@ -50,6 +50,13 @@ const productSchema = new Schema({
         type:Boolean,
         default:false,
     },
+    reviews: [{
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        userName: { type: String, required: true },
+        rating: { type: Number, min: 1, max: 5, required: true },
+        reviewText: { type: String, required: true },
+        date: { type: Date, default: Date.now }
+      }],
     status:{
         type:String,
         enum:["Available","Out of stock","Dicountinued"],

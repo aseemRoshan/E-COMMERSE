@@ -604,6 +604,8 @@ const addReview = async (req, res, next) => {
     const { productId, rating, reviewText } = req.body;
     const userId = req.session.user;
 
+    console.log("Received productId:", productId); // Debug log
+
     if (!productId || !rating || !reviewText) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
@@ -613,9 +615,20 @@ const addReview = async (req, res, next) => {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const existingReview = product.reviews.find(review => review.userId.toString() === userId.toString());
+    if (existingReview) {
+      return res.status(400).json({ success: false, message: "You have already reviewed this product" });
+    }
+
     product.reviews.push({
       userId: userId,
-      rating: rating,
+      userName: user.name || "Anonymous",
+      rating: parseInt(rating),
       reviewText: reviewText,
       date: new Date()
     });
@@ -624,10 +637,10 @@ const addReview = async (req, res, next) => {
 
     res.status(200).json({ success: true, message: "Review added successfully" });
   } catch (error) {
+    console.error("Error adding review:", error);
     next(error);
   }
-};
-
+}
 const generateRazorpayOrder = async (req, res, next) => {
   try {
     const { orderId, amount } = req.body;

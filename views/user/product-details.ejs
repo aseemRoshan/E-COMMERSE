@@ -51,13 +51,15 @@
                             </div>
                             <div class="reviews">
                                 <div class="stars">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star-half-alt"></i>
+                                    <%
+                                        const avgRating = product.reviews.length > 0
+                                            ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length
+                                            : 0;
+                                        for (let i = 1; i <= 5; i++) { %>
+                                            <i class="fas fa-star <%= i <= Math.round(avgRating) ? '' : 'empty-star' %>"></i>
+                                    <% } %>
                                 </div>
-                                <span>(25 reviews)</span>
+                                <span>(<%= product.reviews.length %> reviews)</span>
                             </div>
                         </div>
 
@@ -134,6 +136,33 @@
             </div>
         </section>
     <% } %>
+
+    <!-- Reviews Section -->
+    <div class="reviews-section mt-5">
+        <div class="container">
+            <h2 class="section-title">Customer Reviews</h2>
+            <% if (product.reviews && product.reviews.length > 0) { %>
+                <div class="review-list">
+                    <% product.reviews.forEach(review => { %>
+                        <div class="review-item">
+                            <div class="review-header">
+                                <span class="review-user"><%= review.userName %></span>
+                                <div class="review-rating">
+                                    <% for (let i = 1; i <= 5; i++) { %>
+                                        <i class="fas fa-star <%= i <= review.rating ? '' : 'empty-star' %>"></i>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <p class="review-text"><%= review.reviewText %></p>
+                            <span class="review-date"><%= review.date.toLocaleDateString() %></span>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <p>No reviews yet. Be the first to review this product!</p>
+            <% } %>
+        </div>
+    </div>
 </main>
 
 <style>
@@ -238,6 +267,15 @@
     text-decoration: none;
 }
 
+.reviews .stars i {
+    color: #ffd700;
+    font-size: 14px;
+}
+
+.reviews .stars .empty-star {
+    color: #ccc;
+}
+
 .product-price {
     margin-bottom: 20px;
 }
@@ -326,12 +364,12 @@
 }
 
 .wishlist-btn .fas.fa-heart {
-    color: #999; /* Default color when not in wishlist */
-    transition: color 0.3s ease; /* Smooth color transition */
+    color: #999;
+    transition: color 0.3s ease;
 }
 
 .wishlist-btn.in-wishlist .fas.fa-heart {
-    color: #dc3545; /* Red color when in wishlist */
+    color: #dc3545;
 }
 
 .related-products-section {
@@ -406,22 +444,66 @@
     color: #3BB77E;
 }
 
+.reviews-section {
+    padding: 40px 0;
+}
+
+.review-list {
+    margin-top: 20px;
+}
+
+.review-item {
+    border-bottom: 1px solid #e5e5e5;
+    padding: 20px 0;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.review-user {
+    font-weight: bold;
+    color: #253D4E;
+}
+
+.review-rating i {
+    color: #ffd700;
+    font-size: 14px;
+}
+
+.review-rating .empty-star {
+    color: #ccc;
+}
+
+.review-text {
+    color: #7E7E7E;
+    margin-bottom: 10px;
+}
+
+.review-date {
+    font-size: 12px;
+    color: #999;
+}
+
 @media (max-width: 768px) {
     .related-products-slider {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
 
     .main-image-container {
-        padding-top: 100%; /* Maintain aspect ratio on mobile */
+        padding-top: 100%;
     }
 }
 </style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Quantity selector functionality
     const minusBtn = document.querySelector('.minus');
     const plusBtn = document.querySelector('.plus');
     const qtyInput = document.querySelector('.qty-input');
@@ -438,13 +520,11 @@ document.addEventListener('DOMContentLoaded', function () {
         qtyInput.value = currentValue + 1;
     });
 
-    // Thumbnail switching functionality
     const thumbnails = document.querySelectorAll('.thumbnail-item img');
     const mainImage = document.getElementById('mainImage');
     const zoomWrapper = document.querySelector('.zoom-wrapper');
     const mainImageContainer = document.querySelector('.main-image-container');
 
-    // Adjust container height based on image aspect ratio
     function adjustContainerHeight() {
         const img = new Image();
         img.src = mainImage.src;
@@ -454,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
-    adjustContainerHeight(); // Initial adjustment
+    adjustContainerHeight();
 
     thumbnails.forEach(thumbnail => {
         thumbnail.addEventListener('click', function () {
@@ -462,19 +542,16 @@ document.addEventListener('DOMContentLoaded', function () {
             this.parentElement.classList.add('active');
             const newImageSrc = this.getAttribute('src');
             mainImage.src = newImageSrc;
-            adjustContainerHeight(); // Adjust height for new image
+            adjustContainerHeight();
         });
     });
 
-    // Dynamic zoom functionality
-    const zoomFactor = 2; // Adjust zoom level here
-
+    const zoomFactor = 2;
     zoomWrapper.addEventListener('mousemove', (e) => {
         const rect = zoomWrapper.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Calculate transform origin based on mouse position
         const originX = (x / rect.width) * 100;
         const originY = (y / rect.height) * 100;
 
@@ -487,7 +564,6 @@ document.addEventListener('DOMContentLoaded', function () {
         mainImage.style.transformOrigin = 'center center';
     });
 
-    // Check if product is already in wishlist on page load
     checkWishlistStatus('<%= product._id %>');
 });
 
@@ -521,43 +597,30 @@ function addToCart(productId) {
     });
 }
 
-// New function to check wishlist status
 function checkWishlistStatus(productId) {
     $.ajax({
-        url: '/getWishlistCount', // Assuming this endpoint can be modified to check specific product
-        method: 'GET',
-        success: (response) => {
-            // Assuming response contains an array of wishlist items or a count
-            $.ajax({
-                url: '/checkProductInWishlist', // New endpoint needed to check specific product
-                method: 'POST',
-                data: { productId: productId },
-                success: (result) => {
-                    const wishlistBtn = document.getElementById('wishlistBtn');
-                    if (result.inWishlist) {
-                        wishlistBtn.classList.add('in-wishlist');
-                    } else {
-                        wishlistBtn.classList.remove('in-wishlist');
-                    }
-                },
-                error: (error) => {
-                    console.error('Error checking wishlist status:', error);
-                }
-            });
+        url: '/checkProductInWishlist',
+        method: 'POST',
+        data: { productId: productId },
+        success: (result) => {
+            const wishlistBtn = document.getElementById('wishlistBtn');
+            if (result.inWishlist) {
+                wishlistBtn.classList.add('in-wishlist');
+            } else {
+                wishlistBtn.classList.remove('in-wishlist');
+            }
         },
         error: (error) => {
-            console.error('Error fetching wishlist count:', error);
+            console.error('Error checking wishlist status:', error);
         }
     });
 }
 
-// Updated function to toggle wishlist and change heart color
 function toggleWishlist(productId) {
     const wishlistBtn = document.getElementById('wishlistBtn');
     const isInWishlist = wishlistBtn.classList.contains('in-wishlist');
 
     if (isInWishlist) {
-        // Remove from wishlist
         $.ajax({
             url: '/removeFromWishlist',
             method: 'GET',
@@ -583,7 +646,6 @@ function toggleWishlist(productId) {
             }
         });
     } else {
-        // Add to wishlist
         $.ajax({
             url: '/addToWishlist',
             method: 'POST',

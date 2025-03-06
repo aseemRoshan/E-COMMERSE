@@ -163,6 +163,7 @@
           <div class="col-lg">
             <h5>Add Review</h5>
             <form id="reviewForm">
+              <input type="hidden" id="productId" value="<%= orders.product[0].productId._id %>">
               <div class="mb-3">
                 <label for="rating" class="form-label">Rating</label>
                 <select class="form-control" id="rating" required>
@@ -288,47 +289,49 @@
   }
 
   $(document).ready(function() {
-    $('#reviewForm').on('submit', function(event) {
-      event.preventDefault();
-      var rating = $('#rating').val();
-      var reviewText = $('#reviewText').val();
-      var productId = '<%= orders.product[0]._id %>';
+  $('#reviewForm').on('submit', function(event) {
+    event.preventDefault();
+    var productId = $('#productId').val();
+    var rating = $('#rating').val();
+    var reviewText = $('#reviewText').val();
 
-      $.ajax({
-        url: '/addReview',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ productId: productId, rating: rating, reviewText: reviewText }),
-        success: function(response) {
-          if (response.success) {
-            Swal.fire({
-              icon: 'success',
-              title: 'Review Added',
-              text: 'Your review and rating have been added successfully!',
-              confirmButtonText: 'OK'
-            }).then(() => {
-              window.location.reload();
-            });
-          } else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Failed to Add Review',
-              text: response.message || "Failed to add the review. Please try again.",
-              confirmButtonText: 'OK'
-            });
-          }
-        },
-        error: (error) => {
+    console.log("Sending productId:", productId); // Debug log
+
+    $.ajax({
+      url: '/addReview',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ productId: productId, rating: rating, reviewText: reviewText }),
+      success: function(response) {
+        if (response.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Review Added',
+            text: 'Your review and rating have been added successfully!',
+            confirmButtonText: 'OK'
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
           Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: "An error occurred while adding the review. Please try again.",
+            title: 'Failed to Add Review',
+            text: response.message || "Failed to add the review. Please try again.",
             confirmButtonText: 'OK'
           });
         }
-      });
+      },
+      error: (error) => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: "An error occurred while adding the review. Please try again.",
+          confirmButtonText: 'OK'
+        });
+      }
     });
   });
+});
 
   function retryPayment(orderId, amount) {
     $.ajax({
@@ -441,8 +444,7 @@
 
 <footer class="footer-section">
   <div class="container relative">
-    <div class="sofa-img">
-    </div>
+    <div class="sofa-img"></div>
     <div class="row">
       <div class="col-lg-8">
         <div class="subscription-form">
@@ -510,8 +512,7 @@
       </div>
     </div>
     <div class="border-top copyright">
-      <div class="row pt-4">
-      </div>
+      <div class="row pt-4"></div>
     </div>
   </div>
 </footer>

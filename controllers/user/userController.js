@@ -203,35 +203,41 @@ const filterByPrice = async (req, res, next) => {
 
 const searchProducts = async (req, res, next) => {
     try {
-        const user = req.session.user;
-        const userData = await User.findOne({ _id: user });
-        let search = req.query.query;
-
-        const brands = await Brand.find({}).lean();
-        const categories = await Category.find({ isListed: true }).lean();
-        const categoryIds = categories.map(category => category._id.toString());
-        let searchResult = [];
-
-        if (req.session.filteredProducts && req.session.filteredProducts.length > 0) {
-            searchResult = req.session.filteredProducts.filter(product =>
-                product.productName.toLowerCase().includes(search.toLowerCase())
-            );
-        } else {
-            searchResult = await Product.find({
-                productName: { $regex: ".*" + search + ".*", $options: "i" },
-                isBlocked: false,
-                quantity: { $gt: 0 },
-                category: { $in: categoryIds }
-            });
-        }
-
-        searchResult.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
-
-        res.json(searchResult);
+      const user = req.session.user;
+      const userData = await User.findOne({ _id: user });
+      let search = req.query.query;
+  
+      const brands = await Brand.find({}).lean();
+      const categories = await Category.find({ isListed: true }).lean();
+      const categoryIds = categories.map(category => category._id.toString());
+      let searchResult = [];
+  
+      if (req.session.filteredProducts && req.session.filteredProducts.length > 0) {
+        searchResult = req.session.filteredProducts.filter(product =>
+          product.productName.toLowerCase().includes(search.toLowerCase())
+        );
+      } else {
+        searchResult = await Product.find({
+          productName: { $regex: ".*" + search + ".*", $options: "i" },
+          isBlocked: false,
+          quantity: { $gt: 0 },
+          category: { $in: categoryIds }
+        }).lean(); // Use .lean() for plain JS objects
+      }
+  
+      // Ensure reviews is always an array
+      searchResult = searchResult.map(product => ({
+        ...product,
+        reviews: product.reviews || [] // Fallback to empty array if undefined
+      }));
+  
+      searchResult.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
+  
+      res.json(searchResult);
     } catch (error) {
-        next(error);
+      next(error);
     }
-};
+  };
 
 const pageNotFound = async (req, res, next) => {
     try {

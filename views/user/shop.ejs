@@ -325,6 +325,28 @@
       color: #999;
     }
 
+    .rating-stars {
+      display: flex;
+      justify-content: center;
+      margin: 5px 0;
+    }
+
+    .rating-stars i {
+      color: #ffd700;
+      font-size: 14px;
+    }
+
+    .rating-stars .empty-star {
+      color: #ccc;
+    }
+
+    .product-info-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
     @media (max-width: 768px) {
       .product-list-container {
         flex-direction: column;
@@ -416,10 +438,22 @@
                 <a href="/product-details?id=<%= product._id %>" style="text-decoration: none;">
                   <img src="/uploads/re-image/<%= product.productImage[0] %>" class="img-fluid product-thumbnail" loading="lazy">
                   <h3 class="product-title"><%= product.productName %></h3>
-                  <p class="product-brand">Brand: <%= product.brand %></p>
-                  <div class="product-pricing">
-                    <strong class="product-price" style="text-decoration: line-through;">₹<%= product.regularPrice %></strong>
-                    <strong class="productsale-price">₹<%= product.salePrice %></strong>
+                  <div class="product-info-row">
+                    <p class="product-brand">Brand: <%= product.brand %></p>
+                    <div class="rating-stars">
+                      <%
+                        const reviews = product.reviews || []; // Default to empty array if undefined
+                        const avgRating = reviews.length > 0
+                          ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+                          : 0;
+                        for (let i = 1; i <= 5; i++) { %>
+                          <i class="fas fa-star <%= i <= Math.round(avgRating) ? '' : 'empty-star' %>"></i>
+                      <% } %>
+                    </div>
+                    <div class="product-pricing">
+                      <strong class="product-price" style="text-decoration: line-through;">₹<%= product.regularPrice %></strong>
+                      <strong class="productsale-price">₹<%= product.salePrice %></strong>
+                    </div>
                   </div>
                 </a>
               </div>
@@ -475,6 +509,15 @@
       const productContainer = document.getElementById('productContainer');
       productContainer.innerHTML = '';
       data.forEach(product => {
+        // Use ?? to default to an empty array if reviews is undefined or null
+        const reviews = product.reviews ?? [];
+        const avgRating = reviews.length > 0
+          ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+          : 0;
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+          stars += `<i class="fas fa-star ${i <= Math.round(avgRating) ? '' : 'empty-star'}"></i>`;
+        }
         const productHTML = `
           <div class="product-item">
             <button class="wishlist-btn" onclick="addToWishlist('${product._id}')">
@@ -484,10 +527,13 @@
               <a href="/product-details?id=${product._id}" style="text-decoration: none;">
                 <img src="/uploads/re-image/${product.productImage[0]}" class="img-fluid product-thumbnail" loading="lazy">
                 <h3 class="product-title">${product.productName}</h3>
-                <p class="product-brand">Brand: ${product.brand}</p>
-                <div class="product-pricing">
-                  <strong class="product-price" style="text-decoration: line-through;">₹${product.regularPrice}</strong>
-                  <strong class="productsale-price">₹${product.salePrice}</strong>
+                <div class="product-info-row">
+                  <p class="product-brand">Brand: ${product.brand}</p>
+                  <div class="rating-stars">${stars}</div>
+                  <div class="product-pricing">
+                    <strong class="product-price" style="text-decoration: line-through;">₹${product.regularPrice}</strong>
+                    <strong class="productsale-price">₹${product.salePrice}</strong>
+                  </div>
                 </div>
               </a>
             </div>
@@ -513,7 +559,7 @@
         url: '/getCartCount',
         method: 'GET',
         success: (response) => {
-          console.log('Cart Count Response:', response); // Debug log
+          console.log('Cart Count Response:', response);
           const cartBadge = $('#cartCount');
           if (response && response.count >= 0) {
             cartBadge.text(response.count);
@@ -534,7 +580,7 @@
         url: '/getWishlistCount',
         method: 'GET',
         success: (response) => {
-          console.log('Wishlist Count Response:', response); // Debug log
+          console.log('Wishlist Count Response:', response);
           const wishlistBadge = $('#wishlistCount');
           if (response && response.count >= 0) {
             wishlistBadge.text(response.count);
@@ -630,7 +676,6 @@
       window.location.href = url;
     }
 
-    // Initialize counts when page loads
     $(document).ready(function() {
       updateCartCount();
       updateWishlistCount();
