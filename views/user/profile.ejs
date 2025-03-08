@@ -593,7 +593,7 @@
       const tabLink = document.getElementById(`${tabId}-tab`);
       
       if (tabElement && tabLink) {
-        // Remove active classes from all tabs and links
+        
         document.querySelectorAll('.tab-pane').forEach(tab => {
           tab.classList.remove('show', 'active');
         });
@@ -601,33 +601,33 @@
           link.classList.remove('active');
         });
 
-        // Add active classes to the selected tab and link
+        
         tabElement.classList.add('show', 'active');
         tabLink.classList.add('active');
 
-        // Scroll to the tab (optional)
+        
         tabElement.scrollIntoView({ behavior: "smooth" });
       }
     }
 
-    // Check URL hash on page load
-    const hash = window.location.hash.substring(1); // Remove the '#' from the hash
+    
+    const hash = window.location.hash.substring(1); 
     if (hash && document.getElementById(hash)) {
       activateTab(hash);
     } else {
-      // Default to 'dashboard' if no hash is present
+      
       activateTab('dashboard');
     }
 
-    // Add click event to all tab links to update the URL hash
+    
     document.querySelectorAll('.nav-link[data-bs-toggle="tab"]').forEach(link => {
       link.addEventListener('click', function(e) {
-        const tabId = this.getAttribute('href').substring(1); // Get the tab ID from href
-        window.location.hash = tabId; // Update the URL hash
+        const tabId = this.getAttribute('href').substring(1); 
+        window.location.hash = tabId; 
       });
     });
 
-    // Copy referral code function
+    
     window.copyToClipboard = function(text) {
       navigator.clipboard.writeText(text).then(function() {
         const copyBtn = document.querySelector('.copy-btn');

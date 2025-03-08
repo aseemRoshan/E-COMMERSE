@@ -10,7 +10,7 @@
                 <button class="date-filter active" data-range="1">1 Day</button>
                 <button class="date-filter" data-range="7">1 Week</button>
                 <button class="date-filter" data-range="30">1 Month</button>
-                <button class="date-filter" data-range="365">1 Year</button> <!-- Added 1 Year filter -->
+                <button class="date-filter" data-range="365">1 Year</button> 
             </div>
             <div class="custom-date-group">
                 <input type="date" id="startDate" value="<%= startDate || new Date().toISOString().split('T')[0] %>">
@@ -183,7 +183,7 @@
     --border-radius: 12px;
   }
 
-  /* Existing styles remain mostly unchanged, adding new styles for top sellers */
+  
   .top-sellers-container {
     margin-top: 40px;
     display: grid;
@@ -263,7 +263,7 @@
     color: #64748b;
   }
 
-  /* Existing styles for context */
+  
   .chart-container {
     margin-top: 230px;
     padding: 20px;

@@ -445,7 +445,7 @@ const returnorder = async (req, res, next) => {
       return res.status(400).json({ message: "Product is already returned or return requested" });
     }
 
-    // Set return status to Pending instead of crediting wallet immediately
+    
     findOrder.product[productIndex].productStatus = "Return Requested";
     findOrder.product[productIndex].returnStatus = "Pending";
     await findOrder.save();
@@ -509,12 +509,12 @@ const downloadInvoice = async (req, res, next) => {
       return res.status(404).send('Order not found');
     }
 
-    // Filter out returned or cancelled products
+    
     let activeProducts = order.product.filter(prod => 
       prod.productStatus !== "Returned" && prod.productStatus !== "Cancelled"
     );
 
-    // Map active products for the invoice
+    
     let products = activeProducts.map(prod => ({
       "quantity": prod.quantity,
       "description": prod.name || prod.title,
@@ -522,7 +522,7 @@ const downloadInvoice = async (req, res, next) => {
       "price": prod.price,
     }));
 
-    // Add delivery charge if applicable and there are active products
+    
     if (order.deliveryCharge && order.deliveryCharge > 0 && activeProducts.length > 0) {
       products.push({
         "quantity": 1,
@@ -532,7 +532,7 @@ const downloadInvoice = async (req, res, next) => {
       });
     }
 
-    // If no active products remain, generate a minimal invoice or notify user
+    
     if (products.length === 0) {
       products.push({
         "quantity": 1,
@@ -603,8 +603,6 @@ const addReview = async (req, res, next) => {
   try {
     const { productId, rating, reviewText } = req.body;
     const userId = req.session.user;
-
-    console.log("Received productId:", productId); // Debug log
 
     if (!productId || !rating || !reviewText) {
       return res.status(400).json({ success: false, message: "All fields are required" });

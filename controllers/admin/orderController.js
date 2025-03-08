@@ -173,15 +173,15 @@ const approveReturn = async (req, res, next) => {
   
       const productData = order.product[productIndex];
       const refundAmount = productData.price * productData.quantity;
-  
-      // Update order
+
+      
       order.product[productIndex].productStatus = "Returned";
       order.product[productIndex].returnStatus = "Approved";
       order.totalPrice -= refundAmount;
       order.finalAmount -= refundAmount;
       await order.save();
   
-      // Credit user's wallet
+      
       const user = await User.findById(order.userId);
       if (user) {
         user.wallet += refundAmount;
@@ -194,7 +194,7 @@ const approveReturn = async (req, res, next) => {
         await user.save();
       }
   
-      // Restock product
+      
       const product = await Product.findById(productData.productId);
       if (product) {
         product.quantity += productData.quantity;
@@ -221,8 +221,8 @@ const approveReturn = async (req, res, next) => {
         return res.status(400).json({ success: false, message: "Invalid return request" });
       }
   
-      // Revert to previous status (e.g., "Delivered") and mark return as rejected
-      order.product[productIndex].productStatus = "Delivered"; // Or whatever status it was before
+      
+      order.product[productIndex].productStatus = "Delivered"; 
       order.product[productIndex].returnStatus = "Rejected";
       await order.save();
   

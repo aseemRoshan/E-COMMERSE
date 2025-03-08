@@ -36,7 +36,7 @@ const productDetails = async (req, res, next) => {
         const productOffer = product.productOffer || 0;
         const combinedOffer = categoryOffer + productOffer;
 
-        // Pass the wishlist data to the template
+        
         const wishlist = user ? user.wishlist || [] : [];
 
         res.render("product-details", {
@@ -73,7 +73,7 @@ const getProductDetails = async (req, res, next) => {
 
         const totalOffer = calculateOffer(product.regularPrice, product.salePrice);
 
-        // Pass the wishlist data to the template
+        
         const wishlist = user ? user.wishlist || [] : [];
 
         res.render('product-details', {

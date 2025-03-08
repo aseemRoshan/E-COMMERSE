@@ -73,7 +73,7 @@
 </main>
 <%- include("../../views/partials/user/footer") %>
 
-<!-- Include jQuery -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -100,7 +100,7 @@
             data: { productId: productId },
             success: (response) => {
                 if (response.exists) {
-                    // Product already exists in the cart
+                    
                     Swal.fire({
                         title: 'Product Already in Cart',
                         text: 'This product is already in your cart.',
@@ -108,7 +108,7 @@
                         timer: 3000
                     });
                 } else {
-                    // Product not in cart, proceed to add
+                    
                     $.ajax({
                         url: '/addToCart',
                         method: 'POST',
@@ -120,12 +120,12 @@
                                 icon: 'success',
                                 timer: 3000
                             }).then(() => {
-                                // Remove the product from the wishlist after adding to the cart
+                                
                                 $.ajax({
                                     url: `/removeFromWishlist?productId=${productId}`,
                                     method: 'GET',
                                     success: () => {
-                                        // Reload the wishlist page to reflect the changes
+                                        
                                         location.reload();
                                     },
                                     error: () => {

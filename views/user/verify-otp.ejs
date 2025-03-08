@@ -164,7 +164,7 @@
 
         #resendOtpButton[hidden] {
             opacity: 0;
-            pointer-events: none; /* Disable clicks when hidden */
+            pointer-events: none; 
         }
     </style>
 </head>
@@ -213,7 +213,7 @@
                 clearInterval(timerInterval);
                 document.getElementById("timerValue").classList.add("expired");
                 document.getElementById("timerValue").textContent = "Expired";
-                document.getElementById("resendOtpButton").removeAttribute("hidden"); // Show the Resend OTP button
+                document.getElementById("resendOtpButton").removeAttribute("hidden"); 
             }
         }, 1000);
     }
@@ -268,7 +268,7 @@
         timer = 60;
         document.getElementById("timerValue").textContent = timer;
         document.getElementById("timerValue").classList.remove("expired");
-        document.getElementById("resendOtpButton").setAttribute("hidden", true); // Hide the Resend OTP button
+        document.getElementById("resendOtpButton").setAttribute("hidden", true); 
         startTimer();
 
         $.ajax({

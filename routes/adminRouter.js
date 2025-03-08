@@ -74,7 +74,7 @@ router.patch("/coupon/:id/unlist", adminAuth, couponController.unlistCoupon);
 
 
 router.use((req, res, next) => {
-    res.redirect("/admin/pageerror"); // Redirect to the existing pageerror route
+    res.redirect("/admin/pageerror"); 
 });
 
 

@@ -227,23 +227,23 @@
   </div>
 
   <script>
-    // Toggle password visibility
+    
     function togglePasswordVisibility(fieldId) {
       const passwordField = document.getElementById(fieldId);
       const eyeIcon = passwordField.nextElementSibling.querySelector("i");
 
       if (passwordField.type === "password") {
-        passwordField.type = "text"; // Show password
+        passwordField.type = "text"; 
         eyeIcon.classList.remove("fa-eye");
-        eyeIcon.classList.add("fa-eye-slash"); // Change icon to "eye-slash"
+        eyeIcon.classList.add("fa-eye-slash"); 
       } else {
-        passwordField.type = "password"; // Hide password
+        passwordField.type = "password"; 
         eyeIcon.classList.remove("fa-eye-slash");
-        eyeIcon.classList.add("fa-eye"); // Change icon to "eye"
+        eyeIcon.classList.add("fa-eye"); 
       }
     }
 
-    // Validation functions
+    
     const nameid = document.getElementById("name");
     const emailid = document.getElementById("email");
     const phoneid = document.getElementById("phone");
@@ -326,7 +326,7 @@
       }
     }
 
-    // Form submission handling
+    
     document.addEventListener("DOMContentLoaded", function () {
       signupform.addEventListener("submit", function (e) {
         e.preventDefault();

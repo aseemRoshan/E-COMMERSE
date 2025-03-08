@@ -206,7 +206,7 @@
     overflow: hidden;
     margin-bottom: 20px;
     width: 100%;
-    padding-top: 100%; /* Default 1:1 aspect ratio, adjusted by JS */
+    padding-top: 100%; 
 }
 
 .zoom-wrapper {
@@ -224,7 +224,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Ensures full image is visible without cropping */
+    object-fit: contain; 
     transform-origin: center center;
     transition: transform 0.1s ease;
 }
@@ -505,7 +505,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-// Pass the wishlist data from server to client-side JavaScript
+
 const wishlist = <%- JSON.stringify(wishlist || []) %>;
 
 document.addEventListener('DOMContentLoaded', function () {

@@ -201,13 +201,13 @@
     </div>
 </main>
 
-<!-- External Styles and Scripts -->
+
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
-<!-- JavaScript -->
+
 <script>
 function handleDropdownChange(selectElement) {
     const selectedValue = selectElement.value;
@@ -218,17 +218,17 @@ function handleDropdownChange(selectElement) {
     const actionRow = selectElement.closest('.status-action');
     const statusChip = actionRow.querySelector('.status-chip');
     
-    // Save current status text
+    
     const currentStatus = statusChip.textContent;
     
-    // Disable select during processing
+    
     selectElement.disabled = true;
     
-    // Update status chip to show "Processing..."
+    
     statusChip.classList.add('processing');
     statusChip.textContent = 'Processing...';
 
-    // Define action handlers
+    
     const actions = {
         "ship": () => processAction('shipProduct', orderId, productId),
         "cancel": () => confirmCancelProduct(orderId, productId),
@@ -238,11 +238,11 @@ function handleDropdownChange(selectElement) {
         "rejectReturn": () => processAction('rejectReturn', orderId, productId)
     };
 
-    // Execute selected action
+    
     if (actions[selectedValue]) {
         actions[selectedValue]();
     } else {
-        // Reset UI if no valid action
+        
         resetActionUI(statusChip, currentStatus, selectElement);
     }
 }
@@ -262,7 +262,7 @@ function confirmCancelProduct(orderId, productId) {
         if (result.isConfirmed) {
             processAction('cancelProduct', orderId, productId);
         } else {
-            // Reset UI elements
+        
             const selectElement = document.querySelector(`select[data-product-id="${productId}"]`);
             const statusChip = selectElement.closest('.status-action').querySelector('.status-chip');
             resetActionUI(statusChip, statusChip.getAttribute('data-original-status') || statusChip.textContent, selectElement);
@@ -279,7 +279,7 @@ function processAction(actionType, orderId, productId) {
         contentType: 'application/json',
         data: JSON.stringify({ orderId, productId }),
         beforeSend: function() {
-            // Show processing overlay
+            
             const overlay = document.createElement('div');
             overlay.className = 'processing-overlay';
             overlay.innerHTML = `
@@ -308,7 +308,7 @@ function processAction(actionType, orderId, productId) {
             resetAllActionUI();
         },
         complete: function() {
-            // Remove processing overlay
+            
             const overlay = document.querySelector('.processing-overlay');
             if (overlay) overlay.remove();
         }
@@ -363,7 +363,7 @@ function showErrorMessage(message) {
     });
 }
 
-// Store original status values on page load
+
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.status-chip').forEach(chip => {
         chip.setAttribute('data-original-status', chip.textContent);
@@ -371,9 +371,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- CSS -->
+
 <style>
-/* ===== BASE STYLES ===== */
+
 :root {
     --primary-color: #4361ee;
     --primary-light: #4895ef;
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
     --transition: all 0.3s ease;
 }
 
-/* Reset and base styles */
+
 * {
     margin: 0;
     padding: 0;
@@ -413,7 +413,7 @@ body {
     background-color: #f5f7fa;
 }
 
-/* ===== LAYOUT ===== */
+
 .dashboard-container {
     padding: 1.5rem;
     max-width: 1280px;
@@ -631,7 +631,7 @@ body {
     font-style: italic;
 }
 
-/* ===== ORDER ITEMS TABLE ===== */
+
 .order-items {
     background-color: white;
     border-radius: var(--border-radius);

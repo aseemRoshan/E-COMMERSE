@@ -40,16 +40,16 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(methodOverride('_method'));
 
-// Routes
+
 app.use("/admin", adminRouter);
 app.use("/", userRouter);
 
-// Global 404 handler
+
 app.use((req, res, next) => {
     if (req.path.startsWith('/admin')) {
-        res.redirect('/admin/pageerror'); // Admin 404
+        res.redirect('/admin/pageerror'); 
     } else {
-        res.render('page-404'); // User 404
+        res.render('page-404'); 
     }
 });
 

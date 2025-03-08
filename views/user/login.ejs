@@ -212,25 +212,25 @@
   </div>
 
   <script>
-    // Toggle password visibility
+    
     function togglePasswordVisibility(fieldId) {
       const passwordField = document.getElementById(fieldId);
       const eyeIcon = passwordField.nextElementSibling.querySelector("i");
 
       if (passwordField.type === "password") {
-        passwordField.type = "text"; // Show password
+        passwordField.type = "text"; 
         eyeIcon.classList.remove("fa-eye");
-        eyeIcon.classList.add("fa-eye-slash"); // Change icon to "eye-slash"
+        eyeIcon.classList.add("fa-eye-slash"); 
       } else {
-        passwordField.type = "password"; // Hide password
+        passwordField.type = "password"; 
         eyeIcon.classList.remove("fa-eye-slash");
-        eyeIcon.classList.add("fa-eye"); // Change icon to "eye"
+        eyeIcon.classList.add("fa-eye"); 
       }
     }
 
-    // Form validation
+    
     function validateForm(event) {
-      event.preventDefault(); // Prevent form submission initially
+      event.preventDefault(); 
 
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
@@ -239,25 +239,25 @@
 
       let isValid = true;
 
-      // Reset error messages
+      
       emailError.style.display = "none";
       passwordError.style.display = "none";
 
-      // Check if email is empty
+      
       if (!email) {
         emailError.style.display = "block";
         isValid = false;
       }
 
-      // Check if password is empty
+      
       if (!password) {
         passwordError.style.display = "block";
         isValid = false;
       }
 
-      // If all fields are filled, allow form submission
+      
       if (isValid) {
-        document.querySelector("form").submit(); // Submit the form
+        document.querySelector("form").submit(); 
       }
 
       return isValid;

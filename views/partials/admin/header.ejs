@@ -100,7 +100,7 @@
 </head>
 <body>
     <div class="sidebar">
-        <h2>Furniture Admin</h2>
+        <h2>Furnic Admin</h2>
         <a href="/admin/" id="dashboard-link"><i class="fas fa-home"></i> Dashboard</a>
         <a href="/admin/Customers" id="customers-link"><i class="fas fa-users"></i> Customers</a>
         <a href="/admin/category" id="category-link"><i class="fas fa-folder"></i> Category</a>
@@ -114,15 +114,15 @@
     </div>
 
     <script>
-        // Get current page URL path
+        
         const currentPath = window.location.pathname;
         
-        // Remove active class from all links
+        
         document.querySelectorAll('.sidebar a').forEach(link => {
             link.classList.remove('active');
         });
         
-        // Add active class to current page link
+        
         if (currentPath === '/admin/' || currentPath === '/admin') {
             document.getElementById('dashboard-link').classList.add('active');
         } else if (currentPath.includes('/admin/Customers')) {

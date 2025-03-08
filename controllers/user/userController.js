@@ -30,7 +30,7 @@ const loadShopping = async (req, res, next) => {
 
         if (user) {
             userData = await User.findOne({ _id: user });
-            wishlist = userData.wishlist || []; // Fetch the user's wishlist
+            wishlist = userData.wishlist || []; 
         }
 
         const categories = await Category.find({ isListed: true });
@@ -96,7 +96,7 @@ const loadShopping = async (req, res, next) => {
             totalPages: totalPages,
             user: req.session.user || null,
             selectedCategory: selectedCategory || null,
-            wishlist: wishlist // Pass the wishlist to the template
+            wishlist: wishlist 
         });
     } catch (error) {
         next(error);
@@ -161,7 +161,7 @@ const loadShopping = async (req, res, next) => {
             currentPage,
             selectedCategory: category || null,
             selectedBrand: brand || null,
-            wishlist: wishlist // Pass wishlist to the template
+            wishlist: wishlist 
         });
     } catch (error) {
         next(error);
@@ -175,7 +175,7 @@ const filterByPrice = async (req, res, next) => {
         let wishlist = [];
         if (user) {
             userData = await User.findOne({ _id: user });
-            wishlist = userData.wishlist || []; // Fetch the user's wishlist
+            wishlist = userData.wishlist || []; 
         }
 
         const brands = await Brand.find({}).lean();
@@ -204,7 +204,7 @@ const filterByPrice = async (req, res, next) => {
             brands: brands,
             totalPages,
             currentPage,
-            wishlist: wishlist // Pass wishlist to the template
+            wishlist: wishlist 
         });
     } catch (error) {
         next(error);
@@ -244,7 +244,6 @@ const searchProducts = async (req, res, next) => {
         }));
 
         searchResult.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
-        console.log('Search results:', searchResult); // Debug log
         res.json(searchResult);
     } catch (error) {
         console.error('Error in searchProducts:', error);
@@ -274,7 +273,6 @@ const loadHomepage = async (req, res, next) => {
 
         if (userid) {
             const userData = await User.findById(userid);
-            console.log(userData, 'user');
             res.render("home", { user: userData, products: products });
         } else {
             return res.render("home", { products: products });
@@ -504,7 +502,7 @@ const login = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
     try {
-        delete req.session.user; // Remove only the user session data
+        delete req.session.user; 
         res.redirect("/login");
     } catch (error) {
         next(error);
@@ -532,9 +530,6 @@ const contact = async (req, res) => {
 const sendContactEmail = async (req, res, next) => {
     try {
         const { fname, lname, email, message } = req.body;
-
-        
-        console.log("Incoming data:", { fname, lname, email, message });
 
         
         if (!fname || !lname || !email || !message) {

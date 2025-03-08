@@ -518,7 +518,7 @@ const loadDashboard = async (req, res, next) => {
 };
 const logout = async (req, res, next) => {
     try {
-        delete req.session.admin; // Remove only the admin session data
+        delete req.session.admin; 
         res.redirect("/admin/login");
     } catch (error) {
         console.log("Unexpected error during logout", error);
