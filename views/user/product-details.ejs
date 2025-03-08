@@ -88,7 +88,9 @@
                                 <button class="qty-btn plus">+</button>
                             </div>
                             <button class="add-to-cart-btn" onclick="addToCart('<%= product._id %>')">Add to cart</button>
-                            <button class="wishlist-btn" id="wishlistBtn" onclick="toggleWishlist('<%= product._id %>')">
+                            <button class="wishlist-btn <%= wishlist && wishlist.includes(product._id.toString()) ? 'in-wishlist' : '' %>" 
+                                    id="wishlistBtn" 
+                                    onclick="toggleWishlist('<%= product._id %>')">
                                 <i class="fas fa-heart" id="wishlistHeart"></i>
                             </button>
                         </div>
@@ -503,6 +505,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+// Pass the wishlist data from server to client-side JavaScript
+const wishlist = <%- JSON.stringify(wishlist || []) %>;
+
 document.addEventListener('DOMContentLoaded', function () {
     const minusBtn = document.querySelector('.minus');
     const plusBtn = document.querySelector('.plus');
@@ -563,8 +568,6 @@ document.addEventListener('DOMContentLoaded', function () {
         mainImage.style.transform = 'scale(1)';
         mainImage.style.transformOrigin = 'center center';
     });
-
-    checkWishlistStatus('<%= product._id %>');
 });
 
 function updateCartCount(count) {
@@ -597,25 +600,6 @@ function addToCart(productId) {
     });
 }
 
-function checkWishlistStatus(productId) {
-    $.ajax({
-        url: '/checkProductInWishlist',
-        method: 'POST',
-        data: { productId: productId },
-        success: (result) => {
-            const wishlistBtn = document.getElementById('wishlistBtn');
-            if (result.inWishlist) {
-                wishlistBtn.classList.add('in-wishlist');
-            } else {
-                wishlistBtn.classList.remove('in-wishlist');
-            }
-        },
-        error: (error) => {
-            console.error('Error checking wishlist status:', error);
-        }
-    });
-}
-
 function toggleWishlist(productId) {
     const wishlistBtn = document.getElementById('wishlistBtn');
     const isInWishlist = wishlistBtn.classList.contains('in-wishlist');
@@ -628,6 +612,8 @@ function toggleWishlist(productId) {
             success: (response) => {
                 if (response.success) {
                     wishlistBtn.classList.remove('in-wishlist');
+                    const index = wishlist.indexOf(productId);
+                    if (index > -1) wishlist.splice(index, 1);
                     Swal.fire({
                         title: 'Removed from Wishlist',
                         text: 'The product has been removed from your wishlist',
@@ -653,6 +639,7 @@ function toggleWishlist(productId) {
             success: (response) => {
                 if (response.status) {
                     wishlistBtn.classList.add('in-wishlist');
+                    wishlist.push(productId);
                     Swal.fire({
                         title: 'Added to Wishlist',
                         text: 'The product has been added to your wishlist',

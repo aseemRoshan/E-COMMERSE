@@ -117,8 +117,8 @@
                       <a href="/editAddress?id=<%= address._id %>&redirect=/checkout&userId=<%= user._id %>">
                         <button class="btn-small">Edit</button>
                       </a>
-                      <a href="/deleteAddress?id=<%= address._id %>&redirect=/checkout&userId=<%= user._id %>">
-                        <button class="btn-small" onclick="return confirm('Are you sure you want to delete this address?')">Delete</button>
+                      <a href="#" onclick="confirmDeleteAddress('<%= address._id %>', '<%= user._id %>')">
+                        <button class="btn-small">Delete</button>
                       </a>
                     </div>
                   </div>
@@ -245,6 +245,7 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <script>
   async function placeOrder(userId) {
@@ -537,6 +538,22 @@
     var couponButtons = document.querySelectorAll('.use-button');
     couponButtons.forEach(function (button) {
       button.disabled = false;
+    });
+  }
+
+
+  function confirmDeleteAddress(addressId, userId) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will not be able to recover this address!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'No, keep it'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = `/deleteAddress?id=${addressId}&redirect=/checkout&userId=${userId}`;
+      }
     });
   }
 </script>

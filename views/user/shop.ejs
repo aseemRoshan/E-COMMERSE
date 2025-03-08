@@ -166,8 +166,7 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       display: flex;
       flex-direction: column;
-      min-height: 400px;
-      height: auto;
+      height: 450px; /* Fixed height for consistency */
     }
 
     .product-item:hover {
@@ -183,37 +182,74 @@
       margin-bottom: 15px;
     }
 
+    .product-title-container {
+      height: 50px; /* Fixed height for title */
+      margin-bottom: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .product-title {
       font-size: 1.1rem;
-      margin: 10px 0;
       color: #333;
       text-decoration: none;
       text-align: center;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin: 0;
+    }
+
+    .product-info-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
     }
 
     .product-brand {
       font-size: 0.9rem;
       color: #666;
-      margin: 5px 0;
+      margin: 0;
       text-align: center;
+    }
+
+    .rating-stars {
+      display: flex;
+      justify-content: center;
+    }
+
+    .rating-stars i {
+      color: #ffd700;
+      font-size: 14px;
+    }
+
+    .rating-stars .empty-star {
+      color: #ccc;
     }
 
     .product-pricing {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 5px 0;
+      gap: 10px;
     }
 
     .product-price {
       color: #999;
       font-size: 1rem;
-      margin-right: 10px;
+      text-decoration: line-through;
+      margin: 0;
     }
 
     .productsale-price {
       color: #28a745;
       font-size: 1.1rem;
+      margin: 0;
     }
 
     .wishlist-btn {
@@ -233,6 +269,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 10;
     }
 
     .wishlist-btn:hover {
@@ -304,6 +341,7 @@
     .product-content {
       display: flex;
       flex-direction: column;
+      flex-grow: 1;
     }
 
     .page-header {
@@ -325,28 +363,6 @@
       color: #999;
     }
 
-    .rating-stars {
-      display: flex;
-      justify-content: center;
-      margin: 5px 0;
-    }
-
-    .rating-stars i {
-      color: #ffd700;
-      font-size: 14px;
-    }
-
-    .rating-stars .empty-star {
-      color: #ccc;
-    }
-
-    .product-info-row {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-
     @media (max-width: 768px) {
       .product-list-container {
         flex-direction: column;
@@ -359,6 +375,10 @@
 
       .product-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+      
+      .product-item {
+        height: 420px; /* Slightly reduced height for mobile */
       }
     }
   </style>
@@ -380,7 +400,7 @@
       <h1 class="shop-title">Shop</h1>
 
       <div>
-        <form action="/search" method="POST" class="search-form" onsubmit="event.preventDefault(); performSearch();">
+        <form action="/search" method="GET" class="search-form" onsubmit="event.preventDefault(); performSearch();">
           <input type="text" id="product-search" name="query" placeholder="Search products..." class="search-input">
           <button type="submit" class="search-button">Search</button>
         </form>
@@ -431,14 +451,17 @@
         <div class="product-grid" id="productContainer">
           <% products.forEach(product => { %>
             <div class="product-item">
-              <button class="wishlist-btn" onclick="addToWishlist('<%=product._id%>')">
+              <button class="wishlist-btn <%= wishlist && wishlist.includes(product._id.toString()) ? 'active' : '' %>" 
+                      onclick="addToWishlist('<%= product._id %>')">
                 <i class="fas fa-heart"></i>
               </button>
               <div class="product-content">
                 <a href="/product-details?id=<%= product._id %>" style="text-decoration: none;">
                   <img src="/uploads/re-image/<%= product.productImage[0] %>" class="img-fluid product-thumbnail" loading="lazy">
-                  <h3 class="product-title"><%= product.productName %></h3>
-                  <div class="product-info-row">
+                  <div class="product-title-container">
+                    <h3 class="product-title"><%= product.productName %></h3>
+                  </div>
+                  <div class="product-info-container">
                     <p class="product-brand">Brand: <%= product.brand %></p>
                     <div class="rating-stars">
                       <%
@@ -451,7 +474,7 @@
                       <% } %>
                     </div>
                     <div class="product-pricing">
-                      <strong class="product-price" style="text-decoration: line-through;">₹<%= product.regularPrice %></strong>
+                      <strong class="product-price">₹<%= product.regularPrice %></strong>
                       <strong class="productsale-price">₹<%= product.salePrice %></strong>
                     </div>
                   </div>
@@ -488,28 +511,41 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
+    // Pass the wishlist data from server to client-side JavaScript
+    const wishlist = <%- JSON.stringify(wishlist || []) %>;
+
     function performSearch() {
       const query = document.getElementById('product-search').value;
+      console.log('Search query:', query); // Debug log
       fetch(`/search?query=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       })
-      .then(response => response.json())
+      .then(response => {
+        console.log('Response status:', response.status); // Debug log
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
       .then(data => {
+        console.log('Search results:', data); // Debug log
         updateProductContainer(data);
       })
       .catch(error => {
-        console.error('Error:', error);
+        console.error('Error fetching search results:', error); // Debug log
       });
     }
 
     function updateProductContainer(data) {
+      console.log('Updating container with:', data); // Debug log
       const productContainer = document.getElementById('productContainer');
       productContainer.innerHTML = '';
+      if (data.length === 0) {
+        productContainer.innerHTML = '<p>No products found.</p>';
+        return;
+      }
       data.forEach(product => {
-        // Use ?? to default to an empty array if reviews is undefined or null
         const reviews = product.reviews ?? [];
         const avgRating = reviews.length > 0
           ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
@@ -518,20 +554,24 @@
         for (let i = 1; i <= 5; i++) {
           stars += `<i class="fas fa-star ${i <= Math.round(avgRating) ? '' : 'empty-star'}"></i>`;
         }
+        const isInWishlist = wishlist.includes(product._id);
         const productHTML = `
           <div class="product-item">
-            <button class="wishlist-btn" onclick="addToWishlist('${product._id}')">
+            <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" 
+                    onclick="addToWishlist('${product._id}')">
               <i class="fas fa-heart"></i>
             </button>
             <div class="product-content">
               <a href="/product-details?id=${product._id}" style="text-decoration: none;">
                 <img src="/uploads/re-image/${product.productImage[0]}" class="img-fluid product-thumbnail" loading="lazy">
-                <h3 class="product-title">${product.productName}</h3>
-                <div class="product-info-row">
+                <div class="product-title-container">
+                  <h3 class="product-title">${product.productName}</h3>
+                </div>
+                <div class="product-info-container">
                   <p class="product-brand">Brand: ${product.brand}</p>
                   <div class="rating-stars">${stars}</div>
                   <div class="product-pricing">
-                    <strong class="product-price" style="text-decoration: line-through;">₹${product.regularPrice}</strong>
+                    <strong class="product-price">₹${product.regularPrice}</strong>
                     <strong class="productsale-price">₹${product.salePrice}</strong>
                   </div>
                 </div>
@@ -630,6 +670,7 @@
     function addToWishlist(productId) {
       const button = event.currentTarget;
       button.disabled = true;
+
       $.ajax({
         url: '/addToWishlist',
         method: 'POST',
@@ -643,6 +684,7 @@
               timer: 2000
             });
             button.classList.add('active');
+            wishlist.push(productId);
             updateWishlistCount();
           } else {
             Swal.fire({

@@ -161,29 +161,39 @@
       <% if (orders.status === "Delivered") { %>
         <div class="row mt-4">
           <div class="col-lg">
-            <h5>Add Review</h5>
-            <form id="reviewForm">
-              <input type="hidden" id="productId" value="<%= orders.product[0].productId._id %>">
-              <div class="mb-3">
-                <label for="rating" class="form-label">Rating</label>
-                <select class="form-control" id="rating" required>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="reviewText" class="form-label">Review</label>
-                <textarea class="form-control" id="reviewText" rows="3" required></textarea>
-              </div>
-              <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
+            <h5>Add Reviews</h5>
+            <% if (orders && orders.product && Array.isArray(orders.product) && orders.product.length > 0) { %>
+              <% orders.product.forEach((product, index) => { %>
+                <% if (product.productStatus !== "Cancelled" && product.productStatus !== "Returned") { %>
+                  <div class="review-section mb-4" id="reviewSection_<%= product._id %>">
+                    <h6>Review for: <%= product.name || 'N/A' %></h6>
+                    <form class="reviewForm" data-product-id="<%= product.productId._id %>">
+                      <input type="hidden" name="productId" value="<%= product.productId._id %>">
+                      <div class="mb-3">
+                        <label for="rating_<%= product._id %>" class="form-label">Rating</label>
+                        <select class="form-control" id="rating_<%= product._id %>" name="rating" required>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5">5</option>
+                        </select>
+                      </div>
+                      <div class="mb-3">
+                        <label for="reviewText_<%= product._id %>" class="form-label">Review</label>
+                        <textarea class="form-control" id="reviewText_<%= product._id %>" name="reviewText" rows="3" required></textarea>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </form>
+                  </div>
+                <% } %>
+              <% }); %>
+            <% } else { %>
+              <p>No products available to review.</p>
+            <% } %>
           </div>
         </div>
       <% } %>
-    </div>
   </section>
 </main>
 
@@ -289,13 +299,14 @@
   }
 
   $(document).ready(function() {
-  $('#reviewForm').on('submit', function(event) {
+  $('.reviewForm').on('submit', function(event) {
     event.preventDefault();
-    var productId = $('#productId').val();
-    var rating = $('#rating').val();
-    var reviewText = $('#reviewText').val();
+    const form = $(this);
+    const productId = form.data('product-id');
+    const rating = form.find('select[name="rating"]').val();
+    const reviewText = form.find('textarea[name="reviewText"]').val();
 
-    console.log("Sending productId:", productId); // Debug log
+    console.log("Submitting review for productId:", productId); // Debug log
 
     $.ajax({
       url: '/addReview',

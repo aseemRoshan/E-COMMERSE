@@ -25,7 +25,13 @@ const loadSignup = async (req, res, next) => {
 const loadShopping = async (req, res, next) => {
     try {
         const user = req.session.user;
-        const userData = await User.findOne({ _id: user });
+        let userData = null;
+        let wishlist = [];
+
+        if (user) {
+            userData = await User.findOne({ _id: user });
+            wishlist = userData.wishlist || []; // Fetch the user's wishlist
+        }
 
         const categories = await Category.find({ isListed: true });
         const categoryIds = categories.map((category) => category._id.toString());
@@ -33,47 +39,42 @@ const loadShopping = async (req, res, next) => {
         const limit = 12;
         const skip = (page - 1) * limit;
 
-        
         const selectedCategory = req.query.category;
         const sortQuery = req.query.sort;
 
-    
         let query = {
             isBlocked: false,
             quantity: { $gt: 0 }
         };
 
-        
         if (selectedCategory) {
             query.category = selectedCategory;
         }
 
-
         let sortOption = {};
         switch (sortQuery) {
             case 'price-low':
-                sortOption = { salePrice: 1 }; 
+                sortOption = { salePrice: 1 };
                 break;
             case 'price-high':
-                sortOption = { salePrice: -1 }; 
+                sortOption = { salePrice: -1 };
                 break;
             case 'name-asc':
-                sortOption = { productName: 1 }; 
+                sortOption = { productName: 1 };
                 break;
             case 'name-desc':
-                sortOption = { productName: -1 }; 
+                sortOption = { productName: -1 };
                 break;
             case 'created-new':
                 sortOption = { createdOn: -1 };
                 break;
             case 'created-old':
-                sortOption = { createdOn: 1 }; 
+                sortOption = { createdOn: 1 };
                 break;
             default:
-                sortOption = { createdOn: -1 }; 
+                sortOption = { createdOn: -1 };
         }
 
-        
         const products = await Product.find(query)
             .sort(sortOption)
             .skip(skip)
@@ -94,14 +95,13 @@ const loadShopping = async (req, res, next) => {
             currentPage: page,
             totalPages: totalPages,
             user: req.session.user || null,
-            selectedCategory: selectedCategory || null, 
+            selectedCategory: selectedCategory || null,
+            wishlist: wishlist // Pass the wishlist to the template
         });
     } catch (error) {
         next(error);
     }
-};
-
-const filterProduct = async (req, res, next) => {
+};const filterProduct = async (req, res, next) => {
     try {
         const user = req.session.user;
         const category = req.query.category;
@@ -112,7 +112,7 @@ const filterProduct = async (req, res, next) => {
         const query = {
             isBlocked: false,
             quantity: { $gt: 0 }
-        }
+        };
 
         if (findCategory) {
             query.category = findCategory._id;
@@ -128,21 +128,23 @@ const filterProduct = async (req, res, next) => {
         const categories = await Category.find({ isListed: true });
 
         let itemsPerPage = 12;
-
         let currentPage = parseInt(req.query.page) || 1;
         let startIndex = (currentPage - 1) * itemsPerPage;
         let endIndex = startIndex + itemsPerPage;
         let totalPages = Math.ceil(findProducts.length / itemsPerPage);
         const currentProduct = findProducts.slice(startIndex, endIndex);
+
         let userData = null;
+        let wishlist = [];
         if (user) {
             userData = await User.findOne({ _id: user });
+            wishlist = userData.wishlist || []; // Fetch the user's wishlist
             if (userData) {
                 const searchEntry = {
                     category: findCategory ? findCategory._id : null,
                     brand: findBrand ? findBrand.brandName : null,
                     searchedOn: new Date(),
-                }
+                };
                 userData.searchHistory.push(searchEntry);
                 await userData.save();
             }
@@ -159,6 +161,7 @@ const filterProduct = async (req, res, next) => {
             currentPage,
             selectedCategory: category || null,
             selectedBrand: brand || null,
+            wishlist: wishlist // Pass wishlist to the template
         });
     } catch (error) {
         next(error);
@@ -168,7 +171,13 @@ const filterProduct = async (req, res, next) => {
 const filterByPrice = async (req, res, next) => {
     try {
         const user = req.session.user;
-        const userData = await User.findOne({ _id: user });
+        let userData = null;
+        let wishlist = [];
+        if (user) {
+            userData = await User.findOne({ _id: user });
+            wishlist = userData.wishlist || []; // Fetch the user's wishlist
+        }
+
         const brands = await Brand.find({}).lean();
         const categories = await Category.find({ isListed: true }).lean();
 
@@ -195,50 +204,53 @@ const filterByPrice = async (req, res, next) => {
             brands: brands,
             totalPages,
             currentPage,
+            wishlist: wishlist // Pass wishlist to the template
         });
     } catch (error) {
         next(error);
     }
 };
-
 const searchProducts = async (req, res, next) => {
     try {
-      const user = req.session.user;
-      const userData = await User.findOne({ _id: user });
-      let search = req.query.query;
-  
-      const brands = await Brand.find({}).lean();
-      const categories = await Category.find({ isListed: true }).lean();
-      const categoryIds = categories.map(category => category._id.toString());
-      let searchResult = [];
-  
-      if (req.session.filteredProducts && req.session.filteredProducts.length > 0) {
-        searchResult = req.session.filteredProducts.filter(product =>
-          product.productName.toLowerCase().includes(search.toLowerCase())
-        );
-      } else {
-        searchResult = await Product.find({
-          productName: { $regex: ".*" + search + ".*", $options: "i" },
-          isBlocked: false,
-          quantity: { $gt: 0 },
-          category: { $in: categoryIds }
-        }).lean(); // Use .lean() for plain JS objects
-      }
-  
-      // Ensure reviews is always an array
-      searchResult = searchResult.map(product => ({
-        ...product,
-        reviews: product.reviews || [] // Fallback to empty array if undefined
-      }));
-  
-      searchResult.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
-  
-      res.json(searchResult);
-    } catch (error) {
-      next(error);
-    }
-  };
+        const user = req.session.user;
+        let userData = null;
+        if (user) {
+            userData = await User.findOne({ _id: user });
+        }
+        let search = req.query.query;
+        console.log('Search query:', search); // Debug log
 
+        const brands = await Brand.find({}).lean();
+        const categories = await Category.find({ isListed: true }).lean();
+        const categoryIds = categories.map(category => category._id.toString());
+        let searchResult = [];
+
+        if (req.session.filteredProducts && req.session.filteredProducts.length > 0) {
+            searchResult = req.session.filteredProducts.filter(product =>
+                product.productName.toLowerCase().includes(search.toLowerCase())
+            );
+        } else {
+            searchResult = await Product.find({
+                productName: { $regex: ".*" + search + ".*", $options: "i" },
+                isBlocked: false,
+                quantity: { $gt: 0 },
+                category: { $in: categoryIds }
+            }).lean();
+        }
+
+        searchResult = searchResult.map(product => ({
+            ...product,
+            reviews: product.reviews || []
+        }));
+
+        searchResult.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
+        console.log('Search results:', searchResult); // Debug log
+        res.json(searchResult);
+    } catch (error) {
+        console.error('Error in searchProducts:', error);
+        next(error);
+    }
+};
 const pageNotFound = async (req, res, next) => {
     try {
         res.render("page-404");

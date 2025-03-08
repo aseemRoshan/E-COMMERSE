@@ -36,6 +36,9 @@ const productDetails = async (req, res, next) => {
         const productOffer = product.productOffer || 0;
         const combinedOffer = categoryOffer + productOffer;
 
+        // Pass the wishlist data to the template
+        const wishlist = user ? user.wishlist || [] : [];
+
         res.render("product-details", {
             user,
             product,
@@ -43,15 +46,17 @@ const productDetails = async (req, res, next) => {
             totalOffer: combinedOffer,
             quantity: product.quantity,
             category: findCategory,
+            wishlist: wishlist
         });
     } catch (error) {
         next(error);
     }
 };
+
 const getProductDetails = async (req, res, next) => {
     try {
-        const userId = req.session.user; // Get user from session
-        const user = userId ? await User.findById(typeof userId === 'object' ? userId._id : userId) : null; // Fetch user data or set to null
+        const userId = req.session.user;
+        const user = userId ? await User.findById(typeof userId === 'object' ? userId._id : userId) : null;
         const productId = req.params.id;
 
         const product = await Product.findById(productId);
@@ -68,13 +73,17 @@ const getProductDetails = async (req, res, next) => {
 
         const totalOffer = calculateOffer(product.regularPrice, product.salePrice);
 
+        // Pass the wishlist data to the template
+        const wishlist = user ? user.wishlist || [] : [];
+
         res.render('product-details', {
-            user, 
+            user,
             product,
             relatedProducts,
             totalOffer,
             quantity: product.quantity,
-            category: await Category.findById(product.category)
+            category: await Category.findById(product.category),
+            wishlist: wishlist
         });
     } catch (error) {
         next(error);
