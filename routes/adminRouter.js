@@ -23,9 +23,9 @@ router.get("/export-excel", adminAuth, adminController.generateExcelReport);
 router.get("/export-pdf", adminAuth, adminController.generatePdfReport);
 
 // Customer management
-router.get("/Customers", adminAuth, customerController.customerInfo);
-router.patch("/Customers/:id/block", adminAuth, customerController.customerBlocked);
-router.patch("/Customers/:id/unblock", adminAuth, customerController.customerUnBlocked);
+router.get("/customers", adminAuth, customerController.customerInfo);
+router.patch("/customers/:id/block", adminAuth, customerController.customerBlocked);
+router.patch("/customers/:id/unblock", adminAuth, customerController.customerUnBlocked);
 
 // Category Routes
 router.get("/category", adminAuth, categoryController.categoryInfo);

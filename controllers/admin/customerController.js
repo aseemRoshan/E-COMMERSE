@@ -27,7 +27,7 @@ const customerInfo = async (req, res, next) => {
 
         const totalPages = Math.ceil(count / limit);
 
-        res.render("Customers", {
+        res.render("customers", {
             data: userData,
             currentPage: page,
             totalPages: totalPages,
