@@ -114,13 +114,8 @@
                 </tbody>
               </table>
             </div>
-            <% if (typeof user === 'undefined') { user = null; } %> <!-- Fallback if user is not passed -->
             <% if (!outOfStockMessages || outOfStockMessages.length === 0) { %>
-              <% if (user && user._id) { %>
-                <a href="/checkout?userId=<%= user._id %>" class="btn"> <i class="fi-rs-box-alt mr-10"></i> Proceed to Checkout</a>
-              <% } else { %>
-                <a href="/login" class="btn"> <i class="fi-rs-box-alt mr-10"></i> Log in to Checkout</a>
-              <% } %>
+              <a href="/checkout?userId=<%= user._id%>" class="btn"> <i class="fi-rs-box-alt mr-10"></i> Proceed to Checkout</a>
             <% } %>
           </div>
         </div>
