@@ -5,9 +5,9 @@ const path = require('path');
 const env = require('dotenv').config();
 const session = require("express-session");
 const passport = require("./config/passport.js");
-const db = require('./config/db');
+const db = require('./config/db.js');
 const userRouter = require("./routes/userRouter.js");
-const adminRouter = require("./routes/adminRouter");
+const adminRouter = require("./routes/adminRouter.js");
 const errorHandler = require("./middlewares/errorHandler.js");
 const methodOverride = require('method-override');
 

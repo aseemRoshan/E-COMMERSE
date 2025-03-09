@@ -7,13 +7,18 @@ const mongodb = require("mongodb");
 
 const getCartPage = async (req, res, next) => {
     try {
+        // Check if user is logged in
+        if (!req.session.user || !req.session.user._id) {
+            return res.redirect("/login"); // Redirect to login if no user session
+        }
+
         const userId = req.session.user._id;
         const user = await User.findById(userId);
 
         const cart = await Cart.findOne({ userId }).populate("items.productId");
 
         if (!cart) {
-            return res.render("cart", { cartItems: [], total: 0, outOfStockMessages: [] });
+            return res.render("cart", { cartItems: [], total: 0, outOfStockMessages: [], user: user || null });
         }
 
         const cartItems = cart.items.map(item => ({
@@ -31,7 +36,7 @@ const getCartPage = async (req, res, next) => {
         const outOfStockItems = cartItems.filter(item => item.stock < item.quantity);
         const outOfStockMessages = outOfStockItems.map(item => `The product "${item.name}" is out of stock.`);
 
-        res.render("cart", { cartItems: cartItems, total: total, user: user, outOfStockMessages: outOfStockMessages });
+        res.render("cart", { cartItems, total, user: user || null, outOfStockMessages });
     } catch (error) {
         next(error);
     }

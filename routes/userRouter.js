@@ -44,7 +44,7 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
 router.get("/pageNotFound", userController.pageNotFound);
 router.get("/", userController.loadHomepage);
 router.get("/signup", userController.loadSignup);
-router.get("/shop", userAuth, userController.loadShopping);
+router.get("/shop", userController.loadShopping);
 router.post("/signup", userController.signup);
 router.post("/verify-otp", userController.verifyOtp);
 router.post("/resend-otp", userController.resendOtp);
@@ -90,7 +90,7 @@ router.get("/deleteAddress", userAuth, profileController.deleteAddress);
 router.get("/wishlist", userAuth, wishlistController.loadWishlist);
 router.post("/addToWishlist", userAuth, wishlistController.addToWishlist);
 router.get("/removeFromWishlist", userAuth, wishlistController.removeProduct);
-router.get("/getWishlistCount", userAuth, wishlistController.getWishlistCount); // Added
+router.get("/getWishlistCount", userAuth, wishlistController.getWishlistCount); 
 
 // Cart Management
 router.get("/cart", userAuth, cartController.getCartPage);

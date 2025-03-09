@@ -115,7 +115,11 @@
               </table>
             </div>
             <% if (!outOfStockMessages || outOfStockMessages.length === 0) { %>
-              <a href="/checkout?userId=<%= user._id%>" class="btn"> <i class="fi-rs-box-alt mr-10"></i> Proceed to Checkout</a>
+              <% if (user && user._id) { %>
+                <a href="/checkout?userId=<%= user._id %>" class="btn"> <i class="fi-rs-box-alt mr-10"></i> Proceed to Checkout</a>
+              <% } else { %>
+                <a href="/login" class="btn"> <i class="fi-rs-box-alt mr-10"></i> Log in to Checkout</a>
+              <% } %>
             <% } %>
           </div>
         </div>
