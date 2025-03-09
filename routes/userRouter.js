@@ -20,7 +20,7 @@ function generateReferralCode() {
     return result;
 }
 
-router.get("/auth/google", passport.authenticate("google", { scope: ['profile', 'email'] }));
+router.get("/auth/google", passport.authenticate("google"));
 router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/signup' }), async (req, res, next) => {
     try {
         const user = req.user;
