@@ -18,7 +18,12 @@ const getCartPage = async (req, res, next) => {
         const cart = await Cart.findOne({ userId }).populate("items.productId");
 
         if (!cart) {
-            return res.render("cart", { cartItems: [], total: 0, outOfStockMessages: [], user: user || null });
+            return res.render("cart", { 
+                cartItems: [], 
+                total: 0, 
+                outOfStockMessages: [], 
+                user: user || null // Always include user, even if null
+            });
         }
 
         const cartItems = cart.items.map(item => ({
@@ -36,7 +41,12 @@ const getCartPage = async (req, res, next) => {
         const outOfStockItems = cartItems.filter(item => item.stock < item.quantity);
         const outOfStockMessages = outOfStockItems.map(item => `The product "${item.name}" is out of stock.`);
 
-        res.render("cart", { cartItems, total, user: user || null, outOfStockMessages });
+        res.render("cart", { 
+            cartItems: cartItems, 
+            total: total, 
+            user: user || null, // Always include user, even if null
+            outOfStockMessages: outOfStockMessages 
+        });
     } catch (error) {
         next(error);
     }
