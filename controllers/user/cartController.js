@@ -7,26 +7,13 @@ const mongodb = require("mongodb");
 
 const getCartPage = async (req, res, next) => {
     try {
-        const userId = req.session.user?._id; // Safely access _id
-        if (!userId) {
-            return res.redirect("/login"); // Redirect if no user in session
-        }
-
+        const userId = req.session.user._id;
         const user = await User.findById(userId);
-        if (!user) {
-            req.session.destroy(); // Clear invalid session
-            return res.redirect("/login"); // Redirect if user not found in DB
-        }
 
         const cart = await Cart.findOne({ userId }).populate("items.productId");
 
         if (!cart) {
-            return res.render("cart", { 
-                cartItems: [], 
-                total: 0, 
-                outOfStockMessages: [], 
-                user: user // Always pass user
-            });
+            return res.render("cart", { cartItems: [], total: 0, outOfStockMessages: [] });
         }
 
         const cartItems = cart.items.map(item => ({
@@ -44,12 +31,7 @@ const getCartPage = async (req, res, next) => {
         const outOfStockItems = cartItems.filter(item => item.stock < item.quantity);
         const outOfStockMessages = outOfStockItems.map(item => `The product "${item.name}" is out of stock.`);
 
-        res.render("cart", { 
-            cartItems: cartItems, 
-            total: total, 
-            user: user, 
-            outOfStockMessages: outOfStockMessages 
-        });
+        res.render("cart", { cartItems: cartItems, total: total, user: user, outOfStockMessages: outOfStockMessages });
     } catch (error) {
         next(error);
     }

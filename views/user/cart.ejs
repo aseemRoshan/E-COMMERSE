@@ -115,13 +115,7 @@
               </table>
             </div>
             <% if (!outOfStockMessages || outOfStockMessages.length === 0) { %>
-              <% if (user) { %>
-                <a href="/checkout?userId=<%= user._id %>" class="btn"> 
-                  <i class="fi-rs-box-alt mr-10"></i> Proceed to Checkout
-                </a>
-              <% } else { %>
-                <p>Please <a href="/login">log in</a> to proceed to checkout.</p>
-              <% } %>
+              <a href="/checkout?userId=<%= user._id%>" class="btn"> <i class="fi-rs-box-alt mr-10"></i> Proceed to Checkout</a>
             <% } %>
           </div>
         </div>
