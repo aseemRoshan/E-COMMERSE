@@ -8,10 +8,8 @@ const mongodb = require("mongodb");
 const getCartPage = async (req, res, next) => {
     try {
         const userId = req.session.user._id;
-        console.log('user id',userId);
         
         const user = await User.findById(userId);
-        console.log('user data',user);
 
         const cart = await Cart.findOne({ userId:userId }).populate("items.productId");
 
@@ -156,7 +154,7 @@ const checkProductInCart = async (req, res, next) => {
     }
 };
 
-// New route to get cart count
+
 const getCartCount = async (req, res, next) => {
     try {
         if (!req.session.user) {

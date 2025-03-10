@@ -229,7 +229,7 @@ const userProfile = async (req, res) => {
       
       const totalWalletHistoryPages = Math.ceil(walletHistory.length / walletHistoryLimit);
 
-      console.log('orders', orders);
+      
       res.render("profile", {
           user: userData,
           userAddress: addressData,

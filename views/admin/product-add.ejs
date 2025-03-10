@@ -359,7 +359,7 @@ function handleFileSelect(event) {
                 cropperContainer.remove();
                 saveButton.remove();
 
-                // Save the cropped image to the selectedImages array
+                
                 const croppedFile = dataURLtoFile(croppedImage, file.name);
                 const index = selectedImages.indexOf(file);
                 if (index !== -1) {

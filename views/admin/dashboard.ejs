@@ -709,7 +709,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (diffDays === 1) document.querySelector('[data-range="1"]').classList.add("active");
         else if (diffDays === 7) document.querySelector('[data-range="7"]').classList.add("active");
         else if (diffDays === 30) document.querySelector('[data-range="30"]').classList.add("active");
-        else if (diffDays === 365) document.querySelector('[data-range="365"]').classList.add("active"); // Highlight 1 Year if selected
+        else if (diffDays === 365) document.querySelector('[data-range="365"]').classList.add("active"); 
     }
 
     document.querySelectorAll(".date-filter").forEach(button => {
@@ -720,7 +720,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const range = parseInt(this.getAttribute("data-range"));
             const endDate = new Date();
             const startDate = new Date();
-            startDate.setDate(endDate.getDate() - (range - 1)); // Works for all ranges, including 365
+            startDate.setDate(endDate.getDate() - (range - 1)); 
 
             document.getElementById("startDate").value = formatDate(startDate);
             document.getElementById("endDate").value = formatDate(endDate);

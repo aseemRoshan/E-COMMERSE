@@ -166,7 +166,7 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       display: flex;
       flex-direction: column;
-      height: 450px; /* Fixed height for consistency */
+      height: 450px; 
     }
 
     .product-item:hover {
@@ -183,7 +183,7 @@
     }
 
     .product-title-container {
-      height: 50px; /* Fixed height for title */
+      height: 50px; 
       margin-bottom: 10px;
       overflow: hidden;
       display: flex;
@@ -378,7 +378,7 @@
       }
       
       .product-item {
-        height: 420px; /* Slightly reduced height for mobile */
+        height: 420px; 
       }
     }
   </style>
@@ -511,12 +511,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
-    // Pass the wishlist data from server to client-side JavaScript
+    
     const wishlist = <%- JSON.stringify(wishlist || []) %>;
 
     function performSearch() {
       const query = document.getElementById('product-search').value;
-      console.log('Search query:', query); // Debug log
+      console.log('Search query:', query); 
       fetch(`/search?query=${encodeURIComponent(query)}`, {
         method: 'GET',
         headers: {
@@ -524,21 +524,21 @@
         },
       })
       .then(response => {
-        console.log('Response status:', response.status); // Debug log
+        console.log('Response status:', response.status); 
         if (!response.ok) throw new Error('Network response was not ok');
         return response.json();
       })
       .then(data => {
-        console.log('Search results:', data); // Debug log
+        console.log('Search results:', data); 
         updateProductContainer(data);
       })
       .catch(error => {
-        console.error('Error fetching search results:', error); // Debug log
+        console.error('Error fetching search results:', error); 
       });
     }
 
     function updateProductContainer(data) {
-      console.log('Updating container with:', data); // Debug log
+      console.log('Updating container with:', data); 
       const productContainer = document.getElementById('productContainer');
       productContainer.innerHTML = '';
       if (data.length === 0) {

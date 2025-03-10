@@ -9,11 +9,6 @@ const bcrypt = require('bcrypt');
 
 
 
-
-
-
-
-
 const loadSignup = async (req, res, next) => {
     try {
         return res.render("signup");
@@ -138,7 +133,7 @@ const loadShopping = async (req, res, next) => {
         let wishlist = [];
         if (user) {
             userData = await User.findOne({ _id: user });
-            wishlist = userData.wishlist || []; // Fetch the user's wishlist
+            wishlist = userData.wishlist || []; 
             if (userData) {
                 const searchEntry = {
                     category: findCategory ? findCategory._id : null,
@@ -218,7 +213,6 @@ const searchProducts = async (req, res, next) => {
             userData = await User.findOne({ _id: user });
         }
         let search = req.query.query;
-        console.log('Search query:', search); // Debug log
 
         const brands = await Brand.find({}).lean();
         const categories = await Category.find({ isListed: true }).lean();

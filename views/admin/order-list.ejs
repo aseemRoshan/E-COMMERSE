@@ -85,7 +85,7 @@
             margin-bottom: 2rem;
         }
 
-        /* Mobile card view */
+        
         @media (max-width: 1024px) {
             .table-container table {
                 display: block;
@@ -252,12 +252,12 @@
             color: #6b7280;
         }
 
-        /* Customer info styles */
+        
         .customer-info > div {
             margin-bottom: 0.25rem;
         }
 
-        /* Address info styles */
+        
         .address-info {
             margin-bottom: 0.5rem;
         }
@@ -338,7 +338,6 @@
                                 >
                                     <option value="Confirmed" <%= order.status === 'Confirmed' ? 'selected' : '' %>>Confirmed</option>
                                     <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                                    <!-- <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option> -->
                                     <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                                     <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                                     <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %>>Returned</option>
@@ -389,7 +388,7 @@
             window.location.href = `/admin/changeStatus?orderId=${orderId}&userId=${userId}&status=${status}`;
         }
 
-        // Update status badge classes
+        
         document.querySelectorAll('select').forEach(select => {
             select.addEventListener('change', function() {
                 const status = this.value.toLowerCase();

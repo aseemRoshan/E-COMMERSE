@@ -10,6 +10,8 @@ const orderController = require("../controllers/user/orderController");
 const walletController = require("../controllers/user/walletController");
 const { userAuth } = require('../middlewares/auth');
 
+
+
 function generateReferralCode() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';

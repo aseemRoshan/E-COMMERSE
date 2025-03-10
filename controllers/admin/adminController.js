@@ -56,7 +56,7 @@ const generateExcelReport = async (req, res, next) => {
             const finalAmount = order.finalAmount !== undefined ? `₹${order.finalAmount.toFixed(2)}` : '₹0.00';
             const paymentMethod = order.payment || 'N/A';
 
-            console.log('Payment Method:', paymentMethod);
+            
 
             worksheet.addRow({
                 orderID: order.orderId,
@@ -451,7 +451,7 @@ const loadDashboard = async (req, res, next) => {
                     }
                 }
             ]);
-            console.log("Top Products:", topProducts);
+            
 
             const topCategories = await Order.aggregate([
                 { $match: { createdOn: { $gte: start, $lt: end } } },

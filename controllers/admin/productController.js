@@ -82,7 +82,7 @@ const getAllProducts = async (req, res, next) => {
                 { brand: { $regex: new RegExp(".*" + search + ".*", "i") } },
             ],
         }).limit(limit * 1).skip((page - 1) * limit).sort({ createdAt: -1 }).populate('category').exec();
-        console.log(productData);
+    
 
         const count = await Product.find({
             $or: [
